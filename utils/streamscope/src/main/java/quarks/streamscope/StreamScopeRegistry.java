@@ -66,18 +66,27 @@ public class StreamScopeRegistry {
     return String.format(STREAMID_FMT, jobId, opletId, oport);
   }
 
-  /** create a prefix of a streamId based name */
+  /** create a prefix of a streamId based name
+   * @param jobId the job id (e.g., "JOB_0")
+   * @param opletId the oplet id (e.g., "OP_2")
+   * @return the value
+   */
   static String mkStreamIdNamePrefix(String jobId, String opletId) {
     return String.format(ID_PREFIX+JOB_OPLET_FMT, jobId, opletId);
   }
   
-  /** create a registration name for a stream alias */
+  /** create a registration name for a stream alias
+   * @param alias the alias
+   * @return the value
+   */
   public static String nameForStreamAlias(String alias) {
     Objects.requireNonNull(alias, "alias");
     return ALIAS_PREFIX+alias;
   }
   
   /** Create a registration name for a stream id.
+   * @param streamId the stream id
+   * @return the value
    * @see #mkStreamId(String, String, int)
    */
   public static String nameForStreamId(String streamId) {
@@ -85,7 +94,10 @@ public class StreamScopeRegistry {
     return ID_PREFIX+streamId;
   }
   
-  /** returns null if {@code name} is not a from nameByStreamAlias() */
+  /** Extract the stream alias from a name
+   * @param name the name 
+   * @return null if {@code name} is not from nameByStreamAlias()
+   */
   public static String streamAliasFromName(String name) {
     Objects.requireNonNull(name, "name");
     if (!name.startsWith(ALIAS_PREFIX))
@@ -93,7 +105,10 @@ public class StreamScopeRegistry {
     return name.substring(ALIAS_PREFIX.length());
   }
   
-  /** returns null if {@code name} is not a from nameByStreamId() */
+  /** Extract the streamId from the name.
+   * @param name the name 
+   * @return null if {@code name} is not from nameByStreamId()
+   */
   public static String streamIdFromName(String name) {
     Objects.requireNonNull(name, "name");
     if (!name.startsWith(ID_PREFIX))
@@ -145,6 +160,7 @@ public class StreamScopeRegistry {
   
   /** Get registered StreamScopes and the name(s) each is registered with.
    * The map is backed by the registry so its contents may change.
+   * @return the map
    */
   public synchronized Map<StreamScope<?>, List<String>> getStreamScopes() {
     return Collections.unmodifiableMap(byStreamScopeMap);
@@ -152,6 +168,7 @@ public class StreamScopeRegistry {
   
   /** remove the specific name registration.  Other registration of the same StreamScope may still exist.
    * no-op if name is not registered.
+   * @param name the name to unregister
    * @see #unregister(StreamScope)
    */
   public synchronized void unregister(String name) {
@@ -166,6 +183,7 @@ public class StreamScopeRegistry {
   
   /** remove all name registrations of the StreamScope.
    * no-op if no registrations for the StreamScope
+   * @param streamScope the StreamScope to unregister
    */
   public synchronized void unregister(StreamScope<?> streamScope) {
     List<String> names = byStreamScopeMap.get(streamScope);
@@ -178,6 +196,8 @@ public class StreamScopeRegistry {
   
   /** remove all name registrations of the StreamScopes for the specified oplet.
    * no-op if no registrations for the oplet
+   * @param jobId the job id (e.g., "JOB_0")
+   * @param opletId the oplet id (e.g., "OP_2")
    */
   synchronized void unregister(String jobId, String opletId) {
     String prefix = mkStreamIdNamePrefix(jobId, opletId);

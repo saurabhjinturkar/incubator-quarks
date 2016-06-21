@@ -30,7 +30,6 @@ under the License.
  *  
  * <h4>Submit an Application</h4>
  * Method: {@link quarks.topology.mbeans.ApplicationServiceMXBean#submit(String, String)}
- * <P>
  * <table border=1 cellpadding=3 cellspacing=1>
  * <caption>JSON Submit Application</caption>
  * <tr>
@@ -77,6 +76,5 @@ under the License.
  * job named {@code EngineTemp}.
  * <BR>
  * {@code {"type":"appService","alias":"quarks","op":"submit","args":["EngineTemp",{}]}}
- * </P>
  */
 package quarks.topology.mbeans;

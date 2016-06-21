@@ -25,6 +25,9 @@ import quarks.oplet.OpletContext;
 /**
  * Provides a skeletal implementation of the {@link OpletContext}
  * interface.
+ * 
+ * @param <I> Tuple type of input streams
+ * @param <O> Tuple type of output streams
  */
 public abstract class AbstractContext<I, O> implements OpletContext<I, O> {
 

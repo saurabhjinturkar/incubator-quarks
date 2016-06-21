@@ -54,6 +54,7 @@ public class FileStreams {
      * <p>
      * This is the same as {@code directoryWatcher(t, () -> dir, null)}.
      * 
+     * @param te topology element whose topology the watcher will be added to
      * @param directory
      *            Name of the directory to watch.
      * @return Stream containing absolute pathnames of newly created files in
@@ -94,7 +95,8 @@ public class FileStreams {
      * MacOs Java lacks a native implementation of {@link WatchService}.
      * The result can be a delay in detecting newly created files (e.g., 10sec)
      * as well not detecting rapid deletion and recreation of a file.
-     * 
+     *
+     * @param te topology element whose topology the watcher will be added to
      * @param directory
      *            Name of the directory to watch.
      * @param comparator
@@ -209,6 +211,7 @@ public class FileStreams {
      * }</pre>
      * @param contents the lines to write
      * @param basePathname the base pathname of the created files
+     * @return a TSink
      */
     public static TSink<String> textFileWriter(TStream<String> contents,
             Supplier<String> basePathname) {
@@ -239,6 +242,7 @@ public class FileStreams {
      * @param contents the lines to write
      * @param basePathname the base pathname of the created files
      * @param policy the policy to use.  may be null.
+     * @return a TSink
      * @see FileWriterPolicy
      */
     public static TSink<String> textFileWriter(TStream<String> contents,

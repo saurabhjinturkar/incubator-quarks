@@ -47,6 +47,7 @@ public class Functions {
     
     /**
      * Returns the identity function that returns its single argument.
+     * @param <T> tuple type
      * @return Identity function that returns its single argument.
      */
     @SuppressWarnings("unchecked")
@@ -56,6 +57,7 @@ public class Functions {
     
     /**
      * Returns a constant function that returns zero (0).
+     * @param <T> tuple type
      * @return Constant function that returns zero (0).
      */
     @SuppressWarnings("unchecked")
@@ -67,6 +69,7 @@ public class Functions {
      * Returns a constant function that returns zero (0).
      * This is identical to {@link #zero()} but is more
      * readable when applied as a key function.
+     * @param <T> tuple type
      * @return Constant function that returns zero (0).
      */
     public static <T> Function<T,Integer> unpartitioned() {
@@ -97,6 +100,8 @@ public class Functions {
      * If {@code function} implements {@code AutoCloseable} then
      * the function is assumed to be stateful and a thread-safe
      * version is returned.
+     * @param <T> source tuple type
+     * @param <R> result tuple type
      * @param function Function to return a thread-safe version of.
      * @return A thread-safe function
      */
@@ -134,6 +139,7 @@ public class Functions {
      * If {@code function} implements {@code AutoCloseable} then
      * the function is assumed to be stateful and a thread-safe
      * version is returned.
+     * @param <T> tuple type
      * @param function Function to return a thread-safe version of.
      * @return A thread-safe function
      */
@@ -171,6 +177,7 @@ public class Functions {
      * If {@code function} implements {@code AutoCloseable} then
      * the function is assumed to be stateful and a thread-safe
      * version is returned.
+     * @param <T> tuple type
      * @param function Function to return a thread-safe version of.
      * @return A thread-safe function
      */
@@ -209,6 +216,9 @@ public class Functions {
      * If {@code function} implements {@code AutoCloseable} then
      * the function is assumed to be stateful and a thread-safe
      * version is returned.
+     * @param <T> Type of function's first argument
+     * @param <U> Type of function's second argument
+     * @param <R> Type of function's third argument
      * @param function Function to return a thread-safe version of.
      * @return A thread-safe function
      */
@@ -330,6 +340,7 @@ public class Functions {
      * This can be used to delay the execution of the consumer
      * until some time in the future using an executor service.
      * 
+     * @param <T> tuple type
      * @param consumer Function to be applied to {@code value}.
      * @param value Value to be consumed.
      * 
@@ -346,7 +357,7 @@ public class Functions {
      * @param finalAction Action to be invoked after {@code action.run()} is called.
      * @return {@code Runnable} that invokes {@code action.run()} and then {@code finalAction.run()}
      */
-    public static <T> Runnable runWithFinal(Runnable action, Runnable finalAction) {
+    public static Runnable runWithFinal(Runnable action, Runnable finalAction) {
         return () -> { try {action.run(); } finally {finalAction.run();}};
     }
 
@@ -358,6 +369,7 @@ public class Functions {
 
     /**
      * A Consumer that discards all items passed to it.
+     * @param <T> tuple type
      * @return A Consumer that discards all items passed to it.
      */
     @SuppressWarnings("unchecked")
@@ -377,6 +389,7 @@ public class Functions {
     
     /**
      * A Predicate that is always true
+     * @param <T> tuple type
      * @return A Predicate that is always true.
      */
     @SuppressWarnings("unchecked")
@@ -386,6 +399,7 @@ public class Functions {
     
     /**
      * A Predicate that is always false
+     * @param <T> tuple type
      * @return A Predicate that is always false.
      */
     @SuppressWarnings("unchecked")

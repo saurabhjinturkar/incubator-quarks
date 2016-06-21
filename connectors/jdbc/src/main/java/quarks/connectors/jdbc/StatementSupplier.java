@@ -37,6 +37,8 @@ public interface StatementSupplier {
      *                                  + " FROM persons WHERE id = ?");
      * }</pre>
      * @param cn JDBC connection
+     * @return the PreparedStatement
+     * @throws SQLException on failure
      */
     PreparedStatement get(Connection cn) throws SQLException;
 }

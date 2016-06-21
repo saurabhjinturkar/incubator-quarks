@@ -95,8 +95,8 @@ public interface IFileWriterPolicy<T> {
      * {@link #shouldFlush()}. 
      * 
      * @param basePathname the directory and base leafname for final files
-     * @param flushable
-     * @param closeable
+     * @param flushable function to perform the flush 
+     * @param closeable function to perform the close
      */
     void initialize(String basePathname, Flushable flushable, Closeable closeable);
     
@@ -157,7 +157,7 @@ public interface IFileWriterPolicy<T> {
      * 
      * @param path the active file (from {@link #getNextActiveFilePath()}).
      * @return the final path
-     * @throws IOException
+     * @throws IOException on failure
      */
     Path closeActiveFile(Path path) throws IOException;
     

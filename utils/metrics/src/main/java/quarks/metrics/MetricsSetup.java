@@ -48,6 +48,7 @@ public class MetricsSetup {
     /**
      * Returns a new {@link MetricsSetup} for configuring metrics.
      *
+     * @param services ServiceContainer to use to add services to
      * @param registry the registry to use for the application
      * @return a {@link MetricsSetup} instance
      */
@@ -62,6 +63,7 @@ public class MetricsSetup {
      * Use the specified {@code MBeanServer} with this metric setup.
      *  
      * @param mBeanServer the MBean server used by the metric JMX reporter
+     * @return this
      */
     public MetricsSetup registerWith(MBeanServer mBeanServer) {
         this.mBeanServer = mBeanServer;
@@ -71,6 +73,8 @@ public class MetricsSetup {
     /**
      * Starts the metric {@code JMXReporter}. If no MBeanServer was set, use 
      * the virtual machine's platform MBeanServer.
+     * @param jmxDomainName JMX domain name to use when creating JMX MXBean object names.
+     * @return this
      */
     public MetricsSetup startJMXReporter(String jmxDomainName) {
         final JmxReporter reporter = JmxReporter.forRegistry(registry()).
@@ -84,6 +88,7 @@ public class MetricsSetup {
     
     /**
      * Starts the metric {@code ConsoleReporter} polling every second.
+     * @return this
      */
     public MetricsSetup startConsoleReporter() {
         ConsoleReporter reporter = ConsoleReporter.forRegistry(registry()).convertRatesTo(ratesUnit)

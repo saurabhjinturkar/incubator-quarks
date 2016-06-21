@@ -49,11 +49,14 @@ public interface PeriodMXBean {
     
     /**
      * Set the period.
+     * @param period the period
      */
     public void setPeriod(long period);
     
     /**
      * Set the period and unit
+     * @param period the period
+     * @param unit the {@link TimeUnit} of {@code period}
      */
     public void setPeriod(long period, TimeUnit unit);
 }

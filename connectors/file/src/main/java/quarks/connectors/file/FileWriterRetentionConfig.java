@@ -34,19 +34,32 @@ public class FileWriterRetentionConfig {
     private long ageSec;
     private long periodMsec;
     
-    /** same as {@code newConfig(fileCount, 0, 0, 0)} */
+    /** same as {@code newConfig(fileCount, 0, 0, 0)}
+     * 
+     * @param fileCount remove a file when {@code fileCount} would be exceeded. 0 to disable.
+     * @return the retention config
+     */
     public static  FileWriterRetentionConfig newFileCountBasedConfig(int fileCount) {
         if (fileCount < 1)
             throw new IllegalArgumentException("fileCount");
         return newConfig(fileCount, 0, 0, 0);
     }
-    /** same as {@code newConfig(0, aggregateFileSize, 0, 0)} */
+    /** same as {@code newConfig(0, aggregateFileSize, 0, 0)}
+     * 
+     * @param aggregateFileSize remove a file when {@code aggregateFileSize} would be exceeded. 0 to disable.
+     * @return the retention config
+     */
     public static  FileWriterRetentionConfig newAggregateFileSizeBasedConfig(long aggregateFileSize) {
         if (aggregateFileSize < 1)
             throw new IllegalArgumentException("aggregateFileSize");
         return newConfig(0, aggregateFileSize, 0, 0);
     }
-    /** same as {@code newConfig(0, 0, ageSe, periodMsecc)} */
+    /** same as {@code newConfig(0, 0, ageSe, periodMsecc)}
+     * 
+     * @param ageSec remove a file that's older than {@code ageSec} seconds.  0 to disable.
+     * @param periodMsec frequency for checking for ageSec based removal. 0 to disable.]
+     * @return the retention config
+     */
     public static  FileWriterRetentionConfig newAgeBasedConfig(long ageSec, long periodMsec) {
         if (ageSec < 1)
             throw new IllegalArgumentException("ageSec");
@@ -62,6 +75,7 @@ public class FileWriterRetentionConfig {
      * @param aggregateFileSize remove a file when {@code aggregateFileSize} would be exceeded. 0 to disable.
      * @param ageSec remove a file that's older than {@code ageSec} seconds.  0 to disable.
      * @param periodMsec frequency for checking for ageSec based removal. 0 to disable.]
+     * @return the retention config
      */
     public static FileWriterRetentionConfig newConfig(int fileCount, long aggregateFileSize, long ageSec, long periodMsec) {
         return new FileWriterRetentionConfig(fileCount, aggregateFileSize, ageSec, periodMsec);

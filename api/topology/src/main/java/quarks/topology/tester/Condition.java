@@ -21,6 +21,7 @@ package quarks.topology.tester;
 /**
  * Function representing if a condition is valid or not.
  * 
+ * @param <T> Condition's result type
  */
 public interface Condition<T> {
 

@@ -29,6 +29,7 @@ public interface RuntimeServices {
      * Get a service for this invocation.
      * <P>
      * These services must be provided by all implementations:
+     * </P>
      * <UL>
      * <LI>
      * {@code java.util.concurrent.ThreadFactory} - Thread factory, runtime code should
@@ -39,9 +40,8 @@ public interface RuntimeServices {
      * execute asynchronous and repeating tasks using this scheduler. 
      * </LI>
      * </UL>
-     * </P>
      * 
-     * 
+     * @param <T> service class type
      * @param serviceClass Type of the service required.
      * @return Service of type implementing {@code serviceClass} if the 
      *      container this invocation runs in supports that service, 

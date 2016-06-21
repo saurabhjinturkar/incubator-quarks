@@ -19,8 +19,13 @@ under the License.
 
 package quarks.connectors.http;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import com.google.gson.JsonObject;
@@ -29,6 +34,7 @@ import quarks.connectors.http.runtime.HttpRequester;
 import quarks.function.BiFunction;
 import quarks.function.Function;
 import quarks.function.Supplier;
+import quarks.function.UnaryOperator;
 import quarks.topology.TStream;
 
 
@@ -38,12 +44,190 @@ import quarks.topology.TStream;
  */
 public class HttpStreams {
     
+    /**
+     * Make an HTTP GET request with JsonObject. <br>
+     * 
+     * Method specifically works with JsonObjects. For each JsonObject in the stream, 
+     * HTTP GET request is executed on provided uri. As a result, Response is added to
+     * the response TStream.
+     * <br>
+     * 
+     * Sample usage:<br>
+     * 
+     * <pre>
+     * {@code
+     *     DirectProvider ep = new DirectProvider();
+     *     Topology topology = ep.newTopology();
+     *     final String url = "http://httpbin.org/get?";
+     * 
+     *     JsonObject request1 = new JsonObject();
+     *     request1.addProperty("a", "abc");
+     *     request1.addProperty("b", "42");
+     * 
+     *     TStream<JsonObject> stream = topology.collection(Arrays.asList(request1));
+     *     TStream<JsonObject> rc = HttpStreams.getJson(stream,
+     *             HttpClients::noAuthentication,
+     *             t -> url + "a=" + t.get("a").getAsString() + "&b="
+     *                     + t.get("b").getAsString());
+     * }
+     * </pre>
+     * 
+     * <br>
+     * See <i>HttpTest</i> for example. <br>
+     * 
+     * @param stream - JsonObject TStream.
+     * @param clientCreator - CloseableHttpClient supplier preferably created using {@link HttpClients}
+     * @param uri - URI function which returns URI string
+     * @return TStream of JsonObject which contains responses of GET requests
+     * 
+     * @see HttpStreams#requests(TStream, Supplier, Function, Function, BiFunction)
+     */
     public static TStream<JsonObject> getJson(TStream<JsonObject> stream,
             Supplier<CloseableHttpClient> clientCreator,
             Function<JsonObject,String> uri) {
         
         return HttpStreams.<JsonObject,JsonObject>requests(stream, clientCreator,
-                t -> HttpGet.METHOD_NAME, uri, HttpResponders.json());
+            t -> HttpGet.METHOD_NAME, uri, HttpResponders.json());
+    }
+    
+    /**
+     * Make an HTTP DELETE request with JsonObject. <br>
+     * 
+     * Method specifically works with JsonObjects. For each JsonObject in the
+     * stream, HTTP DELETE request is executed on provided uri. As a result,
+     * Response is added to the response TStream. <br>
+     * 
+     * Sample usage:<br>
+     * 
+     * <pre>
+     * {@code
+     *     DirectProvider ep = new DirectProvider();
+     *     Topology topology = ep.newTopology();
+     *     final String url = "http://httpbin.org/delete?";
+     * 
+     *     JsonObject request = new JsonObject();
+     *     request.addProperty("a", "abc");
+     *     request.addProperty("b", "42");
+     * 
+     *     TStream<JsonObject> stream = topology.collection(Arrays.asList(request));
+     *     TStream<JsonObject> rc = HttpStreams.deleteJson(stream,
+     *             HttpClients::noAuthentication,
+     *             t -> url + "a=" + t.get("a").getAsString() + "&b="
+     *                     + t.get("b").getAsString());
+     * }
+     * </pre>
+     * 
+     * <br>
+     * See <i>HttpTest</i> for example. <br>
+     * 
+     * @param stream - JsonObject TStream.
+     * @param clientCreator - CloseableHttpClient supplier preferably created using {@link HttpClients}
+     * @param uri - URI function which returns URI string
+     * @return TStream of JsonObject which contains responses of DELETE requests
+     * 
+     * @see HttpStreams#requests(TStream, Supplier, Function, Function, BiFunction)
+     */
+    public static TStream<JsonObject> deleteJson(TStream<JsonObject> stream,
+            Supplier<CloseableHttpClient> clientCreator,
+            Function<JsonObject,String> uri) {
+        
+        return HttpStreams.<JsonObject,JsonObject>requests(stream, clientCreator,
+            t -> HttpDelete.METHOD_NAME, uri, HttpResponders.json());
+    }
+    
+    /**
+     * Make an HTTP POST request with JsonObject. <br>
+     * 
+     * Method specifically works with JsonObjects. For each JsonObject in the stream, 
+     * HTTP POST request is executed on provided uri. Request body is filled using
+     * HttpEntity provided by body function. As a result, Response is added to
+     * the response TStream.<br>
+     * 
+     * Sample usage:<br>
+     * 
+     * <pre>
+     * {@code
+     *     DirectProvider ep = new DirectProvider();
+     *     Topology topology = ep.newTopology();
+     *     final String url = "http://httpbin.org/post";
+     * 
+     *     JsonObject body = new JsonObject();
+     *     body.addProperty("foo", "abc");
+     *     body.addProperty("bar", 42);
+     * 
+     *     TStream<JsonObject> stream = topology.collection(Arrays.asList(body));
+     *     TStream<JsonObject> rc = HttpStreams.postJson(stream,
+     *             HttpClients::noAuthentication, t -> url, t -> t);
+     * }
+     * </pre>
+     * 
+     * <br>
+     * See HttpTest for example. <br>
+     * 
+     * @param stream - JsonObject TStream.
+     * @param clientCreator - CloseableHttpClient supplier preferably created using {@link HttpClients}
+     * @param uri - URI function which returns URI string
+     * @param body - Function that returns JsonObject which will be set as a body for the request.
+     * @return TStream of JsonObject which contains responses of POST requests
+     * 
+     * @see HttpStreams#requestsWithBody(TStream, Supplier, Function, Function, Function, BiFunction)
+     */
+    public static TStream<JsonObject> postJson(TStream<JsonObject> stream,
+            Supplier<CloseableHttpClient> clientCreator,
+            Function<JsonObject, String> uri,
+            UnaryOperator<JsonObject> body) {
+
+        return HttpStreams.<JsonObject, JsonObject> requestsWithBody(stream,
+                clientCreator, t -> HttpPost.METHOD_NAME, uri, 
+                t -> new ByteArrayEntity(body.apply(t).toString().getBytes()),
+                HttpResponders.json());
+    }
+    
+    /**
+     * Make an HTTP PUT request with JsonObject. <br>
+     * 
+     * Method specifically works with JsonObjects. For each JsonObject in the
+     * stream, HTTP PUT request is executed on provided uri. Request body is
+     * filled using HttpEntity provided by body function. As a result, Response
+     * is added to the response TStream.<br>
+     * 
+     * Sample usage:<br>
+     * 
+     * <pre>
+     * {@code
+     *     DirectProvider ep = new DirectProvider();
+     *     Topology topology = ep.newTopology();
+     *     final String url = "http://httpbin.org/put";
+     * 
+     *     JsonObject body = new JsonObject();
+     *     body.addProperty("foo", "abc");
+     *     body.addProperty("bar", 42);
+     * 
+     *     TStream<JsonObject> stream = topology.collection(Arrays.asList(body));
+     *     TStream<JsonObject> rc = HttpStreams.putJson(stream,
+     *             HttpClients::noAuthentication, t -> url, t -> t);
+     * }
+     * </pre>
+     * 
+     * <br>
+     * See HttpTest for example. <br>
+     * 
+     * @param stream - JsonObject TStream.
+     * @param clientCreator - CloseableHttpClient supplier preferably created using {@link HttpClients}
+     * @param uri - URI function which returns URI string
+     * @param body - Function that returns JsonObject which will be set as a body for the request.
+     * @return TStream of JsonObject which contains responses of PUT requests
+     * 
+     * @see HttpStreams#requestsWithBody(TStream, Supplier, Function, Function, Function, BiFunction)
+     */
+    public static TStream<JsonObject> putJson(TStream<JsonObject> stream,
+            Supplier<CloseableHttpClient> clientCreator,
+            Function<JsonObject, String> uri,
+            UnaryOperator<JsonObject> body) {
+        return HttpStreams.<JsonObject, JsonObject> requestsWithBody(stream,
+                clientCreator, t -> HttpPut.METHOD_NAME, uri, 
+                t -> new ByteArrayEntity(body.apply(t).toString().getBytes()),
+                HttpResponders.json());
     }
     
     /**
@@ -74,6 +258,8 @@ public class HttpStreams {
      *  </LI>
      *  </UL>
      *  
+     * @param <T> Tuple type for input stream
+     * @param <R> Tuple type for output stream
      * @param stream Stream to invoke HTTP requests.
      * @param clientCreator Function to create a HTTP client.
      * @param method Function to define the HTTP method.
@@ -91,6 +277,34 @@ public class HttpStreams {
             BiFunction<T,CloseableHttpResponse,R> response) {
         
         return stream.map(new HttpRequester<T,R>(clientCreator, method, uri, response));
+    }
+    
+    /**
+     * Make an HTTP request with body for each tuple.<br>
+     * 
+     * @param <T> Tuple type for input stream
+     * @param <R> Tuple type for output stream
+     * @param stream Stream to invoke HTTP requests.
+     * @param clientCreator Function to create a HTTP client.
+     * @param method Function to define the HTTP method.
+     * @param uri Function to define the URI.
+     * @param body Function to define the HTTP request body
+     * @param response Function to process the response.
+     * @return Stream containing HTTP responses processed by the {@code response} function.
+     * 
+     * @see HttpStreams#requests(TStream, Supplier, Function, Function, BiFunction)
+     * @see HttpClients
+     * @see HttpResponders
+     * 
+     */
+    public static <T, R> TStream<R> requestsWithBody(TStream<T> stream,
+            Supplier<CloseableHttpClient> clientCreator,
+            Function<T, String> method, 
+            Function<T, String> uri,
+            Function<T, HttpEntity> body,
+            BiFunction<T, CloseableHttpResponse, R> response) {
+
+        return stream.map(new HttpRequester<T, R>(clientCreator, method, uri, body, response));
     }
 }
 

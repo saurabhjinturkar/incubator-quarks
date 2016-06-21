@@ -153,7 +153,9 @@ public class WebSocketServerEcho {
         return connector.getLocalPort();
     }
     
-    /** restart a running server on the same port, etc: stop, delay, start */
+    /** restart a running server on the same port, etc: stop, delay, start
+     * @param secDelay the amount to delay in seconds before initiating the restart 
+     */
     public void restart(int secDelay) {
         // stop, schedule delay&start and return
         URI endpointURI = setPort(curEndpointURI, getPort());

@@ -73,6 +73,7 @@ public interface TStream<T> extends TopologyElement {
      * <P>
      * Examples of filtering out all empty strings from stream {@code s} of type
      * {@code String}
+     * </P>
      * 
      * <pre>
      * <code>
@@ -81,8 +82,6 @@ public interface TStream<T> extends TopologyElement {
      *             
      * </code>
      * </pre>
-     * 
-     * </P>
      * 
      * @param predicate
      *            Filtering logic to be executed against each tuple.
@@ -101,6 +100,7 @@ public interface TStream<T> extends TopologyElement {
      * <P>
      * Examples of transforming a stream containing numeric values as
      * {@code String} objects into a stream of {@code Double} values.
+     * </P>
      * 
      * <pre>
      * <code>
@@ -115,7 +115,7 @@ public interface TStream<T> extends TopologyElement {
      * </code>
      * </pre>
      * 
-     * </P>
+     * @param <U> Tuple type of output stream
      * @param mapper
      *            Mapping logic to be executed against each tuple.
      * @return Stream that will contain tuples of type {@code U} mapped from this
@@ -138,6 +138,7 @@ public interface TStream<T> extends TopologyElement {
      * Examples of mapping a stream containing lines of text into a stream
      * of words split out from each line. The order of the words in the stream
      * will match the order of the words in the lines.
+     * </P>
      * 
      * <pre>
      * <code>
@@ -148,7 +149,6 @@ public interface TStream<T> extends TopologyElement {
      * </code>
      * </pre>
      * 
-     * </P>
      * @param <U> Type of mapped input tuples.
      * @param mapper
      *            Mapper logic to be executed against each tuple.     
@@ -164,12 +164,12 @@ public interface TStream<T> extends TopologyElement {
      * <P>
      * For each tuple on the stream, {@code splitter.applyAsInt(tuple)} is
      * called. The return value {@code r} determines the destination stream:
+     * </P>
      * 
      * <pre>
      * if r &lt; 0 the tuple is discarded
      * else it is sent to the stream at position (r % n) in the returned array.
      * </pre>
-     * </P>
      *
      * <P>
      * Each split {@code TStream} is exposed by the API. The user has full
@@ -183,16 +183,16 @@ public interface TStream<T> extends TopologyElement {
      * for its stream. {@code split()} is more efficient. Each tuple is analyzed
      * only once by a single {@code splitter} instance to identify the
      * destination stream. For example, these are logically equivalent:
-     * 
+     * </P>
      * <pre>
      * List&lt;TStream&lt;String&gt;&gt; streams = stream.split(2, tuple -&gt; tuple.length());
      * 
      * TStream&lt;String&gt; stream0 = stream.filter(tuple -&gt; (tuple.length() % 2) == 0);
      * TStream&lt;String&gt; stream1 = stream.filter(tuple -&gt; (tuple.length() % 2) == 1);
      * </pre>
-     * </P>
      * <P>
      * Example of splitting a stream of log records by their level attribute:
+     * </P>
      * 
      * <pre>
      * <code>
@@ -210,7 +210,6 @@ public interface TStream<T> extends TopologyElement {
      * splits.get(2). ... // "other" log record processing pipeline
      * </code>
      * </pre>
-     * </P>
      * 
      * @param n
      *            the number of output streams
@@ -227,6 +226,7 @@ public interface TStream<T> extends TopologyElement {
      * Split a stream's tuples among {@code enumClass.size} streams as specified by
      * {@code splitter}.
      *
+     * @param <E> Enum type
      * @param enumClass
      *            enum data to split
      * @param splitter
@@ -257,9 +257,11 @@ public interface TStream<T> extends TopologyElement {
      * <p>
      * If {@code sinker} implements {@link AutoCloseable}, its {@code close()}
      * method will be called when the topology's execution is terminated.
+     * </P>
      * <P>
      * Example of terminating a stream of {@code String} tuples by printing them
      * to {@code System.out}.
+     * </P>
      * 
      * <pre>
      * <code>
@@ -267,8 +269,6 @@ public interface TStream<T> extends TopologyElement {
      * values.sink(t -&gt; System.out.println(tuple));
      * </code>
      * </pre>
-     * 
-     * </P>
      * 
      * @param sinker
      *            Logic to be executed against each tuple on this stream.
@@ -328,6 +328,7 @@ public interface TStream<T> extends TopologyElement {
      * 
      * <P>
      * Example of modifying a stream  {@code String} values by adding the suffix '{@code extra}'.
+     * </P>
      * 
      * <pre>
      * <code>
@@ -336,7 +337,6 @@ public interface TStream<T> extends TopologyElement {
      * </code>
      * </pre>
      * 
-     * </P>
      * <P>
      * This method is equivalent to
      * {@code map(Function<T,T> modifier}).
@@ -432,7 +432,7 @@ public interface TStream<T> extends TopologyElement {
      * {@code other}. A stream cannot be unioned with itself, in this case
      * {@code this} will be returned.
      * 
-     * @param other
+     * @param other the other stream
      * @return A stream that is the union of {@code this} and {@code other}.
      */
     TStream<T> union(TStream<T> other);
@@ -473,10 +473,10 @@ public interface TStream<T> extends TopologyElement {
      * <p>
      * The alias must be unique within the topology.
      * The alias may be used in various contexts:
+     * </p>
      * <ul>
      * <li>Runtime control services for the stream are registered with this alias.</li>
      * </ul>
-     * </p>
      * 
      * @param alias an alias for the stream.
      * @return this
@@ -498,6 +498,9 @@ public interface TStream<T> extends TopologyElement {
      * passed into {@code joiner} and the return value is submitted to the
      * returned stream. If call returns null then no tuple is submitted.
      * 
+     * @param <J> Tuple type of result stream
+     * @param <U> Tuple type of window to join with
+     * @param <K> Key type
      * @param keyer Key function for this stream to match the window's key.
      * @param window Keyed window to join this stream with.
      * @param joiner Join function.
@@ -525,6 +528,9 @@ public interface TStream<T> extends TopologyElement {
      * passed into {@code joiner} and the return value is submitted to the
      * returned stream. If call returns null then no tuple is submitted.
      * </P>
+     * @param <J> Tuple type of result stream
+     * @param <U> Tuple type of stream to join with
+     * @param <K> Key type
      * @param keyer Key function for this stream
      * @param lastStream Stream to join with.
      * @param lastStreamKeyer Key function for {@code lastStream}

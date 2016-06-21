@@ -92,7 +92,9 @@ public class JsonControlService implements ControlService {
      * The control action is executed directly
      * using the calling thread.
      * 
+     * @param request the request
      * @return JSON response, JSON null if the request was not recognized.
+     * @throws Exception on failure
      */
     public JsonElement controlRequest(JsonObject request) throws Exception {
         if (request.has(OP_KEY))

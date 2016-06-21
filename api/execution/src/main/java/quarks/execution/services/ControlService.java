@@ -39,7 +39,7 @@ package quarks.execution.services;
  * </P>
  * <P>
  * An instance of a control service MBean is defined by its:
- * 
+ * </P>
  * <UL>
  * <LI> A type </LI>
  * <LI> A identifier - Unique within the current execution context.</LI>
@@ -48,6 +48,7 @@ package quarks.execution.services;
  * <LI> A Java interface - This defines what operations can be executed
  * against the control MBean.</LI>
  * </UL>
+ * <P>
  * A remote system should be able to specify an operation on an
  * control server MBean though its alias and type. For example
  * an application might be submitted with a fixed name
@@ -72,7 +73,8 @@ public interface ControlService {
 
     /**
      * Register a control MBean.
-     * 
+     *
+     * @param <T> Control MBean type
      * @param type Type of the control MBean.
      * @param id
      *            Unique identifier for the control MBean.
@@ -89,12 +91,14 @@ public interface ControlService {
     
     /**
      * Unregister a control bean registered by {@link #registerControl(String, String, String, Class, Object)}
+     * @param controlId control's registration identifier returned by {@code registerControl}
      */
     void unregister(String controlId);
     
     /**
      * Return a control Mbean registered with this service.
      * 
+     * @param <T> Control MBean type
      * @param type Type of the control MBean.
      * @param alias Alias for the control MBean.
      * @param controlInterface

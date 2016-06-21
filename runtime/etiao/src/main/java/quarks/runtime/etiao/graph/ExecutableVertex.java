@@ -134,4 +134,13 @@ public class ExecutableVertex<N extends Oplet<C, P>, C, P> extends AbstractVerte
         }
         return Collections.unmodifiableList(connectedEdges);
     }
+    
+    /** For debug. Contents subject to change. */
+    @Override
+    public String toString() {
+      return "{" 
+          + "invocation=" + invocation
+          // + " edges=" + edges
+          + "}";
+    }
 }

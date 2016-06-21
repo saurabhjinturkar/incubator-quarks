@@ -64,6 +64,7 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
 
     /**
      * Test that directory watcher creates the correct output.
+     * @throws Exception on failure
      */
     @Test
     public void testDirectoryWatcherOrder() throws Exception {

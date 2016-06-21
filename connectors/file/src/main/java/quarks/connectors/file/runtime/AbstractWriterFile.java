@@ -41,7 +41,11 @@ abstract class AbstractWriterFile<T> {
     public abstract void close() throws IOException;
     /** do what's needed to write the tuple */
     protected abstract int writeTuple(T tuple) throws IOException;
-    /** returns the number of bytes written */
+    /**
+     * @param tuple the tuple to write 
+     * @return the number of bytes written
+     * @throws IOException on failure
+     */
     public int write(T tuple) throws IOException {
         tupleCnt++;
         int nbytes = writeTuple(tuple);

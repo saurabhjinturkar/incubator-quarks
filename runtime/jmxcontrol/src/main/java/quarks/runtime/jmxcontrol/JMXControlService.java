@@ -47,6 +47,7 @@ public class JMXControlService implements ControlService {
 	/**
 	 * JMX control service using the platform MBean server.
 	 * @param domain Domain the MBeans are registered in.
+	 * @param additionalKeys additional name/value keys to add to the generated JMX object names
 	 */
 	public JMXControlService(String domain, Hashtable<String,String> additionalKeys) {
 		mbs = ManagementFactory.getPlatformMBeanServer();

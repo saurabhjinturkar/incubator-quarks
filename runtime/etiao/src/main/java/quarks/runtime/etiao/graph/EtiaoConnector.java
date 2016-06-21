@@ -23,171 +23,242 @@ import java.util.HashSet;
 import java.util.Set;
 
 import quarks.graph.Connector;
-import quarks.graph.Edge;
 import quarks.graph.Vertex;
 import quarks.graph.spi.DirectEdge;
+import quarks.oplet.Oplet;
 import quarks.oplet.core.FanOut;
 import quarks.oplet.core.Peek;
 
 class EtiaoConnector<P> implements Connector<P> {
 
-	/**
-	 * The original port for this connector.
-	 */
-	@SuppressWarnings("unused")
-    private final ExecutableVertex<?, ?, P> originalVertex;
-	@SuppressWarnings("unused")
-    private final int originalPort;
-	private String alias;
+  /** The connector's associated vertex and its output port index. */
+  private final ExecutableVertex<?, ?, P> vertex;
+  private final int oport;
 
-	/**
-	 * The active port for this connector. active is different to original when
-	 * a peek has been inserted.
-	 */
-	private ExecutableVertex<?, ?, P> activeVertex;
-	private int activePort;
+  /*
+   * The connector's shared state.
+   * 
+   * All of the connectors for a single logical stream share the same state.
+   * i.e., the connectors for the internally created peek and fanout vertices
+   * share their associated primary ("the stream's") connector's state.
+   */
+  private SharedState<P> state;
 
-	private Target<P> target;
-
-	/**
-	 * Fanout vertex. When the output port is logically connected to multiple
-	 * inputs activeVertex will be connected to fanOutVertex and logical inputs
-	 * are connected to fanOutVertex.
-	 */
-    private ExecutableVertex<FanOut<P>, P, P> fanOutVertex;
-
-	public EtiaoConnector(ExecutableVertex<?, ?, P> originalVertex, int originalPort) {
-		this.originalVertex = originalVertex;
-		this.originalPort = originalPort;
-
-		this.activeVertex = originalVertex;
-		this.activePort = originalPort;
-
-    }
-
-    @Override
-	public DirectGraph graph() {
-        return activeVertex.graph();
-    }
-
-    @Override
-    public boolean isConnected() {
-		return target != null;
-    }
-
-    private boolean isFanOut() {
-        return fanOutVertex != null;
-    }
-
-	Target<P> disconnect() {
-		assert isConnected();
-
-		activeVertex.disconnect(activePort);
-		Target<P> target = this.target;
-		this.target = null;
-		assert !isConnected();
-		
-		return target;
-    }
-
-	/**
-	 * Take other's connection(s) leaving it disconnected.
-	 */
-	private void take(EtiaoConnector<P> other) {
-		connectDirect(other.disconnect());
-    }
-
-	private void connectDirect(Target<P> target) {
-		assert !isConnected();
-		
-        activeVertex.connect(activePort, target, newEdge(target));
-		this.target = target;
-	}
-
-    @Override
-    public void connect(Vertex<?, P, ?> target, int targetPort) {
-		if (!isConnected()) {
-
-			connectDirect(new Target<>((ExecutableVertex<?, P, ?>) target, targetPort));
-			return;
-        }
-
-		if (!isFanOut()) {
-
-            // Insert a FanOut oplet, initially with a single output port
-			fanOutVertex = graph().insert(new FanOut<P>(), 1, 1);
-            
-            // Connect the FanOut's first port to the previous target
-            EtiaoConnector<P> fanOutConnector = fanOutVertex.getConnectors().get(0);
-            fanOutConnector.take(this);
-            
-			// Connect this to the FanOut oplet
-			assert !isConnected();
-            connect(fanOutVertex, 0);
-        }
-
-        // Add another output port to the fan out oplet.
-        Connector<P> fanOutConnector = fanOutVertex.addOutput();
-        fanOutConnector.connect(target, targetPort);
-    }
-
-    @Override
-    public <N extends Peek<P>> Connector<P> peek(N oplet) {
-        ExecutableVertex<N, P, P> peekVertex = graph().insert(oplet, 1, 1);
-
-        // Have the output of the peek take over the connections of the current output.
-        EtiaoConnector<P> peekConnector = peekVertex.getConnectors().get(0);
-
-        if (isConnected())
-            peekConnector.take(this);
-        
-        Target<P> target = new Target<P>(peekVertex, 0);
-        activeVertex.connect(activePort, target, newEdge(target));
-
-        activeVertex = peekVertex;
-        activePort = 0;
-
-        return this;
-    }
-
-	private Edge newEdge(Target<?> target) {
-	    return new DirectEdge(this, activeVertex, activePort, target.vertex, target.port);
-	}
-
+  /**
+   * Shared connector state.
+   * 
+   * @param <P> The Input/Output port type.
+   */
+  private static class SharedState<P> {    
+    String alias;
     private Set<String> tags = new HashSet<>();
+    
+    /** the primary ("the stream's") connector */
+    EtiaoConnector<P> primaryConnector;
+    
+    /** where to add the next peek and 1st connect() op */
+    EtiaoConnector<P> activeConnector;
+    
+    /** the connect() added non-peek or FanOut target */
+    Target<P> connectTarget;
+    
+    /** FanOut when the connector has >1 connect() added targets */
+    ExecutableVertex<FanOut<P>, P, P> fanOutVertex;
 
-    @Override
-    public void tag(String... values) {
-        for (String v : values)
-            tags.add(v);
+    public SharedState(EtiaoConnector<P> connector) {
+      primaryConnector = connector;
+      activeConnector = connector;
     }
 
-    @Override
-    public Set<String> getTags() {
-        return Collections.unmodifiableSet(tags);
+    public String toString() {
+      return "{" 
+          // avoid activeConnector.toString() recursion
+          + " activeConnector=<" + activeConnector.oport + "," + activeConnector.vertex + ">"
+          + " primaryConnector=<" + primaryConnector.oport + "," + primaryConnector.vertex + ">"
+          + " connectTarget=" + connectTarget
+          + " fanOutVertex=" + fanOutVertex
+          + " alias=" + alias
+          + " tags=" + tags
+          + "}";
+    }
+  }
+
+  /**
+   * Create a new connector.
+   * 
+   * @param vertex the connector's associated Vertex
+   * @param oport the connector's output port index
+   */
+  public EtiaoConnector(ExecutableVertex<?, ?, P> vertex, int oport) {
+    this.vertex = vertex;
+    this.oport = oport;
+    this.state = new SharedState<P>(this); // later reset for "internal" connectors
+  }
+
+  @Override
+  public DirectGraph graph() {
+    return vertex.graph();
+  }
+
+  @Override
+  public boolean isConnected() {
+    // see Connector.isConnected() doc for semantics
+    // the primary connector can return true.  
+    // internal peek connectors must return false (peekAll() depends on it)
+    // internal fanout connectors return false (used to be true and peekAll()
+    //    callers had to explicitly exclude fanout ops).
+   
+    return state.connectTarget != null && this == state.primaryConnector;
+  }
+
+  private boolean isFanOut() {
+    return state.fanOutVertex != null;
+  }
+
+  @Override
+  public void connect(Vertex<?, P, ?> target, int targetPort) {
+    // to be used only for connecting to non-internal (non peek/fanout) vertex
+    
+    if (!isConnected()) {  // 1st connect()
+      state.connectTarget = connectActiveDirect(new Target<P>((ExecutableVertex<?, P, ?>) target, targetPort));
+      return;
     }
 
-    @Override
-    public void alias(String alias) {
-        if (this.alias != null)
-            throw new IllegalStateException("alias already set");
-        this.alias = alias;
-    }
+    if (!isFanOut()) {  // 2nd connect()
+      // Add a FanOut oplet, initially with a single output port
+      // connected to 1st connect()'s target
+      state.fanOutVertex = newInternalVertex(new FanOut<P>(), 1, 1);
+      EtiaoConnector<P> fanOutConnector = state.fanOutVertex.getConnectors().get(0);
+      fanOutConnector.takeTarget();
 
-    @Override
-    public String getAlias() {
-        return alias;
+      // Connect to the FanOut oplet. The FanOut becomes the connectTarget.
+      state.connectTarget = connectActiveDirect(new Target<P>(state.fanOutVertex, 0));
     }
     
-    /**
-     * Intended only as a debug aid and content is not guaranteed. 
-     */
-    @Override
-    public String toString() {
-        return getClass().getSimpleName()
-                + " activePort=" + activePort
-                + " alias=" + getAlias()
-                + " tags=" + getTags();
+    // 2nd-nth connect(): add target as another connector/connection from the FanOut
+    EtiaoConnector<P> fanOutConnector = state.fanOutVertex.addOutput();
+    fanOutConnector.state = state;
+    fanOutConnector.connectDirect(new Target<P>((ExecutableVertex<?, P, ?>) target, targetPort));
+    
+    assert isConnected();
+  }
+
+  @Override
+  public <N extends Peek<P>> Connector<P> peek(N oplet) {
+    // see Connector.peek() method/class doc for the semantics
+    
+    ExecutableVertex<N, P, P> peekVertex = newInternalVertex(oplet, 1, 1);
+    EtiaoConnector<P> peekConnector = peekVertex.getConnectors().get(0);
+
+    // The peek takes over the connection to connect() added target(s).
+    if (isConnected()) {
+      peekConnector.takeTarget();
     }
+
+    // Connect to the new peek.  It becomes the activeConnector / new addition point.
+    connectActiveDirect(new Target<P>(peekVertex, 0));
+    state.activeConnector = peekConnector;
+
+    return this;
+  }
+
+  /**
+   * Create a new vertex for internal use (with shared connector state)
+   * @param op a Peek or FanOut oplet
+   * @param nInputs number of input ports
+   * @param nOutputs number of output ports
+   * @return the new vertex
+   */
+  private <N extends Oplet<P, P>> ExecutableVertex<N, P, P> 
+  newInternalVertex(N op, int nInputs, int nOutputs) {
+    ExecutableVertex<N, P, P> vertex = graph().insert(op, nInputs, nOutputs);
+    for (EtiaoConnector<P> connector : vertex.getConnectors()) {
+      connector.state = state;
+    }
+    return vertex;
+  }
+
+  /**
+   * Disconnect the connect() added target(s)
+   * @return the target
+   */
+  private Target<P> disconnectTarget() {
+    assert state.connectTarget != null;
+
+    state.activeConnector.vertex.disconnect(state.activeConnector.oport);
+    Target<P> target = state.connectTarget;
+    state.connectTarget = null;
+    assert state.connectTarget == null;
+
+    return target;
+  }
+
+  /**
+   * Take activeConnector's connection to the connect() added target(s).
+   */
+  private void takeTarget() {
+    state.connectTarget = connectDirect(disconnectTarget());
+  }
+
+  /**
+   * Connect this to the target
+   * @param target
+   * @return the target parameter
+   */
+  private Target<P> connectDirect(Target<P> target) {
+    vertex.connect(oport, target,
+        new DirectEdge(this, vertex, oport, target.vertex, target.port));
+    return target;
+  }
+
+  /**
+   * Connect the activeConnector to the target
+   * @param target
+   * @return the target parameter
+   */
+  private Target<P> connectActiveDirect(Target<P> target) {
+    ExecutableVertex<?,?,P> vertex = state.activeConnector.vertex;
+    int oport = state.activeConnector.oport;
+    vertex.connect(oport, target, 
+        new DirectEdge(state.activeConnector,
+            vertex, oport, target.vertex, target.port));
+    return target;
+  }
+
+  @Override
+  public void tag(String... values) {
+    for (String v : values)
+      state.tags.add(v);
+  }
+
+  @Override
+  public Set<String> getTags() {
+    return Collections.unmodifiableSet(state.tags);
+  }
+
+  @Override
+  public void alias(String alias) {
+    if (state.alias != null)
+      throw new IllegalStateException("alias already set");
+    state.alias = alias;
+  }
+
+  @Override
+  public String getAlias() {
+    return state.alias;
+  }
+
+  /**
+   * Intended only as a debug aid and content is not guaranteed.
+   */
+  @Override
+  public String toString() {
+    return "{"
+        + getClass().getSimpleName()
+        + " oport=" + oport
+        + " vertex=" + vertex
+        + " state=" + state 
+        + "}";
+  }
 
 }

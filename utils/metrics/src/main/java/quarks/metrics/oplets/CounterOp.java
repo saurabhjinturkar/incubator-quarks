@@ -23,6 +23,8 @@ import com.codahale.metrics.Metric;
 
 /**
  * A metrics oplet which counts the number of tuples peeked at.
+ * 
+ * @param <T> Tuple type
  */
 public final class CounterOp<T> extends SingleMetricAbstractOplet<T> {
 

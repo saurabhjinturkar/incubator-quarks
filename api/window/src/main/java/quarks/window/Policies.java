@@ -37,6 +37,9 @@ public class Policies {
      * A policy which schedules a future partition eviction if the partition is empty.
      * This can be used as a contents policy that is scheduling the eviction of
      * the tuple just about to be inserted.
+     * @param <T> Tuple Type
+     * @param <K> Key type
+     * @param <L> List type for the partition contents.
      * @param time The time span in which tuple are permitted in the partition.
      * @param unit The units of time.
      * @return The time-based contents policy.
@@ -54,6 +57,9 @@ public class Policies {
      * A policy which schedules a future partition eviction on the first insert.
      * This can be used as a contents policy that schedules the eviction of tuples
      * as a batch.
+     * @param <T> Tuple Type
+     * @param <K> Key type
+     * @param <L> List type for the partition contents.
      * @param time The time span in which tuple are permitted in the partition.
      * @param unit The units of time.
      * @return The time-based contents policy.
@@ -79,6 +85,8 @@ public class Policies {
      * An eviction policy which evicts all tuples that are older than a specified time.
      * If any tuples remain in the partition, it schedules their eviction after
      * an appropriate interval.
+     * @param <T> Tuple Type
+     * @param <K> Key type
      * @param time The timespan in which tuple are permitted in the partition.
      * @param unit The units of time.
      * @return The time-based eviction policy.
@@ -105,6 +113,8 @@ public class Policies {
     /**
      * An eviction policy which processes the window, evicts all tuples, and 
      * schedules the next eviction after the appropriate interval.
+     * @param <T> Tuple Type
+     * @param <K> Key type
      * @param time The timespan in which tuple are permitted in the partition.
      * @param unit The units of time.
      * @return The time-based eviction policy.
@@ -143,6 +153,10 @@ public class Policies {
      * If, when called, the number of tuples in the partition is
      * greater than equal to {@code count} then {@code partition.evict()}
      * is called.
+     * @param <T> Tuple type
+     * @param <K> Key type
+     * @param <L> List type for the partition contents.
+     * @param count the count
      * @return A count-based contents policy.
      */
     public static <T, K, L extends List<T>> BiConsumer<Partition<T, K, L>, T> countContentsPolicy(final int count){
@@ -155,6 +169,9 @@ public class Policies {
     /**
      * Returns a Consumer representing an evict determiner that evict all tuples
      * from the window.
+     * @param <T> Tuple type
+     * @param <K> Key type
+     * @param <L> List type for the partition contents.
      * @return An evict determiner that evicts all tuples.
      */
     public static <T, K, L extends List<T>> Consumer<Partition<T, K, L> > evictAll(){
@@ -163,6 +180,9 @@ public class Policies {
     
     /**
      * Returns an evict determiner that evicts the oldest tuple.
+     * @param <T> Tuple type
+     * @param <K> Key type
+     * @param <L> List type for the partition contents.
      * @return A evict determiner that evicts the oldest tuple.
      */
     public static <T, K, L extends List<T>> Consumer<Partition<T, K, L> > evictOldest(){
@@ -172,6 +192,9 @@ public class Policies {
     /**
      * Returns a trigger policy that triggers
      * processing on every insert.
+     * @param <T> Tuple type
+     * @param <K> Key type
+     * @param <L> List type for the partition contents.
      * @return A trigger policy that triggers processing on every insert.
      */ 
     public static <T, K, L extends List<T>> BiConsumer<Partition<T, K, L>, T> processOnInsert(){
@@ -181,6 +204,10 @@ public class Policies {
     /**
      * Returns a trigger policy that triggers when the size of a partition
      * equals or exceeds a value, and then evicts its contents.
+     * @param <T> Tuple type
+     * @param <K> Key type
+     * @param <L> List type for the partition contents.
+     * @param size partition size
      * @return A trigger policy that triggers processing when the size of 
      * the partition equals or exceets a value.
      */ 
@@ -195,6 +222,9 @@ public class Policies {
     
     /**
      * A {@link BiConsumer} policy which does nothing.
+     * @param <T> Tuple type
+     * @param <K> Key type
+     * @param <L> List type for the partition contents.
      * @return A policy which does nothing.
      */
     public static <T, K, L extends List<T>> BiConsumer<Partition<T, K, L>, T> doNothing(){

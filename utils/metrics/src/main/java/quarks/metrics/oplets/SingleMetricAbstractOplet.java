@@ -26,6 +26,8 @@ import quarks.oplet.core.Peek;
 
 /**
  * Base for metrics oplets which use a single metric object.
+ * 
+ * @param <T> Tuple type
  */
 public abstract class SingleMetricAbstractOplet<T> extends Peek<T> {
 

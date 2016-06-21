@@ -43,7 +43,7 @@
     <tstamp/>
 
     <!-- Extract the git commit hash -->
-    <exec executable="git" outputproperty="commithash">
+    <exec executable="git" outputproperty="commithash" errorproperty="commithash.error">
        <arg value="rev-parse"/>
        <arg value="--short"/>
        <arg value="HEAD"/>
@@ -55,6 +55,7 @@
           <propertyref name="DSTAMP"/>
           <propertyref name="TSTAMP"/>
           <propertyref name="commithash"/>
+          <propertyref name="commithash.error"/>
        </propertyset>
     </echoproperties>
   </target>

@@ -73,6 +73,8 @@ public class PublishSubscribe {
      * This is a model that allows jobs to subscribe to 
      * streams published by other jobs.
      * 
+     * @param <T> Tuple type
+     * @param stream stream to publish
      * @param topic Topic to publish to.
      * @param streamType Type of objects on the stream.
      * @return sink element representing termination of this stream.
@@ -87,6 +89,8 @@ public class PublishSubscribe {
      * Subscribe to a published topic.
      * This is a model that allows jobs to subscribe to 
      * streams published by other jobs.
+     * @param <T> Tuple type
+     * @param te TopologyElement whose Topology to add to
      * @param topic Topic to subscribe to.
      * @param streamType Type of the stream.
      * @return Stream containing published tuples.

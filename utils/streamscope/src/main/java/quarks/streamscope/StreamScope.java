@@ -51,6 +51,8 @@ import quarks.streamscope.mbeans.StreamScopeRegistryMXBean;
  * </P>
  * @see StreamScopeRegistry
  * @see quarks.providers.development.DevelopmentProvider DevelopmentProvider
+ * 
+ * @param <T> Tuple type
  */
 public class StreamScope<T> implements Consumer<T> {
   private static final long serialVersionUID = 1L;
@@ -118,9 +120,11 @@ public class StreamScope<T> implements Consumer<T> {
    * <li>a maximum retention count is exceeded</li>
    * <li>TODO a maximum retention time is exceeded</li>
    * </ul> 
-   * </P><P>
+   * <P>
    * The default configuration is a maxCount of 10.
    * </P>
+   * 
+   * @param <T> Tuple type
    */
   public static class BufferManager<T> {
     private List<Sample<T>> buffer = Collections.emptyList();
@@ -208,7 +212,7 @@ public class StreamScope<T> implements Consumer<T> {
    * <li>by-time - capture based on time elapsed since the last capture</li>
    * <li>by-Predicate - capture based on evaluating a predicate</li>
    * </ul>
-   * </P><P>
+   * <P>
    * Tuple capture can be temporarily paused via {@link TriggerManager#setPaused(boolean) setPaused}.
    * Pausing capture does not clear the capture buffer.
    * </P><P>
@@ -220,6 +224,8 @@ public class StreamScope<T> implements Consumer<T> {
    * </P><P>
    * The default configuration is continuous (by-count==1) and not paused.
    * </P>
+   * 
+   * @param <T> Tuple type
    */
   public static class TriggerManager<T> {
     private Predicate<T> predicate = Functions.alwaysTrue();
@@ -268,7 +274,7 @@ public class StreamScope<T> implements Consumer<T> {
     
     /**
      * Capture the first and every nth tuple
-     * @param count
+     * @param count the nth value interval
      */
     public void setCaptureByCount(int count) {
       if (count == 1)
@@ -290,7 +296,7 @@ public class StreamScope<T> implements Consumer<T> {
     
     /**
      * Capture a tuple if the {@code predicate} test of the tuple returns true.
-     * @param predicate
+     * @param predicate the predicate
      */
     public void setCaptureByPredicate(Predicate<T> predicate) {
       Objects.requireNonNull(predicate, "predicate");

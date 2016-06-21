@@ -19,7 +19,6 @@ under the License.
 package quarks.test.fvt.iot;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -48,7 +47,6 @@ import quarks.runtime.jsoncontrol.JsonControlService;
 import quarks.test.apps.iot.EchoIotDevice;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
-import quarks.topology.mbeans.ApplicationServiceMXBean;
 import quarks.topology.services.ApplicationService;
 import quarks.topology.tester.Condition;
 
@@ -60,6 +58,7 @@ public class IotProviderTest {
     
     /**
      * Basic test we can start applications
+     * @throws Exception on failure
      */
     @Test
     public void testIotProviderStartApplications() throws Exception {
@@ -107,6 +106,7 @@ public class IotProviderTest {
     
     /**
      * Basic test we can stop applications
+     * @throws Exception on failure
      */
     @Test
     public void testIotProviderCloseApplicationDirect() throws Exception {

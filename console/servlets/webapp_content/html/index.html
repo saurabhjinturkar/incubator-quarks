@@ -13,21 +13,21 @@
 
 <body>
 <div style='margin-left:15px; float:left;'>
-<img height='95' width='178' src="resources/images/small_quarks.png"/>
+<img height='95' width='178' tabindex=0 alt="Quarks logo" title="Quarks logo" src="resources/images/small_quarks.png"/>
 </div>
 <div style='float:left;margin-top: 30px; font-size: 1.2em; margin-left: 320px;'>
-<label>Topology Graph</label>
+<label tabindex=0>Topology Graph</label>
 </div>
 <div class="topControls" style='margin-left: 30px;clear:both;'>
-<label class="jobsLabel">Job:</label>
+<label for="jobs" class="jobsLabel">Job:</label>
 <select id="jobs"></select>
 </div>
 <div style="float:left;">
-<img id="stateImg" width="28" height="28" style="display:none;" src="resources/images/state.png"/>
+<img id="stateImg" width="28" height="28" style="display:none;" tabindex=0 alt="Job state" src="resources/images/state.png"/>
 </div>
 <div class="topControls">
-<label class="layersLabel">View by:</label>
-<select id="layers">
+<label for="layers" class="layersLabel">View by:</label>
+<select title="view by" id="layers">
 <option value="static">Static flow</option>
 <option value="flow">Tuple count</option>
 <option value="opletColor">Oplet kind</option>
@@ -52,12 +52,12 @@
 <div class="topControls">
 <label for="refreshInterval" class="refreshLabel">Refresh interval:</label>
 <input id="refreshInterval" style='width: 40px;' type="number" min="3" max="20" step="1" value="5"/>
-<label style='margin-left: 5px; margin-right: 10px;'>seconds</label>
+<label title="seconds" style='margin-left: 5px; margin-right: 10px;'>seconds</label>
 <button id="toggleTimer" type="button">Pause graph</button>
 </div>
 
 <div style='width: 300px; margin-left: 30px; clear:both;'>
-	<div id="showAll">View all oplet properties</div>
+	<div id="showAll" tabindex=0 >View all oplet properties</div>
 	<div id="graphLegend" style='height: 600px;'></div>
 </div>
 	<div id="chart" style="float:right; margin-right: 100px; margin-top: -600px;"><div id="loading">Loading graph ...</div></div>

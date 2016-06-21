@@ -19,7 +19,6 @@ under the License.
 
 package quarks.console.server;
 
-import java.io.IOException;
 import java.security.ProtectionDomain;
 
 import org.eclipse.jetty.server.Handler;
@@ -62,7 +61,7 @@ public class HttpServer {
      * Initialization of the context path for the web application "/console" occurs in this method
      * and the handler for the web application is set.  This only occurs once.
      * @return HttpServer: the singleton instance of this class
-     * @throws IOException
+     * @throws Exception on failure
      */
     public static HttpServer getInstance() throws Exception {
         if (!HttpServerHolder.INITIALIZED) {
@@ -117,6 +116,7 @@ public class HttpServer {
 
     /**
      * Starts the jetty web server
+     * @throws Exception on failure
      */
     public void startServer() throws Exception {
         getJettyServer().start();

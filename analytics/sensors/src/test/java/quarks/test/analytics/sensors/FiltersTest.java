@@ -20,6 +20,7 @@ package quarks.test.analytics.sensors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static quarks.function.Functions.identity;
 
 import java.util.List;
@@ -176,6 +177,9 @@ public class FiltersTest  extends TopologyAbstractTest implements DirectTestSetu
     
     @Test
     public void testDeadtimeDynamic() throws Exception {
+        // Timing variances on shared machines can cause this test to fail
+        assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
+        
         Topology topology = newTopology("testDeadtimeDynamic");
 
         // initial deadtime to consume 5 tuples. get 1, skip 2-6, get 7, skip 8-10
@@ -194,7 +198,7 @@ public class FiltersTest  extends TopologyAbstractTest implements DirectTestSetu
             }
             else if (curCnt == 7) {
                 // lengthen deadtime, so should now exclude 8 too and then 10
-                deadtime.setPeriod(300, TimeUnit.MILLISECONDS);
+                deadtime.setPeriod(250, TimeUnit.MILLISECONDS);
             }
             return curCnt;
             }, 100, TimeUnit.MILLISECONDS);

@@ -26,6 +26,8 @@ import quarks.oplet.OpletContext;
  * 
  * Processing for each input is identical
  * and just submits the tuple to the single output.
+ * 
+ * @param <T> Tuple type
  */
 public final class Union<T> extends FanIn<T, T> {
 

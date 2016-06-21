@@ -266,8 +266,8 @@ public class WindowTest {
 		// Timing variances on shared machines can cause this test to fail
     	assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
 
-        List<Long> diffs = new ArrayList<>();
-        List<Boolean> initialized = new ArrayList<>();
+        List<Long> diffs = Collections.synchronizedList(new ArrayList<>());
+        List<Boolean> initialized = Collections.synchronizedList(new ArrayList<>());
         initialized.add(false);
         
         Window<Long, Integer, InsertionTimeList<Long>> window = // new TimeWindowImpl<Long, Integer, LinkedList<Long>>(
@@ -384,7 +384,7 @@ public class WindowTest {
     @SuppressWarnings("serial")
     @Test
     public void timeBatchEnsureUnique() throws InterruptedException{
-        List<List<Integer>> batches = new LinkedList<>();
+        List<List<Integer>> batches = Collections.synchronizedList(new LinkedList<>());
 
         ScheduledExecutorService ses = new ScheduledThreadPoolExecutor(5);
         Window<Integer, Integer, List<Integer>> window =

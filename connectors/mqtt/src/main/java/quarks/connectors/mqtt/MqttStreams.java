@@ -124,7 +124,7 @@ public class MqttStreams {
      * Connecting to the server occurs after the
      * topology is submitted for execution.
      * 
-     * @param topology
+     * @param topology the Topology to add to
      * @param config {@link MqttConfig} supplier.
      */
     public MqttStreams(Topology topology, Supplier<MqttConfig> config) {
@@ -139,6 +139,7 @@ public class MqttStreams {
      * the supplied functions providing the message topic, payload
      * and QoS. The topic and QoS can be generated based upon the tuple.
      * 
+     * @param <T> Tuple type
      * @param stream Stream to be published.
      * @param topic function to supply the message's topic.
      * @param payload function to supply the message's payload.
@@ -169,6 +170,7 @@ public class MqttStreams {
 
     /**
      * Subscribe to the MQTT topic(s) and create a stream of tuples of type {@code T}.
+     * @param <T> Tuple type
      * @param topicFilter the topic(s) to subscribe to.
      * @param qos the maximum Quality of Service to use.
      * @param message2Tuple function to convert {@code (topic, payload)} to
@@ -186,7 +188,8 @@ public class MqttStreams {
      * A convenience function.
      * Each message's payload is expected/required to be a UTF-8 encoded string.
      * Only the converted payload is present the generated tuple.
-     * 
+     *
+     * @param <T> Tuple type
      * @param topicFilter the topic(s) to subscribe to.
      * @param qos the maximum Quality of Service to use.
      * @return {@code TStream<String>}
@@ -210,6 +213,7 @@ public class MqttStreams {
 
     /**
      * Get the {@link quarks.topology.Topology} the connector is associated with.
+     * @return the value
      */
     public Topology topology() {
         return topology;

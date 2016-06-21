@@ -82,7 +82,7 @@ public interface Connector<T> {
     void connect(Vertex<?, T, ?> target, int inputPort);
     
 	/**
-	 * Is my output port connected to any input port.
+	 * Was connect() called on this connector?
 	 * 
 	 * @return true if connected
 	 */
@@ -93,7 +93,8 @@ public interface Connector<T> {
      * connections. This method may be called multiple times to insert multiple
      * peeks. Each tuple submitted to this output port will be seen by all peeks
      * in order of their insertion, starting with the first peek inserted.
-     * 
+     *
+     * @param <N> Peek oplet type
      * @param oplet
      *            Oplet to insert.
      * @return {@code output}
@@ -122,11 +123,11 @@ public interface Connector<T> {
      * <p>
      * The alias must be unique within the topology.
      * The alias may be used in various contexts:
+     * </p>
      * <ul>
      * <li>Runtime control services for the Connector (stream/outputport)
      * are registered with this alias.</li>
      * </ul>
-     * </p>
      * 
      * @param alias the alias
      * @throws IllegalStateException if the an alias has already been set

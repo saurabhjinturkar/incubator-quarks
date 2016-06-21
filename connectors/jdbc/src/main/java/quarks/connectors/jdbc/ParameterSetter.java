@@ -40,7 +40,7 @@ public interface ParameterSetter<T> {
      *
      * @param t stream tuple of type T
      * @param stmt PreparedStatement
-     * @throws SQLException
+     * @throws SQLException on failure
      */
     void setParameters(T t, PreparedStatement stmt) throws SQLException;
 }

@@ -31,8 +31,8 @@ import quarks.function.Consumer;
  * {@link #getOutputs() output ports} for tuple submission
  * and {@link #getJobContext() job} information. 
  *
- * @param <I>
- * @param <O>
+ * @param <I> tuple type of input streams
+ * @param <O> tuple type of output streams
  */
 public interface OpletContext<I, O> extends RuntimeServices {
 

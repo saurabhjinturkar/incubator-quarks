@@ -30,7 +30,7 @@ import quarks.topology.TStream;
  * This is intended to be used as an argument to {@link TStream#split(int, ToIntFunction)}.
  * The splitter maintains state for {@code numChannels} splitter channels,
  * tracking whether a channel is busy or free.
- * <P></P>
+ * </P><P>
  * {@link #applyAsInt(Object) applyAsInt} awaits a free channel, marks
  * the channel as busy, and forwards the tuple to the channel.  The end
  * of the channel's pipeline must call {@link #channelDone(int)} to

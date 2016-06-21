@@ -45,7 +45,7 @@ public class Controls {
      * <LI>Any enumeration</LI>
      * </UL> 
      * </UL>
-     * @param controlInterface
+     * @param controlInterface class of the control interface
      * @return True
      */
     public static boolean isControlServiceMBean(Class<?> controlInterface) {

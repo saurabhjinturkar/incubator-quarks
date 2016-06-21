@@ -35,6 +35,9 @@ import quarks.oplet.OpletContext;
  * {@code receiver} either returns a tuple to emit on the output
  * stream or null.
  * </P> 
+ * 
+ * @param <T> Tuple type of input streams
+ * @param <U> Tuple type of output stream
  */
 public class FanIn<T,U> extends AbstractOplet<T, U> {
     private BiFunction<T, Integer, U> receiver;
@@ -67,7 +70,7 @@ public class FanIn<T,U> extends AbstractOplet<T, U> {
     /**
      * Set the receiver function.  Must be called no later than as part
      * of {@link #initialize(OpletContext)}.
-     * @param receiver
+     * @param receiver function to receive tuples
      */
     protected void setReceiver(BiFunction<T, Integer, U> receiver) {
       this.receiver = receiver;
@@ -85,7 +88,7 @@ public class FanIn<T,U> extends AbstractOplet<T, U> {
     /**
      * Create a Consumer for the input port that invokes the
      * receiver and submits a generated tuple, if any, to the output.
-     * @param iportIndex
+     * @param iportIndex index of the input port
      * @return the Consumer
      */
     protected Consumer<T> consumer(int iportIndex) {

@@ -182,6 +182,8 @@ public class JdbcStreams {
      * specifying {@code dataSource -> dataSource.prepareStatement(stmtSupplier.get()}}
      * for the {@code StatementSupplier}.
      * 
+     * @param <T> Tuple type for input stream
+     * @param <R> Tuple type of result stream
      * @param stream tuples to execute a SQL statement on behalf of
      * @param stmtSupplier an SQL statement
      * @param paramSetter function to set SQL statement parameters
@@ -221,6 +223,8 @@ public class JdbcStreams {
      * If {@code resultsHandler} throws an Exception, it is called a
      * second time for the tuple with a non-null exception argument.
      * 
+     * @param <T> Tuple type for input stream
+     * @param <R> Tuple type of result stream
      * @param stream tuples to execute a SQL statement on behalf of
      * @param stmtSupplier an SQL statement
      * @param paramSetter function to set SQL statement parameters
@@ -244,6 +248,7 @@ public class JdbcStreams {
      * specifying {@code dataSource -> dataSource.prepareStatement(stmtSupplier.get()}}
      * for the {@code StatementSupplier}.
      *
+     * @param <T> Tuple type
      * @param stream tuples to execute a SQL statement on behalf of
      * @param stmtSupplier an SQL statement
      * @param paramSetter function to set SQL statement parameters
@@ -272,6 +277,7 @@ public class JdbcStreams {
      * <li>generate tuple(s) after the statement has run.</li>
      * </ul>
      *
+     * @param <T> Tuple type
      * @param stream tuples to execute a SQL statement on behalf of
      * @param stmtSupplier an SQL statement
      * @param paramSetter function to set SQL statement parameters

@@ -60,7 +60,7 @@ public class Deadtime<T> implements Predicate<T> {
      * @param deadtimePeriod the amount of time for {@code test()}
      *        to return false after returning true.
      *        Specify a value of 0 for no deadtime period.
-     *        Must be >= 0.
+     *        Must be &gt;= 0.
      * @param unit {@link TimeUnit} of {@code deadtimePeriod}
      */
     public synchronized void setPeriod(long deadtimePeriod, TimeUnit unit) {

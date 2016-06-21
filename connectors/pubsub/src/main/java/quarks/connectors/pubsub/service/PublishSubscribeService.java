@@ -45,6 +45,7 @@ public interface PublishSubscribeService {
     /**
      * Add a subscriber to a published topic.
      * 
+     * @param <T> Tuple type
      * @param topic Topic to subscribe to.
      * @param streamType Type of the stream.
      * @param subscriber How to deliver published tuples to the subscriber.
@@ -58,6 +59,7 @@ public interface PublishSubscribeService {
      * A publisher calls {@code destination.accept(tuple)} to publish
      * {@code tuple} to the topic.
      * 
+     * @param <T> Tuple type
      * @param topic Topic tuples will be published to.
      * @param streamType Type of the stream
      * @return Consumer that is used to publish tuples.

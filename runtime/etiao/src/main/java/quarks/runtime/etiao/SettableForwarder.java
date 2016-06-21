@@ -64,8 +64,9 @@ public final class SettableForwarder<T> implements Consumer<T> {
     }
 
     /**
-     * Get the current destination.
+     * Get the destination.
      * No synchronization is taken.
+     * @return the destination
      */
     public final Consumer<T> getDestination() {
         return destination;

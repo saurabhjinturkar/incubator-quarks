@@ -45,23 +45,41 @@ public class FileWriterFlushConfig<T> {
      * The underlying buffered writer's automatic flushing is used.
      * <p>
      * Same as {@code newConfig(0, 0, null)}
+     * 
+     * @param <T> Tuple type
+     * @return the flush configuration
      */
     public static <T> FileWriterFlushConfig<T> newImplicitConfig() {
         return newConfig(0,0,null);
     }
-    /** same as {@code newConfig(cntTuples, 0, null)} */
+    /** same as {@code newConfig(cntTuples, 0, null)}
+     * 
+     * @param <T> Tuple type
+     * @param cntTuples flush every {@code cntTuple} tuples written. 0 to disable.
+     * @return the flush configuration
+     */
     public static <T> FileWriterFlushConfig<T> newCountBasedConfig(int cntTuples) {
         if (cntTuples < 1)
             throw new IllegalArgumentException("cntTuples");
         return newConfig(cntTuples, 0, null);
     }
-    /** same as {@code newConfig(0, periodMsec, null)} */
+    /** same as {@code newConfig(0, periodMsec, null)}
+     * 
+     * @param <T> Tuple type
+     * @param periodMsec flush every {@code periodMsec} milliseconds.  0 to disable.
+     * @return the flush configuration
+     */
     public static <T> FileWriterFlushConfig<T> newTimeBasedConfig(long periodMsec) {
         if (periodMsec < 1)
             throw new IllegalArgumentException("periodMsec");
         return newConfig(0, periodMsec, null);
     }
-    /** same as {@code newConfig(0, 0, tuplePredicate)} */
+    /** same as {@code newConfig(0, 0, tuplePredicate)}
+     * 
+     * @param <T> Tuple type
+     * @param tuplePredicate flush if {@code tuplePredicate} is true. null to disable.
+     * @return the flush configuration
+     */
     public static <T> FileWriterFlushConfig<T> newPredicateBasedConfig(Predicate<T> tuplePredicate) {
         if (tuplePredicate == null)
             throw new IllegalArgumentException("tuplePredicate");
@@ -73,9 +91,11 @@ public class FileWriterFlushConfig<T> {
      * If nothing specific is specified, the underlying buffered
      * writer's automatic flushing is utilized.
      *
+     * @param <T> Tuple type
      * @param cntTuples flush every {@code cntTuple} tuples written. 0 to disable.
      * @param periodMsec flush every {@code periodMsec} milliseconds.  0 to disable.
      * @param tuplePredicate flush if {@code tuplePredicate} is true. null to disable.
+     * @return the flush configuration
      */
     public static <T> FileWriterFlushConfig<T> newConfig(int cntTuples, long periodMsec, Predicate<T> tuplePredicate) {
         return new FileWriterFlushConfig<>(cntTuples, periodMsec, tuplePredicate);

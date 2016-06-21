@@ -55,7 +55,8 @@ public interface TWindow<T, K> extends TopologyElement {
      * Thus the returned stream will contain a sequence of tuples that where the
      * most recent tuple represents the most up to date aggregation of a
      * partition.
-     * 
+     *
+     * @param <U> Tuple type
      * @param aggregator
      *            Logic to aggregation a partition.
      * @return A stream that contains the latest aggregations of partitions in this window.
@@ -76,11 +77,13 @@ public interface TWindow<T, K> extends TopologyElement {
      * the tuples in any subsequent batch. After a partition is batched, its 
      * contents are cleared.
      * 
+     * @param <U> Tuple type
      * @param batcher
      *            Logic to aggregation a partition.
      * @return A stream that contains the latest aggregations of partitions in this window.
      */
     <U> TStream<U> batch(BiFunction<List<T>, K, U> batcher);
+    
     /**
      * Returns the key function used to map tuples to partitions.
      * @return Key function used to map tuples to partitions.

@@ -100,7 +100,6 @@ public class Filters {
      * </UL>
      * <BR>
      * <img src="doc-files/deadband.png" alt="Deadband example">
-     * </P>
      * 
      * @param <T> Tuple type.
      * @param <V> Value type for the deadband function.
@@ -129,6 +128,7 @@ public class Filters {
      * Use {@link Deadtime} directly if you need to change the deadtime period
      * while the topology is running.
      * </p>
+     * @param <T> tuple type
      * @param stream TStream to add deadtime filter to
      * @param deadtimePeriod the deadtime period in {@code unit}
      * @param unit the {@link TimeUnit} to apply to {@code deadtimePeriod}

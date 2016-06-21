@@ -47,6 +47,7 @@ interface IdMapper<ID> {
      * {@code IllegalStateException}. 
      *    
      * @param o the object to add
+     * @param id the associated identifier
      * @return the identifier associated with the object.
      * @throws IllegalStateException if the object has already been added to 
      *          the set with another identifier

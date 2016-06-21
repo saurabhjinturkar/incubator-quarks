@@ -440,7 +440,8 @@ public abstract class Connector<T> implements AutoCloseable, Serializable {
     protected abstract void doClose(T client) throws Exception;
     
     /** 
-     * Get a connector id to use in log and exception msgs 
+     * Get a connector id to use in log and exception msgs
+     * @return the id 
      */
     protected abstract String id();
 

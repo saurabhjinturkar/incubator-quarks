@@ -153,6 +153,7 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
 
     /**
      * Returns the list of input stream forwarders for this invocation.
+     * @return the list
      */
     public List<? extends Consumer<I>> getInputs() {
         return inputs;
@@ -192,5 +193,14 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
     @Override
     public void close() throws Exception {
         oplet.close();
+    }
+    
+    /** For debug. Contents subject to change. */
+    @Override
+    public String toString() {
+      return "{"
+          + "id=" + getId()
+          + " oplet=" + oplet.getClass().getSimpleName()
+          + "}";
     }
 }

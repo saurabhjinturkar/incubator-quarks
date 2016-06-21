@@ -34,6 +34,7 @@ import quarks.function.Predicate;
  * <br>
  * E.g., in a simple case, a Valve might be used to control
  * whether or not logging or publishing of tuples is enabled.
+ * </p>
  * <pre>{@code
  * TStream<JsonObject> stream = ...;
  * 
@@ -43,7 +44,6 @@ import quarks.function.Predicate;
  * // from some analytic or device command handler...
  *     valve.setOpen(true);
  * }</pre>
- * </p>
  *
  * @param <T> tuple type
  */

@@ -22,6 +22,8 @@ import java.io.Serializable;
 
 /**
  * Consumer function that takes two arguments.
+ * @param <T> Type of the first function argument
+ * @param <U> Type of the second function argument
  */
 public interface BiConsumer<T,U> extends Serializable {
     

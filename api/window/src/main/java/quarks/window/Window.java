@@ -77,20 +77,20 @@ public interface Window<T, K, L extends List<T>>{
      * 
      * 
      * 
-     * @param tuple
+     * @param tuple the tuple to insert
      * @return true, if the tuple was successfully inserted. Otherwise, false.
      */
     boolean insert(T tuple);
     
     /**
      * Register a WindowProcessor.
-     * @param windowProcessor
+     * @param windowProcessor function to process the window
      */
     void registerPartitionProcessor(BiConsumer<List<T>, K> windowProcessor);
     
     /**
      * Register a ScheduledExecutorService.
-     * @param ses
+     * @param ses the service
      */
     void registerScheduledExecutorService(ScheduledExecutorService ses);
     
@@ -163,12 +163,12 @@ public interface Window<T, K, L extends List<T>>{
      * is stable when synchronizing on the intrinsic lock of the map,
      * for example:
      * <br>
-     * <pre><code>
-     * Map&ltK, Partitions<U, K, ?>> partitions = window.getPartitions();
+     * <pre>{@code
+     * Map<K, Partitions<U, K, ?>> partitions = window.getPartitions();
      * synchronized(partitions){
      *  // operations with partition
      * }
-     * </code></pre>
+     * }</pre>
      * 
      * @return A map of the window's keys and partitions.
      */

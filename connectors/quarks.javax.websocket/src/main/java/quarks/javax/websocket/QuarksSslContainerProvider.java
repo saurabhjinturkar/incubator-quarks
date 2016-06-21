@@ -26,7 +26,6 @@ import javax.websocket.WebSocketContainer;
 /**
  * A {@link WebSocketContainer} provider for dealing with javax.websocket
  * SSL issues.
- * <p>
  * <ul>
  * <li>JSR356 lacks API for Client-side SSL configuration</li>
  * <li>Jetty's {@code javax.websocket.ContainerProvider} ignores the

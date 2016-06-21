@@ -71,9 +71,9 @@ public class KafkaConsumer {
     public interface ConsumerRecord<K,V> {
         String topic();
         int partition();
-        /** message id in the partition. */
+        /** @return message id in the partition. */
         long offset();
-        /** null if no key was published. */
+        /** @return null if no key was published. */
         K key();
         V value();
     }
@@ -109,12 +109,12 @@ public class KafkaConsumer {
      * <p>
      * The Kafka "Old Consumer" configs are used.  Minimal configuration
      * typically includes:
-     * <p>
      * <ul>
      * <li><code>zookeeper.connect</code></li>
      * <li><code>group.id</code></li>
      * </ul>
-     * 
+     *
+     * @param t Topology to add to
      * @param config KafkaConsumer configuration information.
      */
     public KafkaConsumer(Topology t, Supplier<Map<String,Object>> config) {

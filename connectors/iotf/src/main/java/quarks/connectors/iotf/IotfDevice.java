@@ -100,7 +100,8 @@ public class IotfDevice implements IotDevice {
      * Connecting to the server occurs when the topology is submitted for
      * execution.
      * </p>
-     * 
+     *
+     * @param options control options
      * @param topology
      *            the connector's associated {@code Topology}.
      */

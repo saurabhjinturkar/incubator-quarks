@@ -113,7 +113,7 @@ label.refreshLabel {
 	margin-right: 5px;
 }
 
-#toggleTimer, #tagDialogBtn {
+#toggleTimer, #tagDialogBtn, #pauseTableRefresh {
 	margin-right: 15px;
 	height: 25px;
 	font-size: 0.7em;

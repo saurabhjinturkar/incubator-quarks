@@ -34,7 +34,6 @@ import quarks.runtime.jobregistry.JobEvents;
 import quarks.runtime.jobregistry.JobRegistry;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
-import quarks.topology.plumbing.PlumbingStreams;
 
 /**
  * Demonstrates job monitoring using the {@link JobRegistryService} service.
@@ -114,9 +113,8 @@ public class JobEventsSample {
         TStream<JsonObject> jobEvents = JobEvents.source(
                 topology, 
                 (evType, job) -> { return JobEventsSample.wrap(evType, job); });
-        
-        TStream<JsonObject> isolated = PlumbingStreams.isolate(jobEvents, true);
-        isolated.sink(tuple -> {
+
+        jobEvents.sink(tuple -> {
                 System.err.println(tuple.toString());
             });
 

@@ -368,7 +368,7 @@ public class FileWriterPolicy<T> implements IFileWriterPolicy<T> {
      * 
      * @param activePath path of the active file
      * @param finalPath path to the final destination
-     * @throws IOException
+     * @throws IOException on failure
      */
     protected void hookRenameFile(Path activePath, Path finalPath) throws IOException {
         trace.info("finalizing to {}", finalPath);

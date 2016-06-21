@@ -92,7 +92,7 @@ public interface StreamScopeMXBean {
    * <LI>For other types it's a JSON object with the type's
    * members and JSON encoding of their values.</LI>
    * </UL>
-   * </P><P>
+   * <P>
    * The returned samples are removed from the capture buffer.
    * </P>
    * @return JSON of the captured samples
@@ -128,7 +128,7 @@ public interface StreamScopeMXBean {
   
   /**
    * Capture the first and every nth tuple
-   * @param count
+   * @param count the nth value interval
    */
   void setCaptureByCount(int count);
   

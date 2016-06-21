@@ -50,6 +50,7 @@ public class GraphType {
 
     /**
      * Create an instance of {@link GraphType}.
+     * @param graph the associated Graph
      */
     public GraphType(Graph graph) {
         this(graph, null);
@@ -58,6 +59,8 @@ public class GraphType {
     /**
      * Create an instance of {@link GraphType} using the specified 
      * {@link IdMapper} to generate unique object identifiers.
+     * @param g the associated Graph
+     * @param ids the id mapper
      */
     public GraphType(Graph g, IdMapper<String> ids) {
         if (ids == null) {

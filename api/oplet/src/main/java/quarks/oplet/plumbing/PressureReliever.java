@@ -54,6 +54,7 @@ import quarks.window.Windows;
  * Tuples are  <B>discarded and not</B> submitted to the
  * output port if the downstream processing cannot keep up
  * the incoming tuple rate.
+ * </P>
  * <UL>
  * <LI>For a {@link #PressureReliever(int, Function) count}
  * {@code PressureReliever} up to last (most recent) {@code N} tuples
@@ -63,9 +64,7 @@ import quarks.window.Windows;
  * <BR> If when an input tuple is processed the window partition contains N tuples, then
  * the first (oldest) tuple in the partition is discarded before the input tuple is inserted into the window.
  * </UL>
- * </P>
  * <P>
- * <BR>
  * Insertion of the oplet into a stream disconnects the
  * upstream processing from the downstream processing,
  * so that downstream processing is executed on a different
@@ -133,7 +132,6 @@ public class PressureReliever<T, K> extends Pipe<T, T> {
          * 
          * @param t
          * @param v
-         * @return
          */
         @Override
         public void accept(Partition<T, K, LinkedList<T>> partition, T tuple) {

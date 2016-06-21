@@ -19,7 +19,6 @@ under the License.
 package quarks.test.topology;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
@@ -287,6 +286,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split() with no drops.
+     * @throws Exception on failure
      */
     @Test
     public void testSplit() throws Exception {
@@ -312,6 +312,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split() with drops.
+     * @throws Exception on failure
      */
     @Test
     public void testSplitWithDrops() throws Exception {
@@ -353,6 +354,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split() zero outputs
+     * @throws Exception on failure
      */
     @Test(expected = IllegalArgumentException.class)
     public void testSplitWithZeroOutputs() throws Exception {
@@ -361,6 +363,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split() negative outputs
+     * @throws Exception on failure
      */
     @Test(expected = IllegalArgumentException.class)
     public void testSplitWithNegativeOutputs() throws Exception {
@@ -383,6 +386,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split(enum) with integer type enum.
+     * @throws Exception on failure
      */
     @Test
     public void testSplitWithEnum() throws Exception {
@@ -425,6 +429,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split(enum) with integer type enum.
+     * @throws Exception on failure
      */
     @Test(expected = IllegalArgumentException.class)
     public void testSplitWithEnumForZeroSizeClass() throws Exception {
@@ -484,15 +489,25 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     @Test
     public void testPeekThenFanout() throws Exception {
-        _testFanoutWithPeek(false);
+        _testFanoutWithPeek(1, 0, 0);
     }
 
     @Test
     public void testFanoutThenPeek() throws Exception {
-        _testFanoutWithPeek(true);
+        _testFanoutWithPeek(0, 0, 1);
     }
 
-    void _testFanoutWithPeek(boolean after) throws Exception {
+    @Test
+    public void testPeekMiddleFanout() throws Exception {
+        _testFanoutWithPeek(0, 1, 0);
+    }
+
+    @Test
+    public void testMultiPeekFanout() throws Exception {
+        _testFanoutWithPeek(3, 3, 3);
+    }
+
+    void _testFanoutWithPeek(int numBefore, int numMiddle, int numAfter) throws Exception {
 
         Topology t = newTopology();
 
@@ -501,23 +516,32 @@ public abstract class TStreamTest extends TopologyAbstractTest {
         values.add(new Peeked(-214));
         values.add(new Peeked(9234));
         for (Peeked p : values)
-            assertFalse(p.peeked);
+            assertEquals(0, p.peekedCnt);
 
         TStream<Peeked> s = t.collection(values);
-        if (!after)
-            s.peek(tuple -> tuple.peeked = true);
+        if (numBefore > 0) {
+          for (int i = 0; i < numBefore; i++)
+            s.peek(tuple -> tuple.peekedCnt++);
+        }
 
         TStream<Peeked> sf = s.filter(tuple -> tuple.value > 0);
-        TStream<Peeked> sm = s.modify(tuple -> new Peeked(tuple.value + 37, tuple.peeked));
+        if (numMiddle > 0) {
+          for (int i = 0; i < numMiddle; i++)
+            s.peek(tuple -> tuple.peekedCnt++);
+        }
+        TStream<Peeked> sm = s.modify(tuple -> new Peeked(tuple.value + 37, tuple.peekedCnt));
 
-        if (after)
-            s.peek(tuple -> tuple.peeked = true);
+        if (numAfter > 0) {
+          for (int i = 0; i < numAfter; i++)
+            s.peek(tuple -> tuple.peekedCnt++);
+        }
 
+        int totPeeks = numBefore + numMiddle + numAfter;
         Condition<Long> tsfc = t.getTester().tupleCount(sf, 2);
         Condition<Long> tsmc = t.getTester().tupleCount(sm, 3);
-        Condition<List<Peeked>> tsf = t.getTester().streamContents(sf, new Peeked(33, true), new Peeked(9234, true));
-        Condition<List<Peeked>> tsm = t.getTester().streamContents(sm, new Peeked(70, true), new Peeked(-177, true),
-                new Peeked(9271, true));
+        Condition<List<Peeked>> tsf = t.getTester().streamContents(sf, new Peeked(33, totPeeks), new Peeked(9234, totPeeks));
+        Condition<List<Peeked>> tsm = t.getTester().streamContents(sm, new Peeked(70, totPeeks), new Peeked(-177, totPeeks),
+                new Peeked(9271, totPeeks));
 
         complete(t, t.getTester().and(tsfc, tsmc));
 
@@ -530,7 +554,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + (peeked ? 1231 : 1237);
+            result = prime * result + peekedCnt;
             result = prime * result + value;
             return result;
         }
@@ -544,7 +568,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
             if (getClass() != obj.getClass())
                 return false;
             Peeked other = (Peeked) obj;
-            if (peeked != other.peeked)
+            if (peekedCnt != other.peekedCnt)
                 return false;
             if (value != other.value)
                 return false;
@@ -553,15 +577,24 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
         private static final long serialVersionUID = 1L;
         final int value;
-        boolean peeked;
+        int peekedCnt;
 
         Peeked(int value) {
             this.value = value;
         }
 
         Peeked(int value, boolean peeked) {
-            this.value = value;
-            this.peeked = true;
+          this(value, 1);
+        }
+
+        Peeked(int value, int peekedCnt) {
+          this.value = value;
+          // this.peeked = true;
+          this.peekedCnt = peekedCnt;
+        }
+        
+        public String toString() {
+          return "{" + "value=" + value + " peekedCnt=" + peekedCnt + "}";
         }
     }
     
@@ -677,6 +710,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
     
     /**
      * Submit multiple jobs concurrently using ProcessSource.
+     * @throws Exception on failure
      */
     @Test
     public void testMultiTopology() throws Exception {
@@ -699,6 +733,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Submit multiple jobs concurrently using ProcessSource.
+     * @throws Exception on failure
      */
     @Test
     public void testMultiTopologyWithError() throws Exception {
@@ -723,6 +758,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
     
     /**
      * Submit multiple jobs concurrently using PeriodicSource.
+     * @throws Exception on failure
      */
     @Test
     public void testMultiTopologyPollWithError() throws Exception {

@@ -70,7 +70,6 @@ public class KafkaProducer {
      * <p>
      * The Kafka "New Producer configs" are used.  Minimal configuration
      * typically includes:
-     * <p>
      * <ul>
      * <li><code>bootstrap.servers</code></li>
      * </ul>
@@ -78,6 +77,7 @@ public class KafkaProducer {
      * The full set of producer configuration items are specified in
      * {@code org.apache.kafka.clients.producer.ProducerConfig}
      * 
+     * @param t Topology to add to
      * @param config KafkaProducer configuration information.
      */
     public KafkaProducer(Topology t, Supplier<Map<String,Object>> config) {
@@ -95,6 +95,7 @@ public class KafkaProducer {
      * If neither key nor partition is present a partition will be assigned
      * in a round-robin fashion.
      * 
+     * @param <T> Tuple type
      * @param stream the stream to publish
      * @param keyFn A function that yields an optional byte[] 
      *        Kafka record's key from the tuple.
@@ -118,6 +119,7 @@ public class KafkaProducer {
      * This is a convenience method for {@code String} typed key/value
      * conversion functions.
      * <p>
+     * @param <T> Tuple type
      * @param stream the stream to publish
      * @param keyFn A function that yields an optional String 
      *        Kafka record's key from the tuple.

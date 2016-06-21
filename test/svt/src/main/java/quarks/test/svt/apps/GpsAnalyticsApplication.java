@@ -19,7 +19,9 @@ under the License.
 package quarks.test.svt.apps;
 
 import java.util.concurrent.TimeUnit;
+
 import com.google.gson.JsonObject;
+
 import quarks.connectors.iot.QoS;
 import quarks.test.svt.utils.sensor.gps.GpsSensor;
 import quarks.test.svt.utils.sensor.gps.SimulatedGeofence;
@@ -43,7 +45,6 @@ import quarks.topology.Topology;
  * <li>Windowing to detect hard driving: hard braking or hard acceleration and
  * publish alert to IotF</li>
  * </ul>
- * <p>
  */
 public class GpsAnalyticsApplication {
 

@@ -36,6 +36,8 @@ import quarks.topology.tester.Tester;
 /**
  * Topology implementation that provides basic functions for implementing
  * source streams backed by a {@link Graph}.
+ * 
+ * @param <X> Tester type
  */
 public abstract class GraphTopology<X extends Tester> extends AbstractTopology<X> {
 

@@ -57,6 +57,7 @@ public class ServiceContainer {
      * container has previously contained a service for the class, 
      * the old value is replaced by the specified value.
      *
+     * @param <T> service class type
      * @param serviceClass the class of service to add.
      * @param service service to add to this container.
      * @return the previous value associated with {@code serviceClass}, or
@@ -71,6 +72,7 @@ public class ServiceContainer {
     /**
      * Removes the specified service from this {@code ServiceContainer}.
      *
+     * @param <T> service class type
      * @param serviceClass the class of service to remove.
      * @return the service previously associated with the service class, or
      *         {@code null} if there was no registered service.
@@ -85,6 +87,7 @@ public class ServiceContainer {
      * mapped, or {@code null} if this {@code ServiceContainer} contains no 
      * service for that key.
      * 
+     * @param <T> service class type
      * @param serviceClass the class whose associated service is to be returned
      * @return the service instance mapped to the specified service class, or
      *         {@code null} if no service is registered for the class.

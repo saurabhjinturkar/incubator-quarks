@@ -27,4 +27,13 @@ class Target<T> {
 	}
 	final ExecutableVertex<?, T, ?> vertex;
 	final int port;
+	
+// /** For debug. Contents subject to change. */
+//	@Override
+//	public String toString() {
+//	  return "{"
+//	      + "port=" + port
+//	      + " vertex=" + vertex
+//	      + "}";
+//	}
 }

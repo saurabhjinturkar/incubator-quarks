@@ -19,7 +19,6 @@ under the License.
 package quarks.providers.development;
 
 import java.util.Hashtable;
-import java.util.Set;
 import java.util.concurrent.Future;
 
 import com.codahale.metrics.MetricRegistry;
@@ -28,13 +27,9 @@ import com.google.gson.JsonObject;
 import quarks.console.server.HttpServer;
 import quarks.execution.Job;
 import quarks.execution.services.ControlService;
-import quarks.graph.Connector;
-import quarks.graph.Edge;
 import quarks.metrics.Metrics;
 import quarks.metrics.MetricsSetup;
 import quarks.metrics.oplets.CounterOp;
-import quarks.oplet.core.FanOut;
-import quarks.oplet.core.Peek;
 import quarks.providers.direct.DirectProvider;
 import quarks.runtime.jmxcontrol.JMXControlService;
 import quarks.streamscope.StreamScopeRegistry;
@@ -104,50 +99,7 @@ public class DevelopmentProvider extends DirectProvider {
     public Future<Job> submit(Topology topology, JsonObject config) {
         Metrics.counter(topology);
         StreamScopeSetup.addStreamScopes(topology);
-        duplicateTags(topology);
         return super.submit(topology, config);
-    }
-    
-    /**
-     * Duplicate stream tags across oplets as appropriate.
-     * <P>
-     * While this action is semantically appropriate on its own,
-     * the motivation for it was graph presentation in the Console.
-     * Specifically, without tag promotion, metric oplet injections cause
-     * stream/connection tag coloring discontinuities even though the
-     * metricOp output stream is semantically identical to the input stream.
-     * i.e., 
-     * Cases where duplication is required:
-     * <ul>
-     * <li>tags on Peek oplet input streams to output streams</li>
-     * <li>tags on FanOut oplet input streams to output streams
-     *     (fortunately, Split is not a FanOut)</li>
-     * </ul>
-     * </P>
-     * 
-     * @param topology the topology
-     */
-    private void duplicateTags(Topology topology) {
-      // This one pass implementation is dependent on Edges being
-      // topologically sorted - ancestor Edges appear before their descendants.
-      for (Edge e : topology.graph().getEdges()) {
-        Object o = e.getTarget().getInstance();
-        if (o instanceof Peek || o instanceof FanOut) {
-          duplicateTags(e);
-        }
-      }
-    }
-    
-    /**
-     * Duplicate the tags on Edge {@code e} to the Edge's target's connectors.
-     * @param e the Edge
-     */
-    private void duplicateTags(Edge e) {
-      Set<String> tags = e.getTags();
-      String[] ta = tags.toArray(new String[tags.size()]);
-      for (Connector<?> c : e.getTarget().getConnectors()) {
-        c.tag(ta);
-      }
     }
 
 }

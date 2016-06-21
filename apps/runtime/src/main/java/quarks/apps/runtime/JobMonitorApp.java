@@ -54,6 +54,7 @@ import quarks.topology.services.ApplicationService;
  * <P>
  * The monitoring application must be submitted within a context which 
  * provides the following services:
+ * </P>
  * <ul>
  * <li>ApplicationService - an {@code ApplicationServiceMXBean} control 
  * registered by this service is used to resubmit failed applications.</li>
@@ -62,7 +63,6 @@ import quarks.topology.services.ApplicationService;
  * restarting failed applications.</li>
  * <li>JobRegistryService - generates job monitoring events. </li>
  * </ul>
- * </P>
  */
 public class JobMonitorApp {
     /**
@@ -101,8 +101,8 @@ public class JobMonitorApp {
      * Submits the application topology.
      * 
      * @return the job.
-     * @throws InterruptedException
-     * @throws ExecutionException
+     * @throws InterruptedException if the operation was interrupted
+     * @throws ExecutionException on task execution exception 
      */
     public Job submit() throws InterruptedException, ExecutionException {
         Future<Job> f = submitter.submit(topology);

@@ -163,10 +163,12 @@ public final class Range<T extends Comparable<?>> implements Predicate<T>, Seria
      * <p>
      * See {@link Ranges} for a collection of convenience constructors.
      * 
+     * @param <T> a Comparable type
      * @param lowerEndpoint null for an infinite value (and lbt must be OPEN)
      * @param lbt {@link BoundType} for the lowerEndpoint
      * @param upperEndpoint null for an infinite value (and ubt must be OPEN)
      * @param ubt {@link BoundType} for the upperEndpoint
+     * @return the Range
      */
     public static <T extends Comparable<?>> Range<T> range(T lowerEndpoint, BoundType lbt, T upperEndpoint, BoundType ubt) {
         // matchs Guava Range.range param order
@@ -372,11 +374,13 @@ public final class Range<T extends Comparable<?>> implements Predicate<T>, Seria
      * <p>
      * See {@link Ranges} for a collection of valueOf methods
      * for several types of {@code T}.
-     * 
+     *
+     * @param <T> a Comparable type
      * @param toStringValue value from toString() or has the same syntax.
      * @param fromString function to create a T from its String value from
      *        the parsed toStringValue.  Should throw an IllegalArgumentException
      *        if unable to perform the conversion.
+     * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert to 
      *         endpoint in toStringValue to a T.
      */

@@ -1,0 +1,113 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/* Configure root project */
+ext.commithash = {
+  try {
+    return "git rev-parse --short HEAD".execute().text.trim()
+  } catch (Exception e) {
+    return ''
+  }
+}()
+def now = new Date()
+ext.DSTAMP = String.format('%tY%<tm%<td', now)
+ext.TSTAMP = String.format('%tH%<tM', now)
+ext.ext_classpath = ['com.google.code.gson:gson:2.2.4', 
+  'org.slf4j:slf4j-api:1.7.12', 
+  'io.dropwizard.metrics:metrics-core:3.1.2']
+
+/* Configure subprojects */
+subprojects {
+  if (!buildFile.exists()) {
+    configurations.create('default')
+    return
+  }
+  repositories {
+    mavenCentral()
+    maven {
+      url 'https://repo.eclipse.org/content/repositories/paho-snapshots/'
+    }
+  }
+
+  plugins.apply 'java'
+  plugins.apply 'jacoco'
+
+  archivesBaseName = "${rootProject.name}${project.path.replace(':','.')}"
+  version = build_version
+
+  jacoco {
+    toolVersion = '0.7.5.201505241946'
+  }
+
+  dependencies {
+    testCompile 'junit:junit:4.10'
+    testRuntime 'org.slf4j:slf4j-jdk14:1.7.12'
+  }
+
+  ext.addCompileTestDependencies = { String... deps ->
+    deps.each { dep ->
+      dependencies {
+        testCompile project(dep).sourceSets.test.output
+      }
+      compileTestJava {
+        dependsOn "${dep}:testClasses"
+      }
+    }
+  }
+
+  sourceCompatibility = '1.8'
+  targetCompatibility = '1.8'
+  def compileOptions = {
+    options.debugOptions.debugLevel = 'source,lines,vars'
+    options.verbose = logger.isDebugEnabled()
+    options.listFiles = logger.isInfoEnabled()
+    options.deprecation = true
+    options.encoding = 'UTF-8'
+  }
+  compileJava {
+    configure compileOptions
+  }
+  compileTestJava {
+    configure compileOptions
+  }
+
+  test {
+    include '**/*Test.class'
+    systemProperty 'quarks.test.top.dir.file.path', rootProject.projectDir
+    testLogging {
+      exceptionFormat 'full'
+    }
+  }
+
+  ext.jarOptions = {
+    manifest {
+      attributes(
+        'Implementation-Title': "${-> baseName}",
+        'Implementation-Vendor': build_vendor,
+        'Implementation-Version': "${commithash}-${DSTAMP}-${TSTAMP}",
+        // TODO Class-Path attribute
+      )
+    }
+    metaInf {
+      from rootProject.file('LICENSE')
+      from rootProject.file('NOTICE')
+    } 
+  }
+  jar {
+    configure jarOptions
+  }
+}
+
+task wrapper(type: Wrapper) {
+  jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
+}

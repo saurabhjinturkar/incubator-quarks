@@ -27,7 +27,7 @@
   <path id="compile.classpath">
     <pathelement location="${quarks.lib}/quarks.api.topology.jar" />
     <pathelement location="${quarks.connectors}/iot/lib/quarks.connectors.iot.jar" />
-    <pathelement location="${component.ext}/com.ibm.iotf.client-0.0.9.jar"/>
+    <pathelement location="${component.ext}/watson-iot-0.1.1.jar"/>
     <path refid="quarks.ext.classpath" />
     <fileset dir="${component.ext}/lib" includes="*.jar"/>
   </path>

@@ -145,6 +145,7 @@ public abstract class MetricsEverywhereTest extends TopologyAbstractTest {
     }
 
     // Apply Metrics on all streams, graph with split oplet and Metric oplet
+    // Counter oplets are inserted everywhere except after OP_2 (Counter).
     @Test
     public void metricsEverywhereSplit() throws Exception {
         
@@ -184,10 +185,10 @@ public abstract class MetricsEverywhereTest extends TopologyAbstractTest {
         printGraph(g);
 
         Collection<Vertex<? extends Oplet<?, ?>, ?, ?>> vertices = g.getVertices();
-        assertEquals(11, vertices.size());
+        assertEquals(10, vertices.size());
 
         Collection<Edge> edges = g.getEdges();
-        assertEquals(10, edges.size());
+        assertEquals(9, edges.size());
     }
 
     @Test
@@ -332,9 +333,9 @@ public abstract class MetricsEverywhereTest extends TopologyAbstractTest {
     }
 
     private void printGraph(Graph g) {
-        // Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        // String json = gson.toJson(new GraphType(g));
-        // System.out.println(json);
+//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//        String json = gson.toJson(new GraphType(g));
+//        System.out.println(json);
     }
 
     @SuppressWarnings("serial")

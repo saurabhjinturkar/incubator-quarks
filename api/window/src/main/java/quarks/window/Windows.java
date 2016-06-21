@@ -40,7 +40,11 @@ public class Windows {
     
     /**
      * Create a window using the passed in policies.
-     * 
+     *
+     * @param <T> Tuple type.
+     * @param <K> Key type.
+     * @param <L> List type.
+     *
      * @param insertionPolicy Policy indicating if a tuple should be inserted
      * into the window.
      * @param contentsPolicy Contents policy called prior to insertion of a tuple.

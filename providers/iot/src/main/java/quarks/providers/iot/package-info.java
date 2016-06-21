@@ -46,6 +46,7 @@ under the License.
  * 
  * <H4>Provider operations</H4>
  * <TABLE border="1">
+ * <caption>Device Commands</caption>
  * <tr>
  *     <th>Operation</th><th>Command identifier</th>
  *     <th>Type</th><th>Alias</th><th>Method</th><th>Arguments</th>
@@ -58,7 +59,7 @@ under the License.
  *    <td><em>{@code [applicationName, config]}</em></td>
  *    <td>{@link quarks.topology.mbeans.ApplicationServiceMXBean ApplicationServiceMXBean}</td>
  * </tr>
- * </tr>
+ * <tr>
  * <th>Sample command data</th>
  * <td colspan=5>{@code {"type":"appService","alias":"quarks","op":"submit","args":["Heartbeat",{}]}}</td>
  * </tr>
@@ -71,7 +72,7 @@ under the License.
  *    <td>{@code ["CLOSE"]}</td>
  *    <td>{@link quarks.execution.mbeans.JobMXBean JobMXBean}</td>
  * </tr>
- * </tr>
+ * <tr>
  * <th>Sample command data</th>
  * <td colspan=5>{@code {"type":"job","alias":"Heartbeat","op":"stateChange","args":["CLOSE"]}}</td>
  * </tr>

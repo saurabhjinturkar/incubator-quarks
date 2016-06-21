@@ -88,4 +88,15 @@ public class DirectEdge implements Edge {
     public String getAlias() {
         return connector.getAlias();
     }
+    
+//    /** For debug. Contents subject to change. */
+//    @Override
+//    public String toString() {
+//      return "{"
+//          + "source=" + (source==null ? "null" : source.getInstance())
+//          + " sourcePort=" + sourcePort
+//          + " target=" + (target==null ? "null" : target.getInstance())
+//          + " targetPort=" + targetPort
+//          + "}";
+//    }
 }

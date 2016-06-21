@@ -22,7 +22,6 @@ import static quarks.topology.services.ApplicationService.SYSTEM_APP_PREFIX;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import com.google.gson.JsonObject;
@@ -71,7 +70,6 @@ import quarks.topology.services.ApplicationService;
  * <LI>Access to the control service through device commands from the message hub using command
  * identifier {@link Commands#CONTROL_SERVICE quarksControl}.
  * </UL>
- * </P>
  * <P>
  * An {@code IotProvider} is created with a provider and submitter that it delegates
  * the creation and submission of topologies to.
@@ -249,7 +247,7 @@ public class IotProvider implements TopologyProvider,
     /**
      * Start this provider by starting its system applications.
      * 
-     * @throws ExecutionException Exception starting applications.
+     * @throws Exception on failure starting applications.
      */
     public void start() throws Exception {
         ApplicationServiceMXBean bean = getControlService().getControl(ApplicationServiceMXBean.TYPE,

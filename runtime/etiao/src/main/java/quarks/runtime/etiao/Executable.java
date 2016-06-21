@@ -149,7 +149,10 @@ public class Executable implements RuntimeServices {
 
     /**
      * Creates a new {@code Invocation} associated with the specified oplet.
-     * 
+     *
+     * @param <T> Oplet type
+     * @param <I> Tuple type of input streams
+     * @param <O> Tuple type of output streams
      * @param oplet the oplet
      * @param inputs the invocation's inputs
      * @param outputs the invocation's outputs

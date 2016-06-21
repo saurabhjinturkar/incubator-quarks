@@ -38,8 +38,8 @@ public interface Oplet<I, O> extends AutoCloseable {
     /**
      * Initialize the oplet.
      * 
-     * @param context
-     * @throws Exception
+     * @param context the OpletContext
+     * @throws Exception on failure
      */
     void initialize(OpletContext<I, O> context) throws Exception;
 

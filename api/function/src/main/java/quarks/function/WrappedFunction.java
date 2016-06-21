@@ -42,6 +42,7 @@ public abstract class WrappedFunction<F> implements Serializable {
     
     /**
      * Unwrap to find the outermost function that is an instance of {@code clazz}.
+     * @param <C> Type of class.
      * @param clazz Implementation class to search for.
      * @return outermost function that is an instance of {@code clazz},
      * {@code null} if {@code clazz} is not implemented by {@code this}
@@ -58,6 +59,7 @@ public abstract class WrappedFunction<F> implements Serializable {
      * If a function object is not an instance of {@code clazz} but is an instance of
      * {@code WrappedFunction} then the test is repeated on the value of {@link #f()}.
      *  
+     * @param <C> Type of class.
      * @param clazz Implementation class to search for.
      * @param wf Function to unwrap
      * @return outermost function that implements {@code clazz}, {@code null} if

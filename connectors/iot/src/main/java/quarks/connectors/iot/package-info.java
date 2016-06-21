@@ -19,7 +19,7 @@ under the License.
 
 /**
  * Quarks device connector API to a message hub.
- * 
+ * <P>
  * Generic device model that supports a device model consisting of:
  * <UL>
  * <LI>
@@ -37,7 +37,6 @@ under the License.
  * The format for the payload is JSON, support for other payload formats may be added
  * in the future.
  * </LI>
- * <P>
  * <LI>
  * <B>Device Commands</B> - A device {@link quarks.connectors.iot.IotDevice#commands(String...) subscribes} to <em>commands</em> from back-end systems
  * through the message hub. A device command consists of:
@@ -52,7 +51,6 @@ under the License.
  * The format for the payload is typically JSON, though other formats may be used.
  * </LI>
  * </UL>
- * </P>
  * <P>
  * Device event and command identifiers starting with "{@link quarks.connectors.iot.IotDevice#RESERVED_ID_PREFIX quarks}"
  * are reserved for use by Quarks.

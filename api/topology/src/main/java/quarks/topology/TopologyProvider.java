@@ -26,7 +26,8 @@ public interface TopologyProvider {
 
     /**
      * Create a new topology with a given name.
-     * 
+     *
+     * @param name name for topology
      * @return A new topology.
      */
     Topology newTopology(String name);

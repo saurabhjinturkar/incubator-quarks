@@ -55,12 +55,12 @@ import quarks.topology.TopologyElement;
  * <P>
  * At startup this application sends a single device event with
  * identifier {@link Events#IOT_START}. This performs two functions:
+ * </P>
  * <UL>
  * <LI>Initiates a connection to the message hub.</LI>
  * <LI>Allows external applications to be notified (by subscribing to device events)
  * when a Quarks provider starts.</LI>
  * </UL>
- * </P>
  * 
  * @see PublishSubscribe
  */
@@ -92,6 +92,8 @@ public class IotDevicePubSub {
     /**
      * Create an instance of this application using {@code device} as the device
      * connection to a message hub.
+     * 
+     * @param device the IotDevice
      */
     public static void createApplication(IotDevice device) {
 

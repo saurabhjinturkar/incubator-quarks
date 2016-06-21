@@ -18,7 +18,6 @@ under the License.
 */
 package quarks.metrics;
 
-import quarks.graph.Vertex;
 import quarks.metrics.oplets.CounterOp;
 import quarks.metrics.oplets.RateMeter;
 import quarks.topology.TStream;
@@ -33,6 +32,7 @@ public class Metrics {
      * 
      * @param <T>
      *            TStream tuple type
+     * @param stream to stream to instrument
      * @return a {@link TStream} containing the input tuples
      */
     public static <T> TStream<T> counter(TStream<T> stream) {
@@ -45,6 +45,7 @@ public class Metrics {
      * 
      * @param <T>
      *            TStream tuple type
+     * @param stream to stream to instrument
      * @return a {@link TStream} containing the input tuples
      */
     public static <T> TStream<T> rateMeter(TStream<T> stream) {
@@ -62,16 +63,20 @@ public class Metrics {
      * oplet is inserted after the last Peek, right upstream from oplet B.</li>
      * <li>If a chain a Peek oplets is followed by a FanOut, a metric oplet is 
      * inserted between the last Peek and the FanOut oplet.</li>
+     * <li>Oplets are not inserted immediately downstream from another 
+     * {@code CounterOp} oplet (but they are inserted upstream from one.)</li>
      * </ul>
-     * The implementation is not idempotent: previously inserted metric oplets
-     * are treated as regular graph vertices.  Calling the method twice 
+     * The implementation is not idempotent: Calling the method twice 
      * will insert a new set of metric oplets into the graph.
      * @param t
      *            The topology
+     * @see quarks.graph.Graph#peekAll(quarks.function.Supplier, quarks.function.Predicate) Graph.peekAll()
      */
     public static void counter(Topology t) {
-        t.graph().peekAll( 
-                () -> new CounterOp<>(),
-                (Vertex<?, ?, ?> v) -> !(v.getInstance() instanceof quarks.oplet.core.FanOut));
+        // peekAll() embodies the above exclusion semantics
+        t.graph().peekAll(
+                () -> new CounterOp<>(), 
+                v -> !(v.getInstance() instanceof CounterOp)
+            );
     }
 }

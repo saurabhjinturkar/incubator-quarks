@@ -43,25 +43,45 @@ public class FileWriterCycleConfig<T> {
     private long periodMsec;
     private Predicate<T> tuplePredicate;
     
-    /** same as {@code newConfig(fileSize, 0, 0, null)} */
+    /** same as {@code newConfig(fileSize, 0, 0, null)}
+     * 
+     * @param <T> Tuple type
+     * @param fileSize cycle after {@code fileSize} bytes have been written. 0 to disable.
+     * @return the cycle configuration
+     */
     public static <T> FileWriterCycleConfig<T> newFileSizeBasedConfig(long fileSize) {
         if (fileSize < 1)
             throw new IllegalArgumentException("fileSize");
         return newConfig(fileSize, 0, 0, null);
     }
-    /** same as {@code newConfig0, cntTuples, 0, null)} */
+    /** same as {@code newConfig(0, cntTuples, 0, null)}
+     * 
+     * @param <T> Tuple type
+     * @param cntTuples cycle after every {@code cntTuple} tuples have been written. 0 to disable.
+     * @return the cycle configuration
+     */
     public static <T> FileWriterCycleConfig<T> newCountBasedConfig(int cntTuples) {
         if (cntTuples < 1)
             throw new IllegalArgumentException("cntTuples");
         return newConfig(0, cntTuples, 0, null);
     }
-    /** same as {@code newConfig(0, 0, periodMsec, null)} */
+    /** same as {@code newConfig(0, 0, periodMsec, null)}
+     * 
+     * @param <T> Tuple type
+     * @param periodMsec cycle after {@code periodMsec} has elapsed since the last time based cycle. 0 to disable.
+     * @return the cycle configuration
+     */
     public static <T> FileWriterCycleConfig<T> newTimeBasedConfig(long periodMsec) {
         if (periodMsec < 1)
             throw new IllegalArgumentException("periodMsec");
         return newConfig(0, 0, periodMsec, null);
     }
-    /** same as {@code newConfig(0, 0, 0, tuplePredicate)} */
+    /** same as {@code newConfig(0, 0, 0, tuplePredicate)}
+     * 
+     * @param <T> Tuple type
+     * @param tuplePredicate cycle if {@code tuplePredicate} returns true. null to disable.
+     * @return the cycle configuration
+     */
     public static <T> FileWriterCycleConfig<T> newPredicateBasedConfig(Predicate<T> tuplePredicate) {
         return newConfig(0, 0, 0, tuplePredicate);
     }
@@ -70,10 +90,12 @@ public class FileWriterCycleConfig<T> {
      * Create a new configuration.
      * <p>
      * At least one configuration mode must be enabled.
+     * @param <T> Tuple type
      * @param fileSize cycle after {@code fileSize} bytes have been written. 0 to disable.
      * @param cntTuples cycle after every {@code cntTuple} tuples have been written. 0 to disable.
      * @param periodMsec cycle after {@code periodMsec} has elapsed since the last time based cycle. 0 to disable.
      * @param tuplePredicate cycle if {@code tuplePredicate} returns true. null to disable.
+     * @return the cycle configuration
      */
     public static <T> FileWriterCycleConfig<T> newConfig(long fileSize, int cntTuples, long periodMsec, Predicate<T> tuplePredicate) {
         return new FileWriterCycleConfig<>(fileSize, cntTuples, periodMsec, tuplePredicate);

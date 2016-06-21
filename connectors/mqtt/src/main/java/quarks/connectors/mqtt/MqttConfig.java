@@ -224,6 +224,7 @@ public class MqttConfig {
 
     /**
      * Get the subscriber idle reconnect interval.
+     * @return the value
      */
     public int getSubscriberIdleReconnectInterval() {
         return subscriberIdleReconnectIntervalSec;
@@ -290,6 +291,7 @@ public class MqttConfig {
     
     /**
      * Get the the password to use for authentication with the server.
+     * @return the value
      */
     public char[] getPassword() {
         return options.getPassword();
@@ -297,6 +299,7 @@ public class MqttConfig {
 
     /**
      * Get the username to use for authentication with the server.
+     * @return the value
      */
     public String getUserName() {
         return options.getUserName();
@@ -306,7 +309,7 @@ public class MqttConfig {
      * Connection Client Id.
      * <p>
      * Optional. default null: a clientId is auto-generated.
-     * @param clientId
+     * @param clientId the client id
      */
     public void setClientId(String clientId) {
         this.clientId = clientId;
@@ -316,7 +319,7 @@ public class MqttConfig {
      * Maximum time to wait for an action (e.g., publish message) to complete.
      * <p>
      * Optional. default: -1 no timeout. 0 also means no timeout.
-     * @param actionTimeToWaitMillis
+     * @param actionTimeToWaitMillis the time to wait in milliseconds
      */
     public void setActionTimeToWaitMillis(long actionTimeToWaitMillis) {
         this.actionTimeToWaitMillis = actionTimeToWaitMillis;
@@ -326,7 +329,7 @@ public class MqttConfig {
      * QoS 1 and 2 in-flight message persistence.
      * <p>
      * optional. default: use memory persistence.
-     * @param persistence
+     * @param persistence the persistence implementation
      */
     public void setPersistence(MqttClientPersistence persistence) {
         this.persistence = persistence;
@@ -336,7 +339,7 @@ public class MqttConfig {
      * Clean Session.
      * <p>
      * Qptional. default: true.
-     * @param cleanSession
+     * @param cleanSession the clean session value
      */
     public void setCleanSession(boolean cleanSession) {
         options.setCleanSession(cleanSession);
@@ -345,7 +348,7 @@ public class MqttConfig {
     /**
      * Connection timeout.
      * Optional. 0 disables the timeout / blocks until connected. default: 30 seconds.
-     * @param connectionTimeoutSec
+     * @param connectionTimeoutSec the timeout in seconds
      */
     public void setConnectionTimeout(int connectionTimeoutSec) {
         options.setConnectionTimeout(connectionTimeoutSec);
@@ -360,7 +363,7 @@ public class MqttConfig {
      * If the connector is subscribing to topics, it will also reconnect
      * as per {@link #setSubscriberIdleReconnectInterval(int)}.
      * <p>
-     * @param idleTimeoutSec
+     * @param idleTimeoutSec the timeout in seconds
      * @see #setSubscriberIdleReconnectInterval(int)
      */
     public void setIdleTimeout(int idleTimeoutSec) {
@@ -375,7 +378,7 @@ public class MqttConfig {
      * Following an idle disconnect, if the connector is subscribing to topics,
      * it will reconnect after the specified interval.
      * Optional. default: 60 seconds.
-     * @param seconds
+     * @param seconds the interval in seconds
      */
     public void setSubscriberIdleReconnectInterval(int seconds) {
         if (seconds < 0)
@@ -387,10 +390,9 @@ public class MqttConfig {
      * Connection Keep alive.
      * <p>
      * Optional. 0 disables keepalive processing. default: 60 seconds.
-     * @param keepAliveSec
+     * @param keepAliveSec the interval in seconds
      */
-    public void setKeepAliveInterval(int keepAliveSec)
-            throws IllegalArgumentException {
+    public void setKeepAliveInterval(int keepAliveSec) {
         options.setKeepAliveInterval(keepAliveSec);
     }
 
@@ -399,7 +401,7 @@ public class MqttConfig {
      * <p>
      * Required. Must be an array of one or more MQTT server URLs.
      * When connecting, the first URL that successfully connects is used.
-     * @param serverUrls
+     * @param serverUrls the URLs
      */
     public void setServerURLs(String[] serverUrls) {
         options.setServerURIs(serverUrls);
@@ -421,7 +423,7 @@ public class MqttConfig {
     /**
      * Set the password to use for authentication with the server.
      * Optional. default: null.
-     * @param password
+     * @param password the password
      */
     public void setPassword(char[] password) {
         options.setPassword(password);
@@ -430,7 +432,7 @@ public class MqttConfig {
     /**
      * Set the username to use for authentication with the server.
      * Optional. default: null.
-     * @param userName
+     * @param userName the user name
      */
     public void setUserName(String userName) {
         options.setUserName(userName);

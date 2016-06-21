@@ -31,12 +31,12 @@ import quarks.function.BiConsumer;
  * registered jobs, as well as register listeners which are notified on job 
  * registrations, removals, and updates.
  * The following event types are sent to registered listeners:
+ * </p>
  * <ul>
  * <li>An {@link EventType#ADD} event is sent when a job is added.</li>
  * <li>An {@link EventType#REMOVE} event is sent when a job is removed.</li>
  * <li>An {@link EventType#UPDATE} event is sent when a job is updated.</li>
  * </ul>
- * <p>
  * <h3>Event dispatch</h3>
  * If a listener invocation throws an Exception, then the exception
  * will not prevent the remaining listeners from being invoked. However, 
@@ -89,6 +89,7 @@ public interface JobRegistryService {
     /**
      * Returns a job given its identifier.
      *
+     * @param id job identifier
      * @return the job or {@code null} if no job is registered with that 
      *      identifier.
      */

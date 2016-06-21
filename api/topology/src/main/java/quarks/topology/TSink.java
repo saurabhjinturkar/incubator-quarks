@@ -21,6 +21,7 @@ package quarks.topology;
 /**
  * Termination point (sink) for a stream.
  *
+ * @param <T> Tuple type
  */
 public interface TSink<T> extends TopologyElement {
     /**

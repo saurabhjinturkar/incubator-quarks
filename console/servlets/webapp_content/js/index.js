@@ -244,7 +244,12 @@ var path = d3.svg.diagonal()
 var showAllLink = d3.select("#showAll")
 	.on("click", function() {
 		 displayRowsTooltip(true);
-	});
+	})
+    .on('keydown', function() {
+	if (d3.event.keyCode && d3.event.keyCode === 13) {
+		displayRowsTooltip(true);
+	} 
+});
 	
 var tooltip = d3.select("body")
 	.append("div")
@@ -284,33 +289,36 @@ var showTooltip = function(content, d, i, event) {
     	
 };
 
+var refreshTable = true;
+
 var displayRowsTooltip = function(newRequest) {
 	var rows = makeRows();
-	var headerStr = "<html><head><title>Oplet properties</title><link rel='stylesheet' type='text/css' href='resources/css/main.css'></head>" + 
-	"<body><table style='width: 675px;margin: 10px;table-layout:fixed;word-wrap: break-word;'>";
+	var tableHdr = "";
 	var content = "";
 	var firstTime = true;
 	var firstKey = true;
+	var headerStr = "";
+	
 	for (var key in rows) {
 		var row = rows[key];
 		content += "<tr>";
 		for (var newKey in row) {
 			if (firstTime) {
 				if (newKey === "Name") {
-					headerStr += "<th style='width: 100px;'>" + newKey + "</th>";
+					headerStr += "<th style='width: 100px;' tabindex=0>" + newKey + "</th>";
 				} else {
-					headerStr += "<th style='width: 150px;'>" + newKey + "</th>";
+					headerStr += "<th style='width: 150px;' tabindex=0>" + newKey + "</th>";
 				}
 			}
 
 			if (newKey === "Name"){
-				content += "<td class='center100'>" + row[newKey] + "</td>";
+				content += "<td class='center100' tabindex=0>" + row[newKey] + "</td>";
 			} else if (newKey === "Tuple count"){
-				content += "<td class='right'>" + row[newKey] + "</td>";
+				content += "<td class='right' tabindex=0>" + row[newKey] + "</td>";
 			} else if (newKey === "Oplet kind"){
-				content += "<td class='left'>" + row[newKey] + "</td>";
+				content += "<td class='left' tabindex=0>" + row[newKey] + "</td>";
 			} else {
-				content += "<td class='center'>" + row[newKey] + "</td>";
+				content += "<td class='center' tabindex=0>" + row[newKey] + "</td>";
 			}
 		}
 		firstTime = false;
@@ -320,12 +328,19 @@ var displayRowsTooltip = function(newRequest) {
 		}
 		content += "</tr>";
 	}
-	var str = headerStr + content + "</table></body><html>";
+	
 	
 	if (newRequest) {
+		var htmlStr = "<html><head><title>Oplet properties</title><link rel='stylesheet' type='text/css' href='resources/css/main.css'></head>" + 
+		"<body>";
+		var buttonStr = '<button id="pauseTableRefresh" type="button">Pause table refresh</button>';
+		var tableHdr = "<table id='allPropsTable' tabindex=0 style='width: 675px;margin: 10px;table-layout:fixed;word-wrap: break-word;'>";
+		
+		var str = htmlStr + buttonStr + tableHdr + headerStr + content + "</table></body><html>";
 		propWindow = window.open("", "Properties", "width=825,height=500,scrollbars=yes,dependent=yes");
 		propWindow.document.body.innerHTML = "";
 		propWindow.document.write(str);
+		propWindow.document.body.focus();
 		propWindow.onunload = function() {
 			propWindow = null;
 		};
@@ -334,10 +349,24 @@ var displayRowsTooltip = function(newRequest) {
 				propWindow.close();
 			}
 		};
+		
+		var btn = propWindow.document.getElementById("pauseTableRefresh");
+		btn.onclick = 
+			function() {
+				 if (this.innerHTML === "Pause table refresh") {
+					 this.innerHTML = "Resume table refresh";
+					 refreshTable = false;
+				 } else {
+					 this.innerHTML = "Pause table refresh";
+					 refreshTable = true;
+				 }
+		};
 	} else {
-		if (typeof(propWindow) === "object") {
-			propWindow.document.body.innerHTML = "";
-			propWindow.document.write(str);
+		if (refreshTable) {
+			if (typeof(propWindow) === "object") {
+				d3.select("#allPropsTable").innerHTML = content;
+				propWindow.document.body.focus();
+			}
 		}
 	}
 };
@@ -347,30 +376,62 @@ var showStateTooltip = function(event) {
 	var jobId = d3.select("#jobs").node().value;
 	var jobObj = jobMap[jobId];
 	var content = "<div style='margin:10px'>";
+
+	var kIdx = 0;
 	for (var key in jobObj) {
+		kIdx++;
 		var idx = key.indexOf("State");
+		var errIdx = key.indexOf("Error");
+		
 		if ( idx !== -1) {
 			var name = key.substring(0, idx) + " " + key.substring(idx, key.length).toLowerCase();
 			var val = jobObj[key];
 			var value = val.substring(0,1) + val.substring(1,val.length).toLowerCase();
-			content += name + ": " + value + "<br/>";
+			content += "<div tabindex=0 id='sJobDiv" + kIdx + "'>" + name + ": " + value + "</div>";
+		} else if (errIdx !== -1) {
+			var name = key.substring(0, errIdx) + " " + key.substring(errIdx, key.length).toLowerCase();
+			var val = jobObj[key];
+			var value = "";
+			if (val) {
+				value = val.substring(0,1) + val.substring(1,val.length).toLowerCase();
+			}
+			content += "<div tabindex=0 id='sJobDiv" + kIdx + "'>" + name + ": " + value + "</div>";
 		} else {
-			content += key + ": " + jobObj[key] + "<br/>";
+			content += "<div tabindex=0 id='sJobDiv" + kIdx + "'>" + key + ": " + jobObj[key] + "</div>";
 		}
+		
 	}
+	var evtX = d3.event.srcElement.x;
+	var evtY = d3.event.srcElement.y;
 	content += "</div>";
+
 	stateTooltip
 	.html(content)
-	.style("left", (event.pageX - 200) + "px")
-	.style("top", event.pageY +"px")
+	.style("left", (evtX - 160) + "px")
+	.style("top", evtY +"px")
 	.style("padding-x", 22)
 	.style("padding-y", 10)
 	.style("display", "block");
+	
+	d3.select("#stateImg").node().blur();
+	stateTooltip.node().focus();
+	
+	var keyDownNode = "#sJobDiv" + kIdx
+	
+	d3.select(keyDownNode)
+	.on("keydown", function() {
+		// the next tab closes the popup
+		if (d3.event.keyCode && d3.event.keyCode === 9) {
+			hideStateTooltip();
+		}
+	});
 };
 
 var hideStateTooltip = function() {
 	stateTooltip
 	.style("display", "none");
+	//put focus back on the state image
+	d3.select("#stateImg").node().focus();
 };
 
 
@@ -866,6 +927,13 @@ var fetchJobsInfo = function() {
 	                                })
 	                                .on('mouseout', function() {
 	                                        hideStateTooltip();
+	                                })
+	                                .on('keydown', function() {
+	                                	if (d3.event.keyCode && d3.event.keyCode === 13) {
+	                                		showStateTooltip(d3.event);
+	                                	} else if (d3.event.keyCode) {
+	                                		hideStateTooltip();
+	                                	}
 	                                });
 	                                
 	                                stateTooltip = d3.select("body")
@@ -874,7 +942,8 @@ var fetchJobsInfo = function() {
 	                                .style("z-index", "10")
 	                                .style("display", "none")
 	                                .style("background-color", "white")
-	                                .attr("class", "bshadow");
+	                                .attr("class", "bshadow")
+	                                .attr("tabindex", "0");
 	                                
 	                                rowsTooltip = d3.select("body")
 	                                .append("div")

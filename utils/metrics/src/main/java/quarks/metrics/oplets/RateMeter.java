@@ -24,6 +24,8 @@ import com.codahale.metrics.Metric;
 /**
  * A metrics oplet which measures current tuple throughput and one-, five-, 
  * and fifteen-minute exponentially-weighted moving averages.
+ * 
+ * @param <T> Tuple type
  */
 public final class RateMeter<T> extends SingleMetricAbstractOplet<T> {
 

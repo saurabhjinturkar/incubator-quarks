@@ -73,6 +73,7 @@ public interface SerialDevice extends TopologyElement {
 	 * device connected to the serial port. While each function
 	 * is being called it has exclusive use of the serial port.
 	 * </P>
+	 * @param <T> Tuple type
 	 * @param driver Function that interacts with the serial port to produce a value.
 	 * @return Function that for each call will interact with the serial port to produce a value.
 	 * 

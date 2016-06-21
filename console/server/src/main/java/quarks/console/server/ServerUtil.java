@@ -19,10 +19,17 @@ under the License.
 
 package quarks.console.server;
 
+import java.io.IOException;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerUtil {
 
@@ -45,31 +52,35 @@ public class ServerUtil {
      * @return a File object
      */
     private File getTopDirFilePath() {
+        String topDirProp = System.getProperty("quarks.test.top.dir.file.path");
+        if (topDirProp != null) {
+          return new File(topDirProp);
+        }
         File jarFile = new File(getPath());
         return jarFile.getParentFile().getParentFile().getParentFile();
     }
 
-    // create new filename filter
-    FilenameFilter fileNameFilter = new FilenameFilter() {
-
-        @Override
-        public boolean accept(File dir, String name) {
-            if (name.equals("webapps")) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-    };
     /**
      * Returns the File object representing the "webapps" directory
      * @return a File object or null if the "webapps" directory is not found
      */
     private File getWarFilePath() {
-        File[] foundFiles = getTopDirFilePath().listFiles(fileNameFilter);
-        if (foundFiles.length == 1) {
-            return foundFiles[0];
+        List<File> foundFiles = new ArrayList<>();
+        try {
+            Files.walkFileTree(getTopDirFilePath().toPath(), new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    if (dir.endsWith("webapps")) {
+                      foundFiles.add(dir.toFile());
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+          // end of file searching
+        }
+        if (foundFiles.size() == 1) {
+            return foundFiles.get(0);
         }
         return null;
     }
@@ -96,6 +107,7 @@ public class ServerUtil {
     
     /**
      * Looks for the absolute file path of the name of the warFileName argument when running from Eclipse
+     * @param pDomain the ProtectionDomain to use to get the source's location
      * @param warFileName the name of the war file to find the absolute path to
      * @return the absolute path to the warFileName argument as a String
      */

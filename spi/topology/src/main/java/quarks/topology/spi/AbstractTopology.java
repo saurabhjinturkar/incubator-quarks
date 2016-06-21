@@ -31,6 +31,7 @@ import quarks.topology.tester.Tester;
  * Topology implementation that uses the basic functions to implement most
  * sources streams.
  *
+ * @param <X> Tester type
  */
 public abstract class AbstractTopology<X extends Tester> implements Topology {
 

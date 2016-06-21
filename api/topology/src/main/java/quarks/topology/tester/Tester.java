@@ -99,6 +99,7 @@ public interface Tester extends TopologyElement {
      * {@link Condition#valid()} and {@link Condition#getResult()} may change as
      * more tuples are seen on {@code stream}. <BR>
      * 
+     * @param <T> Tuple type
      * @param stream
      *            Stream to be tested.
      * @param values
@@ -117,7 +118,8 @@ public interface Tester extends TopologyElement {
      * If the topology is still executing then the returned values from
      * {@link Condition#valid()} and {@link Condition#getResult()} may change as
      * more tuples are seen on {@code stream}. <BR>
-     * 
+     *
+     * @param <T> Tuple type
      * @param stream
      *            Stream to be tested.
      * @param values

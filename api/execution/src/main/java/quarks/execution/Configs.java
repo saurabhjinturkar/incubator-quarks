@@ -26,7 +26,7 @@ package quarks.execution;
  * {@linkplain quarks.execution.Submitter#submit(Object, com.google.gson.JsonObject) submitted}.
  * <p>
  * The configuration JSON representation is summarized in the following table:
- *
+ * </p>
  * <table border=1 cellpadding=3 cellspacing=1>
  * <caption>Summary of configuration properties</caption>
  * <tr>
@@ -40,7 +40,6 @@ package quarks.execution;
  *    <td>The name of the job.</td>
  *  </tr>
  * </table>
- * </p>
  */
 public interface Configs {
     /**
