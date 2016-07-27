@@ -12,54 +12,62 @@
  * limitations under the License.
  */
 /* Configure root project */
-apply plugin: 'java'
-ext.commithash = {
-  try {
-    return "git rev-parse --short HEAD".execute().text.trim()
-  } catch (Exception e) {
-    return ''
-  }
-}()
-def now = new Date()
-ext.DSTAMP = String.format('%tY%<tm%<td', now)
-ext.TSTAMP = String.format('%tH%<tM', now)
-ext.ext_classpath = ['com.google.code.gson:gson:2.2.4',
-  'org.slf4j:slf4j-api:1.7.12',
-  'io.dropwizard.metrics:metrics-core:3.1.2']
-ext.target_dir = "$distsDir"
-ext.target_java8_dir = "${ext.target_dir}/java8"
-ext.target_javadoc_dir = "${ext.target_dir}/docs/javadoc"
+allprojects {
+  apply plugin: 'idea'
+  apply plugin: 'eclipse'
+  apply plugin: "jacoco"
+  apply plugin: 'java'
 
-/* Configure subprojects */
-subprojects {
-  if (!buildFile.exists()) {
-    configurations.create('default')
-    return
-  }
   repositories {
     mavenCentral()
     maven {
       url 'https://repo.eclipse.org/content/repositories/paho-snapshots/'
     }
   }
+}
 
-  plugins.apply 'java'
-  plugins.apply 'jacoco'
+ext {
+  commithash = {
+    try {
+      return "git rev-parse --short HEAD".execute().text.trim()
+    } catch (Exception e) {
+      return ''
+    }
+  }()
+  now = new Date()
+  DSTAMP = String.format('%tY%<tm%<td', now)
+  TSTAMP = String.format('%tH%<tM', now)
+  ext_classpath = ['com.google.code.gson:gson:2.2.4',
+                   'org.slf4j:slf4j-api:1.7.12',
+                   'io.dropwizard.metrics:metrics-core:3.1.2']
+  target_dir = "$distsDir"
+  target_java8_dir = "${ext.target_dir}/java8"
+  target_javadoc_dir = "${ext.target_dir}/docs/javadoc"
+  target_report_dir = "${ext.target_dir}/reports"
+}
+/* Configure subprojects */
+subprojects {
+  if (buildFile.isFile() && !buildFile.exists()) {
+    configurations.create('default')
+    return
+  }
 
-  if(["javax.websocket-client", "javax.websocket-server", "edgent.javax.websocket"].contains(project.name)) {
+  configurations {
+    junitLibs
+  }
+
+  if (["javax.websocket-client", "javax.websocket-server", "edgent.javax.websocket"].contains(project.name)) {
     archivesBaseName = "${project.name}"
-  } else{
+  } else {
     archivesBaseName = "${rootProject.name}${project.path.replace(':', '.')}"
   }
   version = build_version
 
-  jacoco {
-    toolVersion = '0.7.5.201505241946'
-  }
-
   dependencies {
     testCompile 'junit:junit:4.10'
     testRuntime 'org.slf4j:slf4j-jdk14:1.7.12'
+    junitLibs 'org.apache.ant:ant-junit:1.9.5'
+    junitLibs 'org.apache.ant:ant-junit4:1.9.5'
   }
 
   ext.addCompileTestDependencies = { String... deps ->
@@ -75,6 +83,7 @@ subprojects {
 
   sourceCompatibility = '1.8'
   targetCompatibility = '1.8'
+
   def compileOptions = {
     options.debugOptions.debugLevel = 'source,lines,vars'
     options.verbose = logger.isDebugEnabled()
@@ -91,21 +100,37 @@ subprojects {
 
   test {
     include '**/*Test.class'
+    exclude '**/*Mqtt*'
 
     systemProperty 'edgent.test.top.dir.file.path', rootProject.projectDir
     systemProperty 'edgent.test.root.dir', rootProject.projectDir
     testLogging {
       exceptionFormat 'full'
     }
+
+    mkdir 'test-result'
+    afterSuite {
+      if (!it.parent) {
+        ant.taskdef(name: 'junitreport',
+                classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
+                classpath: configurations.junitLibs.asPath)
+        ant.junitreport(todir: './test-result') {
+          fileset(dir: './test-result') {
+            include(name: '*.xml')
+          }
+          report(format: 'frames', todir: "${target_report_dir}/junit")
+        }
+      }
+    }
   }
 
   ext.jarOptions = {
     manifest {
       attributes(
-        'Implementation-Title': "${-> baseName}",
-        'Implementation-Vendor': build_vendor,
-        'Implementation-Version': "${commithash}-${DSTAMP}-${TSTAMP}",
-        // TODO Class-Path attribute
+              'Implementation-Title': "${-> baseName}",
+              'Implementation-Vendor': build_vendor,
+              'Implementation-Version': "${commithash}-${DSTAMP}-${TSTAMP}",
+              // TODO Class-Path attribute
       )
     }
     metaInf {
@@ -123,7 +148,7 @@ subprojects {
       from jar
       into "${rootProject.ext.target_java8_dir}/" + "/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
-    }else if(["samples"].contains(projectGroup)){
+    } else if (["samples"].contains(projectGroup)) {
       from jar
       into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
@@ -135,7 +160,7 @@ subprojects {
           include '**/*.java'
         }
       }
-    }else{
+    } else {
       from jar
       into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name".replaceAll(":", "/") + "/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
