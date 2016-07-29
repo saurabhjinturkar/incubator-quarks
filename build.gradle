@@ -15,7 +15,6 @@
 allprojects {
   apply plugin: 'idea'
   apply plugin: 'eclipse'
-  apply plugin: "jacoco"
   apply plugin: 'java'
 
   repositories {
@@ -45,15 +44,15 @@ ext {
   target_javadoc_dir = "${ext.target_dir}/docs/javadoc"
   target_report_dir = "${ext.target_dir}/reports"
 }
+
 /* Configure subprojects */
 subprojects {
+
+  apply plugin: "jacoco"
+
   if (buildFile.isFile() && !buildFile.exists()) {
     configurations.create('default')
     return
-  }
-
-  configurations {
-    junitLibs
   }
 
   if (["javax.websocket-client", "javax.websocket-server", "edgent.javax.websocket"].contains(project.name)) {
@@ -66,8 +65,6 @@ subprojects {
   dependencies {
     testCompile 'junit:junit:4.10'
     testRuntime 'org.slf4j:slf4j-jdk14:1.7.12'
-    junitLibs 'org.apache.ant:ant-junit:1.9.5'
-    junitLibs 'org.apache.ant:ant-junit4:1.9.5'
   }
 
   ext.addCompileTestDependencies = { String... deps ->
@@ -99,6 +96,9 @@ subprojects {
   }
 
   test {
+    if(it.path == ":test:fvtiot" ||  it.path == ":providers:development") {
+      dependsOn ":console:servlets"
+    }
     include '**/*Test.class'
     exclude '**/*Mqtt*'
 
@@ -107,20 +107,9 @@ subprojects {
     testLogging {
       exceptionFormat 'full'
     }
-
-    mkdir 'test-result'
-    afterSuite {
-      if (!it.parent) {
-        ant.taskdef(name: 'junitreport',
-                classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
-                classpath: configurations.junitLibs.asPath)
-        ant.junitreport(todir: './test-result') {
-          fileset(dir: './test-result') {
-            include(name: '*.xml')
-          }
-          report(format: 'frames', todir: "${target_report_dir}/junit")
-        }
-      }
+    reports {
+      junitXml.enabled = true
+      html.enabled = true
     }
   }
 
@@ -139,6 +128,9 @@ subprojects {
     }
   }
   jar {
+    if(it.path == ":test:fvtiot" ||  it.path == ":providers:development") {
+      dependsOn ":console:servlets"
+    }
     configure jarOptions
   }
 
@@ -180,7 +172,126 @@ task copyScript {
   }
 }
 
+//Create Junit Report
+configurations {
+  junitLibs
+}
+dependencies {
+  junitLibs 'org.apache.ant:ant-junit:1.9.5'
+  junitLibs 'org.apache.ant:ant-junit4:1.9.5'
+  junitLibs 'org.jacoco:org.jacoco.ant:0.7.5.201505241946'
+}
+
+task createJunitReport << {
+  description = 'Generates a Junit report from all subprojects'
+
+  ant.taskdef(name: 'junitreport',
+          classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
+          classpath: configurations.junitLibs.asPath)
+  ant.junitreport(todir: './') {
+    fileset(dir: './') {
+      include(name: '**/test-results/TEST-*.xml')
+    }
+    report(format: 'frames', todir: "${target_report_dir}/junit")
+  }
+  ant.move(file: "TESTS-TestSuites.xml", tofile: "${target_report_dir}/TESTS-TestSuites.xml")
+}
+build.finalizedBy createJunitReport
+
+task jacocoTestReport {
+  description = 'Generates a coverage report from all subprojects'
+
+  dependsOn(subprojects*.test, subprojects*.jar)
+
+  FileCollection executionData = files()
+
+  subprojects.findAll { subproject ->
+    subproject.pluginManager.hasPlugin('java') && subproject.pluginManager.hasPlugin('jacoco')
+  }.each { subproject ->
+    executionData += subproject.tasks.jacocoTestReport.executionData
+  }
+
+  executionData = files(executionData.findAll {
+    it.exists()
+  })
+  ant.taskdef(name: 'jacocoReport', classname: 'org.jacoco.ant.ReportTask',
+          classpath: configurations.junitLibs.asPath)
+  ant.jacocoReport {
+    executiondata {
+      executionData.addToAntBuilder(ant, 'resources')
+    }
+
+    structure(name: project.name) {
+      group(name: "Edgent API") {
+        classfiles {
+          fileset(dir: "${target_java8_dir}", includes: "edgent.api.*.jar")
+        }
+        sourcefiles {
+          fileset(dir: "./api/function/src/main/java", includes: "**/*.java")
+          fileset(dir: "./api/execution/src/main/java", includes: "**/*.java")
+          fileset(dir: "./api/oplet/src/main/java", includes: "**/*.java")
+          fileset(dir: "./api/graph/src/main/java", includes: "**/*.java")
+          fileset(dir: "./api/topology/src/main/java", includes: "**/*.java")
+        }
+      }
+      group(name: "Edgent SPI") {
+        classfiles {
+          fileset(dir: "${target_java8_dir}", includes: "edgent.spi.*.jar")
+        }
+        sourcefiles {
+          fileset(dir: "./spi/graph/src/main/java", includes: "**/*.java")
+          fileset(dir: "./spi/topology/src/main/java", includes: "**/*.java")
+        }
+      }
+      group(name: "Edgent Runtime") {
+        classfiles {
+          fileset(dir: "${target_java8_dir}", includes: "edgent.runtime.*.jar")
+        }
+        sourcefiles {
+          fileset(dir: "./runtime/etiao/src/main/java", includes: "**/*.java")
+          fileset(dir: "./runtime/jmxcontrol/src/main/java", includes: "**/*.java")
+        }
+      }
+      group(name: "Edgent Utilities") {
+        classfiles {
+          fileset(dir: "${target_java8_dir}", includes: "edgent.utils.*.jar")
+        }
+        sourcefiles {
+          fileset(dir: "./utils/metrics/src/main/java", includes: "**/*.java")
+          fileset(dir: "./utils/streamscope/src/main/java", includes: "**/*.java")
+        }
+      }
+      group(name: "Edgent Utilities") {
+        classfiles {
+          fileset(dir: "${target_java8_dir}", includes: "edgent.connectors.*.jar")
+        }
+        sourcefiles {
+          fileset(dir: "./connectors/common/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/command/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/csv/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/file/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/iot/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/iotp/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/jdbc/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/kafka/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/mqtt/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/http/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/wsclient/src/main/java", includes: "**/*.java")
+          fileset(dir: "./connectors/wsclient-javax.websocket/src/main/java", includes: "**/*.java")
+        }
+      }
+    }
+    html(destdir: "${target_report_dir}/coverage/")
+    xml(destfile: "${target_report_dir}/coverage/jacoco-sessions.xml")
+  }
+}
+build.finalizedBy jacocoTestReport
+
+//Create JavaDoc
 task aggregateJavadoc(type: Javadoc) {
+  description = 'Generates a Javadoc from all subprojects'
+
+  dependsOn(subprojects*.test, subprojects*.jar)
   destinationDir file("$rootProject.ext.target_javadoc_dir")
   options.addStringOption('Xdoclint:none', '-quiet')
   configure(options) {
@@ -207,8 +318,7 @@ task aggregateJavadoc(type: Javadoc) {
           { project -> project.sourceSets.main.compileClasspath }
   )
 }
-
-build.dependsOn aggregateJavadoc
+build.finalizedBy aggregateJavadoc
 
 task wrapper(type: Wrapper) {
   jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
