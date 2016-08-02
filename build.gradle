@@ -181,6 +181,16 @@ task aggregateJavadoc(type: Javadoc) {
   classpath = files(subprojects.collect
           { project -> project.sourceSets.main.compileClasspath }
   )
+  
+  // doc-files aren't picked up automatically so get them now.
+  doLast {
+    copy {
+      from subprojects.collect { project -> project.sourceSets.main.java.srcDirs }
+      include '**/doc-files/**'
+      includeEmptyDirs = false
+      into "$rootProject.ext.target_javadoc_dir"
+    }
+  }
 }
 
 build.dependsOn aggregateJavadoc

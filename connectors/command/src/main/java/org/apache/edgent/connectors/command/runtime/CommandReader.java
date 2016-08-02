@@ -30,8 +30,8 @@ import org.apache.edgent.function.Supplier;
  * and restart it upon process termination/error if so configured.
  * </P>
  * <P>
- * The iterator returned by {@link Iterable#iterator()) returns
- * {@hasNext()==true} until a read from {@link Process#getOutputStream()}
+ * The iterator returned by {@link Iterable#iterator()} returns
+ * {@code hasNext()==true} until a read from {@link Process#getOutputStream()}
  * returns EOF or an IOError.
  */
 public class CommandReader extends CommandConnector implements Supplier<Iterable<String>>, AutoCloseable {

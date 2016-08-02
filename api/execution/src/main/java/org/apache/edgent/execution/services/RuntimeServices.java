@@ -43,7 +43,6 @@ package org.apache.edgent.execution.services;
  * }
  * </code>
  * </pre>
- * </P>
  *
  */
 public interface RuntimeServices {
