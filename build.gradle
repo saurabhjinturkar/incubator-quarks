@@ -100,7 +100,6 @@ subprojects {
       dependsOn ":console:servlets"
     }
     include '**/*Test.class'
-    exclude '**/*Mqtt*'
 
     systemProperty 'edgent.test.top.dir.file.path', rootProject.projectDir
     systemProperty 'edgent.test.root.dir', rootProject.projectDir
@@ -136,6 +135,7 @@ subprojects {
 
   task copyJar(type: Copy) {
     def projectGroup = "$project.group".replace("edgent.", "")
+
     if (["api", "providers", "runtime", "spi"].contains(projectGroup)) {
       from jar
       into "${rootProject.ext.target_java8_dir}/" + "/lib"
@@ -198,10 +198,21 @@ task createJunitReport << {
 }
 build.finalizedBy createJunitReport
 
-task jacocoTestReport {
+task jacocoTestReport << {
+
   description = 'Generates a coverage report from all subprojects'
 
-  dependsOn(subprojects*.test, subprojects*.jar)
+  def libDir = new File("${target_java8_dir}", "lib")
+  def utilsDir = new File("${target_java8_dir}", "utils")
+  def connectorsDir = new File("${target_java8_dir}", "connectors")
+  def analyticsDir = new File("${target_java8_dir}", "analytics")
+  def consoleDir = new File("${target_java8_dir}", "console")
+
+  if( !libDir.exists() ) { libDir.mkdirs() }
+  if( !utilsDir.exists() ) { utilsDir.mkdirs() }
+  if( !connectorsDir.exists() ) { connectorsDir.mkdirs() }
+  if( !analyticsDir.exists() ) { analyticsDir.mkdirs() }
+  if( !consoleDir.exists() ) { consoleDir.mkdirs() }
 
   FileCollection executionData = files()
 
@@ -224,7 +235,7 @@ task jacocoTestReport {
     structure(name: project.name) {
       group(name: "Edgent API") {
         classfiles {
-          fileset(dir: "${target_java8_dir}", includes: "edgent.api.*.jar")
+          fileset(dir: "${target_java8_dir}/lib", includes: "edgent.api.*.jar")
         }
         sourcefiles {
           fileset(dir: "./api/function/src/main/java", includes: "**/*.java")
@@ -236,7 +247,7 @@ task jacocoTestReport {
       }
       group(name: "Edgent SPI") {
         classfiles {
-          fileset(dir: "${target_java8_dir}", includes: "edgent.spi.*.jar")
+          fileset(dir: "${target_java8_dir}/lib", includes: "edgent.spi.*.jar")
         }
         sourcefiles {
           fileset(dir: "./spi/graph/src/main/java", includes: "**/*.java")
@@ -245,7 +256,7 @@ task jacocoTestReport {
       }
       group(name: "Edgent Runtime") {
         classfiles {
-          fileset(dir: "${target_java8_dir}", includes: "edgent.runtime.*.jar")
+          fileset(dir: "${target_java8_dir}/lib", includes: "edgent.runtime.*.jar")
         }
         sourcefiles {
           fileset(dir: "./runtime/etiao/src/main/java", includes: "**/*.java")
@@ -254,16 +265,16 @@ task jacocoTestReport {
       }
       group(name: "Edgent Utilities") {
         classfiles {
-          fileset(dir: "${target_java8_dir}", includes: "edgent.utils.*.jar")
+          fileset(dir: "${target_java8_dir}/utils", includes: "**/edgent.utils.*.jar")
         }
         sourcefiles {
           fileset(dir: "./utils/metrics/src/main/java", includes: "**/*.java")
           fileset(dir: "./utils/streamscope/src/main/java", includes: "**/*.java")
         }
       }
-      group(name: "Edgent Utilities") {
+      group(name: "Edgent Connectors") {
         classfiles {
-          fileset(dir: "${target_java8_dir}", includes: "edgent.connectors.*.jar")
+          fileset(dir: "${target_java8_dir}/connectors", includes: "**/edgent.connectors.*.jar")
         }
         sourcefiles {
           fileset(dir: "./connectors/common/src/main/java", includes: "**/*.java")
@@ -280,12 +291,40 @@ task jacocoTestReport {
           fileset(dir: "./connectors/wsclient-javax.websocket/src/main/java", includes: "**/*.java")
         }
       }
+      group(name: "Edgent Providers") {
+        classfiles {
+          fileset(dir: "${target_java8_dir}/lib", includes: "edgent.providers.*.jar")
+        }
+        sourcefiles {
+          fileset(dir: "./providers/direct/src/main/java", includes: "**/*.java")
+          fileset(dir: "./providers/development/src/main/java", includes: "**/*.java")
+        }
+      }
+      group(name: "Edgent Analytics") {
+        classfiles {
+          fileset(dir: "${target_java8_dir}/analytics", includes: "**/edgent.analytics.*.jar")
+        }
+        sourcefiles {
+          fileset(dir: "./analytics/math3/src/main/java", includes: "**/*.java")
+          fileset(dir: "./analytics/sensors/src/main/java", includes: "**/*.java")
+        }
+      }
+      group(name: "Edgent Console") {
+        classfiles {
+          fileset(dir: "${target_java8_dir}/console", includes: "**/edgent.console.*.jar")
+        }
+        sourcefiles {
+          fileset(dir: "./console/server/src/main/java", includes: "**/*.java")
+          fileset(dir: "./console/servlets/src/main/java", includes: "**/*.java")
+        }
+      }
     }
     html(destdir: "${target_report_dir}/coverage/")
     xml(destfile: "${target_report_dir}/coverage/jacoco-sessions.xml")
   }
 }
 build.finalizedBy jacocoTestReport
+jacocoTestReport.dependsOn subprojects*.test, subprojects*.copyJar
 
 //Create JavaDoc
 task aggregateJavadoc(type: Javadoc) {
