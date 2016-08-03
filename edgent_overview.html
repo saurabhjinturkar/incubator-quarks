@@ -109,7 +109,7 @@ However Edgent allows arbitrary topologies including:
 <LI>Multiple sinks in an application </LI>
 <LI>Multiple processing including sinks against a stream (fan-out)</LI>
 <LI>Union of streams (fan-in)  </LI>
-<LI>Correlation of streams by allowing streams to be joined (to be added)</LI>
+<LI>Correlation of streams by allowing streams to be joined</LI>
 </UL>
 <H3>Graph API</H3>
 <H4>Overview</H4>
@@ -196,8 +196,10 @@ Feel free to explore them.
 You need to include one or more Edgent jars in your {@code classpath} depending
 on what features your application uses.
 <P>
-Include one or both of the following:
+Include one or more of the topology providers:
 <ul>
+<li>{@code <edgent-target>/lib/edgent.providers.iot.jar} - if you use the
+{@link org.apache.edgent.providers.iot.IotProvider IotProvider}</li>
 <li>{@code <edgent-target>/lib/edgent.providers.direct.jar} - if you use the
 {@link org.apache.edgent.providers.direct.DirectProvider DirectProvider}</li>
 <li>{@code <edgent-target>/lib/edgent.providers.development.jar} - if you use the
@@ -205,11 +207,15 @@ Include one or both of the following:
 </ul>
 Include the jar of any Edgent connector you use:
 <ul>
+<li>{@code <edgent-target>/connectors/command/lib/edgent.connectors.command.jar}</li>
+<li>{@code <edgent-target>/connectors/csv/lib/edgent.connectors.csv.jar}</li>
 <li>{@code <edgent-target>/connectors/file/lib/edgent.connectors.file.jar}</li>
+<li>{@code <edgent-target>/connectors/http/lib/edgent.connectors.http.jar}</li>
+<li>{@code <edgent-target>/connectors/iotp/lib/edgent.connectors.iotp.jar}</li>
 <li>{@code <edgent-target>/connectors/jdbc/lib/edgent.connectors.jdbc.jar}</li>
-<li>{@code <edgent-target>/connectors/iotf/lib/edgent.connectors.iotf.jar}</li>
 <li>{@code <edgent-target>/connectors/kafka/lib/edgent.connectors.kafka.jar}</li>
 <li>{@code <edgent-target>/connectors/mqtt/lib/edgent.connectors.mqtt.jar}</li>
+<li>{@code <edgent-target>/connectors/pubsub/lib/edgent.connectors.pubsub.jar}</li>
 <li>{@code <edgent-target>/connectors/wsclient-javax.websocket/lib/edgent.connectors.wsclient.javax.websocket.jar} [*]</li>
 </ul>
 [*] You also need to include a {@code javax.websocket} client implementation
