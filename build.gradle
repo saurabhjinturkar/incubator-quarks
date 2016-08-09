@@ -11,6 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+defaultTasks 'all'
+ 
 /* Configure root project */
 allprojects {
   apply plugin: 'idea'
@@ -26,10 +29,12 @@ allprojects {
 }
 
 ext {
+  commithash_error = ''
   commithash = {
     try {
       return "git rev-parse --short HEAD".execute().text.trim()
     } catch (Exception e) {
+      ext.commithash_error = e
       return ''
     }
   }()
@@ -41,7 +46,10 @@ ext {
                    'io.dropwizard.metrics:metrics-core:3.1.2']
   target_dir = "$distsDir"
   target_java8_dir = "${ext.target_dir}/java8"
-  target_javadoc_dir = "${ext.target_dir}/docs/javadoc"
+  target_java7_dir = "${ext.target_dir}/java7"
+  target_android_dir = "${ext.target_dir}/android"
+  target_docs_dir = "${ext.target_dir}/docs"
+  target_javadoc_dir = "${ext.target_docs_dir}/javadoc"
   target_report_dir = "${ext.target_dir}/reports"
 }
 
@@ -127,6 +135,9 @@ subprojects {
     }
   }
   jar {
+    // TODO fix this - this dependency handling shouldn't occur here,
+    // rather :console:server should dependOn :console:servlets
+    // (really the server doesn't exist w/o the servlets)
     if(it.path == ":test:fvtiot" ||  it.path == ":providers:development") {
       dependsOn ":console:servlets"
     }
@@ -160,16 +171,14 @@ subprojects {
   }
 
   copyJar.dependsOn assemble
-  build.dependsOn copyJar
 }
 
-task copyScript {
-  copy {
-    includeEmptyDirs = false
-    from "scripts/"
-    into "${rootProject.ext.target_java8_dir}/scripts/"
-    include "**/*"
-  }
+task copyScripts(type: Copy) {
+  description = 'Copy scripts to target_java8_dir'
+  includeEmptyDirs = false
+  from "scripts/"
+  into "${rootProject.ext.target_java8_dir}/scripts/"
+  include "**/*"
 }
 
 //Create Junit Report
@@ -324,13 +333,12 @@ task jacocoTestReport << {
   }
 }
 build.finalizedBy jacocoTestReport
-jacocoTestReport.dependsOn subprojects*.test, subprojects*.copyJar
+// jacocoTestReport.dependsOn subprojects*.test, subprojects*.copyJar
+jacocoTestReport.dependsOn subprojects*.test
 
-//Create JavaDoc
 task aggregateJavadoc(type: Javadoc) {
-  description = 'Generates a Javadoc from all subprojects'
-
-  dependsOn(subprojects*.test, subprojects*.jar)
+  description = 'Create all javadoc into target_dir/docs/javadoc'
+  dependsOn(subprojects*.jar)    // why is this needed?
   destinationDir file("$rootProject.ext.target_javadoc_dir")
   options.addStringOption('Xdoclint:none', '-quiet')
   configure(options) {
@@ -372,7 +380,79 @@ task aggregateJavadoc(type: Javadoc) {
     }
   }
 }
-build.finalizedBy aggregateJavadoc
+
+task copyJars(dependsOn: subprojects*.copyJar) {
+  description = 'copyJar aggregator'
+}
+
+task addVersionDotTxt {
+  description = 'Add version.txt in target_dir'
+  doLast {
+    def map = [
+      DSTAMP: "$DSTAMP",
+      TSTAMP: "$TSTAMP",
+      commithash: "$commithash",
+      'commithash.error': "$commithash_error",
+      'edgent.version': "$build_version",
+      ]
+    def f = new File("${rootProject.ext.target_dir}/version.txt");
+    f.createNewFile()
+    map.forEach { k,v -> f.append "$k=$v\n" }
+  }
+}
+
+task mkTargetDir << {
+    def d = new File(rootProject.ext.target_dir);
+    if( !d.exists() ) { d.mkdirs() }
+}
+
+task addMiscDistFiles {
+  description = 'Add misc things to target_dir'
+  dependsOn 'mkTargetDir', 'addVersionDotTxt'
+  addVersionDotTxt.mustRunAfter mkTargetDir
+  doLast {
+    copy { from 'LICENSE'; into target_dir }
+    copy { from 'README.md'; into target_dir }
+  }
+}
+
+task releaseTarGz(type: Tar) {
+  description = 'Create tgz in target_dir'
+  archiveName = "${build_name}-v${build_version}-${DSTAMP}-${TSTAMP}.tgz"
+  compression = Compression.GZIP
+  destinationDir = new File("${target_dir}/../release-edgent")
+  duplicatesStrategy 'exclude'
+  into "${build_name}"
+  // make some things first in the tgz
+  from "${rootProject.ext.target_dir}/LICENSE"
+  from "${rootProject.ext.target_dir}/README.md"
+  from "${rootProject.ext.target_dir}/version.txt"
+  from rootProject.ext.target_dir
+  doLast {
+    ant.checksum algorithm: 'md5', file: archivePath
+    ant.checksum algorithm: 'sha1', file: archivePath
+    println "created $destinationDir/$archiveName"
+  }
+}  
+
+task all {
+  description = 'Assemble distribution artifacts and populate the target_dir with jars, doc, etc.'
+  dependsOn('copyJars', 'copyScripts', 'aggregateJavadoc')
+}
+
+task cleanAll {
+  description = 'clean aggregator'  // e.g., release dependsOn clean only does top-level clean
+  dependsOn 'clean'  // top-level clean too
+  dependsOn subprojects*.clean
+}
+
+task release {
+  description = 'Assemble distribution artifacts, populate target_dir, and create a release tgz'
+  dependsOn('cleanAll', 'addMiscDistFiles', 'all', 'releaseTarGz')
+  addMiscDistFiles.mustRunAfter cleanAll
+  all.mustRunAfter addMiscDistFiles
+  releaseTarGz.mustRunAfter all
+}
 
 task wrapper(type: Wrapper) {
   jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
