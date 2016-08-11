@@ -18,7 +18,6 @@ defaultTasks 'all'
 allprojects {
   apply plugin: 'idea'
   apply plugin: 'eclipse'
-  apply plugin: 'java'
 
   repositories {
     mavenCentral()
@@ -27,6 +26,8 @@ allprojects {
     }
   }
 }
+
+apply plugin: 'java'
 
 ext {
   commithash_error = ''
@@ -51,11 +52,28 @@ ext {
   target_docs_dir = "${ext.target_dir}/docs"
   target_javadoc_dir = "${ext.target_docs_dir}/javadoc"
   target_report_dir = "${ext.target_dir}/reports"
+  
+  aggregatorOnlyProjects = [
+    ':analytics', ':api', ':apps',
+    ':connectors', ':console', ':providers',
+    ':runtime', ':samples', ':spi',
+    ':test', ':utils'
+  ]
+  
+  filteredSubprojects = subprojects*.findAll { 
+    project -> !aggregatorOnlyProjects.contains(project.path)
+  }
 }
 
 /* Configure subprojects */
 subprojects {
 
+  // ignore aggregator only projects so we don't assemble empty jars, etc for them.
+  if (aggregatorOnlyProjects.contains(project.path)) {
+    return
+  }
+
+  apply plugin: 'java'
   apply plugin: "jacoco"
 
   if (buildFile.isFile() && !buildFile.exists()) {
@@ -104,6 +122,9 @@ subprojects {
   }
 
   test {
+    // TODO fix this - this dependency handling shouldn't occur here,
+    // rather :console:server should dependOn :console:servlets
+    // (really the server doesn't exist w/o the servlets)
     if(it.path == ":test:fvtiot" ||  it.path == ":providers:development") {
       dependsOn ":console:servlets"
     }
@@ -145,32 +166,41 @@ subprojects {
   }
 
   task copyJar(type: Copy) {
+    description = "Copy subproject's assembled artifacts to target_dir (implicitly builds jars due to 'from jar')"
     def projectGroup = "$project.group".replace("edgent.", "")
 
     if (["api", "providers", "runtime", "spi"].contains(projectGroup)) {
+      // println "copyJar(cfg) lib $project.group $projectGroup $project.name $jar.archiveName"
       from jar
-      into "${rootProject.ext.target_java8_dir}/" + "/lib"
+      into "${rootProject.ext.target_java8_dir}/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
-    } else if (["samples"].contains(projectGroup)) {
+    } 
+    else if (["samples"].contains(projectGroup)) {
+      // println "copyJar(cfg) samples $project.group $projectGroup $project.name $jar.archiveName"
       from jar
-      into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/lib"
+      into "${rootProject.ext.target_java8_dir}/$projectGroup/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
 
       //Copy Sample SRC to dist
-      copy {
-        into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/src/$project.name/src/main/java/"
-        from(sourceSets.main.allSource.srcDirs) {
-          include '**/*.java'
+      doLast {
+        copy {
+          from(sourceSets.main.allSource.srcDirs) {
+            include '**/*.java'
+          }
+          into "${rootProject.ext.target_java8_dir}/$projectGroup/src/$project.name/src/main/java/"
         }
       }
-    } else {
+    } 
+    else {
+      // println "copyJar(cfg) other $project.group $projectGroup $project.name $jar.archiveName"
       from jar
-      into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name".replaceAll(":", "/") + "/lib"
+      into "${rootProject.ext.target_java8_dir}/$projectGroup/$project.name/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
     }
   }
-
-  copyJar.dependsOn assemble
+  
+  // assemble: inject updating target_dir 
+  assemble.finalizedBy copyJar
 }
 
 task copyScripts(type: Copy) {
@@ -192,7 +222,7 @@ dependencies {
 }
 
 task createJunitReport << {
-  description = 'Generates a Junit report from all subprojects'
+  description = "Generates a Junit report from all subprojects (use after 'test')"
 
   ant.taskdef(name: 'junitreport',
           classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
@@ -201,15 +231,13 @@ task createJunitReport << {
     fileset(dir: './') {
       include(name: '**/test-results/TEST-*.xml')
     }
-    report(format: 'frames', todir: "${target_report_dir}/junit")
+    report(format: 'frames', todir: "${target_report_dir}/tests")
   }
   ant.move(file: "TESTS-TestSuites.xml", tofile: "${target_report_dir}/TESTS-TestSuites.xml")
 }
-build.finalizedBy createJunitReport
 
 task jacocoTestReport << {
-
-  description = 'Generates a coverage report from all subprojects'
+  description = "Generates a coverage report from all subprojects (use after 'test')"
 
   def libDir = new File("${target_java8_dir}", "lib")
   def utilsDir = new File("${target_java8_dir}", "utils")
@@ -241,10 +269,18 @@ task jacocoTestReport << {
       executionData.addToAntBuilder(ant, 'resources')
     }
 
+    // the 'test' task directly uses the built class files
+    // (test doesn't assemble jars nor populate target_dir with them)
+    jococoClassfilesFromJars = false;
+    
     structure(name: project.name) {
       group(name: "Edgent API") {
         classfiles {
-          fileset(dir: "${target_java8_dir}/lib", includes: "edgent.api.*.jar")
+          if (jococoClassfilesFromJars) {
+            fileset(dir: "${target_java8_dir}/lib", includes: "edgent.api.*.jar")
+          } else {
+            fileset(dir: "api", includes: "**/*.class")
+          }
         }
         sourcefiles {
           fileset(dir: "./api/function/src/main/java", includes: "**/*.java")
@@ -256,7 +292,11 @@ task jacocoTestReport << {
       }
       group(name: "Edgent SPI") {
         classfiles {
-          fileset(dir: "${target_java8_dir}/lib", includes: "edgent.spi.*.jar")
+          if (jococoClassfilesFromJars) {
+            fileset(dir: "${target_java8_dir}/lib", includes: "edgent.spi.*.jar")
+          } else {
+            fileset(dir: "spi", includes: "**/*.class")
+          }
         }
         sourcefiles {
           fileset(dir: "./spi/graph/src/main/java", includes: "**/*.java")
@@ -265,7 +305,11 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Runtime") {
         classfiles {
-          fileset(dir: "${target_java8_dir}/lib", includes: "edgent.runtime.*.jar")
+          if (jococoClassfilesFromJars) {
+            fileset(dir: "${target_java8_dir}/lib", includes: "edgent.runtime.*.jar")
+          } else {
+            fileset(dir: "runtime", includes: "**/*.class")
+          }
         }
         sourcefiles {
           fileset(dir: "./runtime/etiao/src/main/java", includes: "**/*.java")
@@ -274,7 +318,11 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Utilities") {
         classfiles {
-          fileset(dir: "${target_java8_dir}/utils", includes: "**/edgent.utils.*.jar")
+          if (jococoClassfilesFromJars) {
+            fileset(dir: "${target_java8_dir}/utils", includes: "**/edgent.utils.*.jar")
+          } else { 
+            fileset(dir: "utils", includes: "**/*.class")
+          }
         }
         sourcefiles {
           fileset(dir: "./utils/metrics/src/main/java", includes: "**/*.java")
@@ -283,7 +331,11 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Connectors") {
         classfiles {
-          fileset(dir: "${target_java8_dir}/connectors", includes: "**/edgent.connectors.*.jar")
+          if (jococoClassfilesFromJars) {
+            fileset(dir: "${target_java8_dir}/connectors", includes: "**/edgent.connectors.*.jar")
+          } else { 
+            fileset(dir: "connectors", includes: "**/*.class")
+          }
         }
         sourcefiles {
           fileset(dir: "./connectors/common/src/main/java", includes: "**/*.java")
@@ -302,7 +354,11 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Providers") {
         classfiles {
-          fileset(dir: "${target_java8_dir}/lib", includes: "edgent.providers.*.jar")
+          if (jococoClassfilesFromJars) {
+            fileset(dir: "${target_java8_dir}/lib", includes: "edgent.providers.*.jar")
+          } else {
+            fileset(dir: "providers", includes: "**/*.class")
+          }
         }
         sourcefiles {
           fileset(dir: "./providers/direct/src/main/java", includes: "**/*.java")
@@ -311,7 +367,11 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Analytics") {
         classfiles {
-          fileset(dir: "${target_java8_dir}/analytics", includes: "**/edgent.analytics.*.jar")
+          if (jococoClassfilesFromJars) {
+            fileset(dir: "${target_java8_dir}/analytics", includes: "**/edgent.analytics.*.jar")
+          } else {
+            fileset(dir: "analytics", includes: "**/*.class")
+          }
         }
         sourcefiles {
           fileset(dir: "./analytics/math3/src/main/java", includes: "**/*.java")
@@ -320,7 +380,11 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Console") {
         classfiles {
-          fileset(dir: "${target_java8_dir}/console", includes: "**/edgent.console.*.jar")
+          if (jococoClassfilesFromJars) {
+            fileset(dir: "${target_java8_dir}/console", includes: "**/edgent.console.*.jar")
+          } else {
+            fileset(dir: "console", includes: "**/*.class")
+          }
         }
         sourcefiles {
           fileset(dir: "./console/server/src/main/java", includes: "**/*.java")
@@ -332,13 +396,9 @@ task jacocoTestReport << {
     xml(destfile: "${target_report_dir}/coverage/jacoco-sessions.xml")
   }
 }
-build.finalizedBy jacocoTestReport
-// jacocoTestReport.dependsOn subprojects*.test, subprojects*.copyJar
-jacocoTestReport.dependsOn subprojects*.test
 
 task aggregateJavadoc(type: Javadoc) {
   description = 'Create all javadoc into target_dir/docs/javadoc'
-  dependsOn(subprojects*.jar)    // why is this needed?
   destinationDir file("$rootProject.ext.target_javadoc_dir")
   options.addStringOption('Xdoclint:none', '-quiet')
   configure(options) {
@@ -381,10 +441,6 @@ task aggregateJavadoc(type: Javadoc) {
   }
 }
 
-task copyJars(dependsOn: subprojects*.copyJar) {
-  description = 'copyJar aggregator'
-}
-
 task addVersionDotTxt {
   description = 'Add version.txt in target_dir'
   doLast {
@@ -408,7 +464,7 @@ task mkTargetDir << {
 
 task addMiscDistFiles {
   description = 'Add misc things to target_dir'
-  dependsOn 'mkTargetDir', 'addVersionDotTxt'
+  dependsOn mkTargetDir, addVersionDotTxt
   addVersionDotTxt.mustRunAfter mkTargetDir
   doLast {
     copy { from 'LICENSE'; into target_dir }
@@ -436,22 +492,33 @@ task releaseTarGz(type: Tar) {
 }  
 
 task all {
-  description = 'Assemble distribution artifacts and populate the target_dir with jars, doc, etc.'
-  dependsOn('copyJars', 'copyScripts', 'aggregateJavadoc')
+  description = "Assemble distribution artifacts and populate the target_dir with jars, doc, etc. Like 'build' w/o 'test'"
+  dependsOn filteredSubprojects*.assemble, copyScripts, aggregateJavadoc
 }
 
 task cleanAll {
-  description = 'clean aggregator'  // e.g., release dependsOn clean only does top-level clean
-  dependsOn 'clean'  // top-level clean too
-  dependsOn subprojects*.clean
+  description = 'clean aggregator'  // "release dependsOn clean" only does top-level clean
+  dependsOn clean, filteredSubprojects*.clean
 }
 
 task release {
   description = 'Assemble distribution artifacts, populate target_dir, and create a release tgz'
-  dependsOn('cleanAll', 'addMiscDistFiles', 'all', 'releaseTarGz')
+  dependsOn cleanAll, addMiscDistFiles, all, releaseTarGz
   addMiscDistFiles.mustRunAfter cleanAll
   all.mustRunAfter addMiscDistFiles
   releaseTarGz.mustRunAfter all
+}
+
+task reports {
+  description = "Generate JUnit and Coverage reports of prior test run. Use after 'test'"
+  dependsOn createJunitReport, jacocoTestReport
+}
+
+// build: inject test report generation and javadoc generation (for early problem detection)
+// make 'build' like "all test reports"
+build {
+  dependsOn filteredSubprojects*.build, aggregateJavadoc, copyScripts
+  finalizedBy reports // after build's test task
 }
 
 task wrapper(type: Wrapper) {
