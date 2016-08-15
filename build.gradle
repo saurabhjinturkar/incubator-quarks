@@ -31,10 +31,10 @@ System.out.println("version=${version}")
 group = 'org.apache.edgent'
 
 def getDate() {
-        if (!hasProperty('buildDate') || buildDate == null) {
-                ext.buildDate = new java.util.Date().format('yyyyMMddHHmm');
-        }
-        return ext.buildDate;
+  if (!hasProperty('buildDate') || buildDate == null) {
+     ext.buildDate = new java.util.Date().format('yyyyMMddHHmm');
+  }
+  return ext.buildDate;
 }
 
 getDate();
@@ -150,9 +150,9 @@ subprojects {
   }
 
   task sourceJar(type: Jar) {
-                // baseName-appendix-version-classifier.extension
-                from sourceSets.main.allJava
-                classifier = 'sources'
+    // baseName-appendix-version-classifier.extension
+    from sourceSets.main.allJava
+    classifier = 'sources'
   }
 
 
@@ -183,19 +183,17 @@ subprojects {
   }
 
   publishing {
-                publications {
-                        mavenJava(MavenPublication) {
-                                from components.java
-                                artifactId = artifact
-                                artifact sourceJar
-                                //artifact javadocJar
-                                //artifact testJar
-                                pom.withXml {
-                                        // Example of appending more information to pom.
-                                        //asNode().appendNode('description', 'A demonstration of Maven POM customization')
-                                }
-                        }
-                }
+     publications {
+        mavenJava(MavenPublication) {
+           from components.java
+           artifactId = artifact
+           artifact sourceJar
+           //artifact javadocJar
+           //artifact testJar
+           pom.withXml {
+           }
+        }
+     }
   }
 
   copyJar.dependsOn assemble
