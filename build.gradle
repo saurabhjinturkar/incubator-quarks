@@ -194,6 +194,16 @@ subprojects {
       from jar
       into "${rootProject.ext.target_java8_dir}/$projectGroup/$project.name/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
+      
+      // Copy console.war  (should be more general but this works for now)
+      if (projectGroup == 'console' && project.name == 'servlets') {
+        doLast {
+          copy {
+            from war
+            into "${rootProject.ext.target_java8_dir}/$projectGroup/webapps"
+          }
+        }
+      } 
     }
   }
   
