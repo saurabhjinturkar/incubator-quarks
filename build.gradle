@@ -25,6 +25,21 @@ allprojects {
   }
 }
 
+/* SET PROJECT INFO for all artifacts */
+assert hasProperty('version')   // See version in gradle.properties.
+System.out.println("version=${version}")
+group = 'org.apache.edgent'
+
+def getDate() {
+        if (!hasProperty('buildDate') || buildDate == null) {
+                ext.buildDate = new java.util.Date().format('yyyyMMddHHmm');
+        }
+        return ext.buildDate;
+}
+
+getDate();
+
+
 ext {
   commithash = {
     try {
@@ -47,9 +62,10 @@ ext {
 
 /* Configure subprojects */
 subprojects {
-
+  apply plugin: 'maven-publish'
   apply plugin: "jacoco"
-
+  ext.artifact = project.name
+  
   if (buildFile.isFile() && !buildFile.exists()) {
     configurations.create('default')
     return
@@ -133,6 +149,13 @@ subprojects {
     configure jarOptions
   }
 
+  task sourceJar(type: Jar) {
+                // baseName-appendix-version-classifier.extension
+                from sourceSets.main.allJava
+                classifier = 'sources'
+  }
+
+
   task copyJar(type: Copy) {
     def projectGroup = "$project.group".replace("edgent.", "")
 
@@ -157,6 +180,22 @@ subprojects {
       into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name".replaceAll(":", "/") + "/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
     }
+  }
+
+  publishing {
+                publications {
+                        mavenJava(MavenPublication) {
+                                from components.java
+                                artifactId = artifact
+                                artifact sourceJar
+                                //artifact javadocJar
+                                //artifact testJar
+                                pom.withXml {
+                                        // Example of appending more information to pom.
+                                        //asNode().appendNode('description', 'A demonstration of Maven POM customization')
+                                }
+                        }
+                }
   }
 
   copyJar.dependsOn assemble
