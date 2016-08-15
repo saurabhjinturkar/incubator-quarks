@@ -12,7 +12,7 @@
  * limitations under the License.
  */
  
-defaultTasks 'all'
+defaultTasks 'assemble'
  
 /* Configure root project */
 allprojects {
@@ -184,9 +184,7 @@ subprojects {
       //Copy Sample SRC to dist
       doLast {
         copy {
-          from(sourceSets.main.allSource.srcDirs) {
-            include '**/*.java'
-          }
+          from(sourceSets.main.allSource.srcDirs) { include '**/*.java' }
           into "${rootProject.ext.target_java8_dir}/$projectGroup/src/$project.name/src/main/java/"
         }
       }
@@ -206,9 +204,8 @@ subprojects {
 task copyScripts(type: Copy) {
   description = 'Copy scripts to target_java8_dir'
   includeEmptyDirs = false
-  from "scripts/"
+  from("scripts/") { include "**/*" }
   into "${rootProject.ext.target_java8_dir}/scripts/"
-  include "**/*"
 }
 
 //Create Junit Report
@@ -228,9 +225,7 @@ task createJunitReport << {
           classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
           classpath: configurations.junitLibs.asPath)
   ant.junitreport(todir: './') {
-    fileset(dir: './') {
-      include(name: '**/test-results/TEST-*.xml')
-    }
+    fileset(dir: './', includes: '**/test-results/TEST-*.xml')
     report(format: 'frames', todir: "${target_report_dir}/tests")
   }
   ant.move(file: "TESTS-TestSuites.xml", tofile: "${target_report_dir}/TESTS-TestSuites.xml")
@@ -491,9 +486,13 @@ task releaseTarGz(type: Tar) {
   }
 }  
 
-task all {
+assemble {
   description = "Assemble distribution artifacts and populate the target_dir with jars, doc, etc. Like 'build' w/o 'test'"
-  dependsOn filteredSubprojects*.assemble, copyScripts, aggregateJavadoc
+  dependsOn filteredSubprojects*.assemble, aggregateJavadoc, copyScripts
+}
+
+task all(dependsOn: assemble) {
+  description = "alias for 'assemble'"
 }
 
 task cleanAll {
@@ -503,10 +502,10 @@ task cleanAll {
 
 task release {
   description = 'Assemble distribution artifacts, populate target_dir, and create a release tgz'
-  dependsOn cleanAll, addMiscDistFiles, all, releaseTarGz
+  dependsOn cleanAll, addMiscDistFiles, assemble, releaseTarGz
   addMiscDistFiles.mustRunAfter cleanAll
   all.mustRunAfter addMiscDistFiles
-  releaseTarGz.mustRunAfter all
+  releaseTarGz.mustRunAfter assemble
 }
 
 task reports {
@@ -517,7 +516,7 @@ task reports {
 // build: inject test report generation and javadoc generation (for early problem detection)
 // make 'build' like "all test reports"
 build {
-  dependsOn filteredSubprojects*.build, aggregateJavadoc, copyScripts
+  dependsOn filteredSubprojects*.build
   finalizedBy reports // after build's test task
 }
 

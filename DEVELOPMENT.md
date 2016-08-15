@@ -108,16 +108,17 @@ Work is ongoing to replace the Ant based build system with a Gradle based one
 be complete.
 
 **TODO: The primary build process is using Gradle, any pull request is expected to
-maintain the build success of `clean, all, test`.**
+maintain the build success of `clean, assemble, test, reports`.**
 
 The Gradle wrapper `edgent/{gradlew,gradlew.bat}` should be used to ensure an appropriate
-version of Gradle is used.  e.g.  `$ ./gradlew clean all test reports`
+version of Gradle is used.  e.g.  `$ ./gradlew clean build`
 
 The top-level Gradle file is `edgent/build.gradle` and contains several
 unique tasks: 
 
-* `all` (default) : Build all code and Javadoc into `build\distributions`. The build will fail on any code error or Javadoc warning or error.
-* `build` : essentially like "all test reports"
+* `assemble` (default) : Build all code and Javadoc into `build\distributions`. The build will fail on any code error or Javadoc warning or error.
+* `all` : synonym for `assemble`
+* `build` : essentially like "assemble test reports"
 * `clean` : Clean the project
 * `test` : Run the JUnit tests, if any test fails the test run stops.
   * use a project test task and optionally the `--tests` option to run a subset of the tests:
