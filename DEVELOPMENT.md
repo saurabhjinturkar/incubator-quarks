@@ -101,6 +101,42 @@ Running the reports target produces two reports:
 * `reports/junit/index.html` - JUnit test report
 * `reports/coverage/index.html` - Code coverage report.
 
+### [WIP] Building With Gradle
+
+Work is ongoing to replace the Ant based build system with a Gradle based one
+[EDGENT-139].  Delivered functionality is expected to work though is not yet
+be complete.
+
+**TODO: The primary build process is using Gradle, any pull request is expected to
+maintain the build success of `clean, assemble, test, reports`.**
+
+The Gradle wrapper `edgent/{gradlew,gradlew.bat}` should be used to ensure an appropriate
+version of Gradle is used.  e.g.  `$ ./gradlew clean build`
+
+The top-level Gradle file is `edgent/build.gradle` and contains several
+unique tasks: 
+
+* `assemble` (default) : Build all code and Javadoc into `build\distributions`. The build will fail on any code error or Javadoc warning or error.
+* `all` : synonym for `assemble`
+* `build` : essentially like "assemble test reports"
+* `clean` : Clean the project
+* `test` : Run the JUnit tests, if any test fails the test run stops.
+  * use a project test task and optionally the `--tests` option to run a subset of the tests:
+    * `./gradlew <project>:test`
+    * `./gradlew <project>:test --tests '*.SomeTest'`
+    * `./gradlew <project>:test --tests '*.SomeTest.someMethod'`
+* `reports` : Generate JUnit and Code Coverage reports in `build\distributions\reports`. Use after executing the `test` target. 
+  * `reports\tests\overview-summary.html` - JUnit test report
+  * `reports\coverage\index.html` - Code coverage report
+* `release` : Build a release bundle in `build/release-edgent`, **TODO: that includes subsets of the Edgent jars that run on Java 7 (`build/distributions/java7`) and Android (`build/distributions/android`)**.
+
+The build process has been tested on Linux and MacOSX.
+
+To build on Windows probably needs some changes, please get involved and contribute them!
+
+**TODO: Continuous Integration with Gradle**
+
+
 ### Code Layout
 
 The code is broken into a number of projects and modules within those projects defined by directories under `edgent`.

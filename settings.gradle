@@ -11,6 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+// N.B. if you add a subproject to a new 'aggregator only' project
+// adjust the 'aggregatorOnlyProjects' list in build.gradle
+
 include 'api:function'
 include 'api:execution'
 include 'api:window'
