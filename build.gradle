@@ -29,20 +29,6 @@ allprojects {
 
 apply plugin: 'java'
 
-/* SET PROJECT INFO for all artifacts */
-assert hasProperty('version')   // See version in gradle.properties.
-System.out.println("version=${version}")
-group = 'org.apache.edgent'
-
-def getDate() {
-  if (!hasProperty('buildDate') || buildDate == null) {
-     ext.buildDate = new java.util.Date().format('yyyyMMddHHmm');
-  }
-  return ext.buildDate;
-}
-
-getDate();
-
 
 ext {
   commithash_error = ''
@@ -92,7 +78,8 @@ subprojects {
   apply plugin: 'java'
   apply plugin: "jacoco"
   ext.artifact = project.name
-  
+  //group = 'org.apache.edgent'
+ 
   if (buildFile.isFile() && !buildFile.exists()) {
     configurations.create('default')
     return
@@ -234,13 +221,12 @@ subprojects {
   publishing {
      publications {
         mavenJava(MavenPublication) {
-           from components.java
-           artifactId = artifact
+	   groupId "org.apache.edgent"
+           artifactId "$project.group".replace("edgent.", "") + "." + artifact
+	   version build_version
            artifact sourceJar
-           //artifact javadocJar
-           //artifact testJar
-           pom.withXml {
-           }
+
+	   from components.java
         }
      }
   }
