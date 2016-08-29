@@ -134,7 +134,23 @@ The build process has been tested on Linux and MacOSX.
 
 To build on Windows probably needs some changes, please get involved and contribute them!
 
-**TODO: Continuous Integration with Gradle**
+#### Publish to Maven Repository
+
+Initial support for publishing to a local Maven repository has been added.
+Use the following to do the publish.
+
+```
+./gradlew publishToMavenLocal
+```
+
+The component jars / wars are published as well as their sources.
+The published groupId is `org.apache.edgent`. The artifactIds match the
+names of the jars in the target-dir / release tgz.
+
+E.g. `org.apache.edgent:edgent.api.topology:0.4.0`
+
+
+#### **TODO: Continuous Integration with Gradle**
 
 
 ### Code Layout

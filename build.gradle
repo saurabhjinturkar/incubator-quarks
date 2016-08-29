@@ -25,6 +25,8 @@ allprojects {
       url 'https://repo.eclipse.org/content/repositories/paho-snapshots/'
     }
   }
+
+  project.version = build_version
 }
 
 apply plugin: 'java'
@@ -90,7 +92,6 @@ subprojects {
   } else {
     archivesBaseName = "${rootProject.name}${project.path.replace(':', '.')}"
   }
-  version = build_version
 
   dependencies {
     testCompile 'junit:junit:4.10'
@@ -169,13 +170,6 @@ subprojects {
     configure jarOptions
   }
 
-  task sourceJar(type: Jar) {
-    // baseName-appendix-version-classifier.extension
-    from sourceSets.main.allJava
-    classifier = 'sources'
-  }
-
-
   task copyJar(type: Copy) {
     description = "Copy subproject's assembled artifacts to target_dir (implicitly builds jars due to 'from jar')"
     def projectGroup = "$project.group".replace("edgent.", "")
@@ -217,19 +211,31 @@ subprojects {
       } 
     }
   }
+  
+  task sourceJar(type: Jar) {
+    // baseName-appendix-version-classifier.extension
+    from sourceSets.main.allJava
+    classifier = 'sources'
+  }  
 
+  // support for 'gradle publishToMavanLocal' etc 
+  // TODO publishing test.{fvt,svt} and samples ... doesn't seem desirable? e.g., we're excluding test.{fvt,svt} jars from the tgz
   publishing {
-     publications {
-        mavenJava(MavenPublication) {
-	   groupId "org.apache.edgent"
-           artifactId "$project.group".replace("edgent.", "") + "." + artifact
-	   version build_version
-           artifact sourceJar
-
-	   from components.java
+    publications {
+      mavenJava(MavenPublication) {
+        // specify dependencies like: org.apache.edgent:edgent.api.topology:0.4.0
+        groupId = build_group
+        artifactId = "${project.group}.${project.name}" 
+        artifact sourceJar
+        if (project.pluginManager.hasPlugin('war')) {
+          from components.web
         }
-     }
-  }
+        else {
+          from components.java
+        }
+      }
+    }
+  }  
   
   // assemble: inject updating target_dir 
   assemble.finalizedBy copyJar
