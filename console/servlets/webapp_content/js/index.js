@@ -164,8 +164,10 @@ var margin = {top: 30, right: 5, bottom: 6, left: 30},
 var svgLegend = d3.select("#graphLegend")
 	.append("svg")
 	.attr("height", 600)
+	.attr("width", 340)
+	.attr("transform", "translate(0," + 30 + ")")
   	.append("g")
-  	.attr("width", 300)
+  	.attr("width", 340)
     .attr("height", 600)
   	.attr("id", "legendG")
   	.attr("transform", "translate(0," + 30 + ")");
