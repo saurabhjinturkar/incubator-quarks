@@ -25,7 +25,7 @@ allprojects {
       url 'https://repo.eclipse.org/content/repositories/paho-snapshots/'
     }
   }
-
+  
   project.version = build_version
 }
 
@@ -55,7 +55,15 @@ ext {
   target_docs_dir = "${ext.target_dir}/docs"
   target_javadoc_dir = "${ext.target_docs_dir}/javadoc"
   target_report_dir = "${ext.target_dir}/reports"
+ 
+  // project groups whose jars are to be placed in target_java8_lib
+  // instead of the default "$target_java8_dir/$simpleProjectGroup/$project.name/lib"
+  //         e.g., "$target_java8_dir/lib" for api/topology
+  //         "$target_java8_dir/connectors/iotp/lib" for connectors/iotp
+  //
+  target_java8_lib_groups = ["api", "providers", "runtime", "spi"]
   
+  // TODO can these be deduced by the absence of a build.gradle for the project?
   aggregatorOnlyProjects = [
     ':analytics', ':api', ':apps',
     ':connectors', ':console', ':providers',
@@ -66,7 +74,166 @@ ext {
   filteredSubprojects = subprojects*.findAll { 
     project -> !aggregatorOnlyProjects.contains(project.path)
   }
+  
+  // for manifest classpath hackery
+  jarNameToProjectMap = [:]  // e.g., "edgent.connectors.iotp-0.4.0.jar" => Project(':component:iotp')
+  projectToJarNameMap = [:]
 }
+
+def recordProjectJar(Project proj) {
+  // manifest classpath hackery: update maps of project's jar <=> Project
+  def jarName = "${proj.group}.${proj.name}-${project.version}.jar"
+  jarNameToProjectMap[jarName] = proj
+  projectToJarNameMap[proj] = jarName
+  //println "#### updated jar <=> project maps: "+"$proj : $jarName"
+}
+
+def String mkJarNameFromSpec(String jarSpec) {
+  // e.g. 'com.google.code.gson:gson:2.2.4' => gson-2.2.4.jar
+  return jarSpec.split(':')[1] + '-' + jarSpec.split(':')[2] + '.jar'
+}
+
+def String stripJarNameVersion(String jarName) {
+  // e.g., edgent.api.topology-0.4.0.jar => edgent.api.topology.jar
+  return jarName.substring(0, jarName.lastIndexOf('-')) + '.jar'
+}
+
+def String getSimpleProjectGroup(Project proj) {
+  // e.g., 'edgent.api' => 'api'
+  return "$proj.group".replace("edgent.", "")
+}
+
+// create a path to dir2 relative to dir1
+// e.g., dir1:'lib', dir2:'connectors/iotp/lib' => ../connectors/iotp/lib
+def String mkRelativePath(File dir1, File dir2) {
+  def relPath = dir1.toPath().relativize(dir2.toPath())
+  //println "#### relPath: "+relPath+"   dir1:"+dir1+" dir2:"+dir2
+  return relPath.toString()
+}
+def String mkRelativePath(String dir1, String dir2) {
+  return mkRelativePath(new File(dir1), new File(dir2))
+}
+
+// e.g., =>  "lib" or "<component>/<subcomponent>/lib"
+def String getRelProjectDirInTargetDir(Project proj, String kind) {  // kind: "lib", "ext"
+  // the general case location
+  def simpleProjectGroup = getSimpleProjectGroup(proj);
+  def relProjDir = "$simpleProjectGroup/$proj.name/$kind"
+   
+  // special cases
+  if (target_java8_lib_groups.contains(simpleProjectGroup)) {
+    relProjDir = "$kind"
+  }
+  else if ('samples' == simpleProjectGroup) {
+    relProjDir = "$simpleProjectGroup/$kind"
+  }
+   
+  return relProjDir
+}
+
+// Get paths relative to the project's dir in the target-dir
+// to the project's immediate-only dependant project's jars
+// in their project's dir in the target dir
+// 
+// e.g., returns ['../../../lib/edgent.api.topology.jar', ...]
+def Collection getRelDirectDependantProjJars(Project proj) {
+  //println "#### proj: " + proj
+
+  def directDependantProjects = proj.configurations.compile.dependencies
+            .withType(ProjectDependency.class)
+            .collect { it.dependencyProject }
+  //println "#### directDependantProjects: " + directDependantProjects
+  
+  def directDependantProjJars = directDependantProjects.collect {
+    def relProjDirInTarget = getRelProjectDirInTargetDir(it, 'lib')
+    def jarName = projectToJarNameMap[it]
+    "$relProjDirInTarget/$jarName"
+  }
+  
+  // make relative paths from the project's dir in targetDir to the
+  // jars in the dependent projects' dir in targetDir
+  def myProjDirInTargetDir = getRelProjectDirInTargetDir(proj, 'lib')
+  def relDependantJars = directDependantProjJars.collect {
+    mkRelativePath(myProjDirInTargetDir, it)
+  }
+  //println "#### relDependantJars: "+relDependantJars
+  return relDependantJars
+}
+
+// e.g., returns ['../../../ext/gson-2.2.4.jar', ...]
+def Collection getRelCoreExtDependantJars(Project proj) {
+  // make relative paths from the project's dir in targetDir to the
+  // "ext" dir in targetDir
+  def myProjDirInTargetDir = getRelProjectDirInTargetDir(proj, 'lib')
+  def relDependantJars = ext_classpath.collect {
+    jarSpec ->
+    def jarName = mkJarNameFromSpec jarSpec
+    def relativeDependantJarDir = mkRelativePath(myProjDirInTargetDir, 'ext')
+    "$relativeDependantJarDir/$jarName"
+  }
+  //println "#### relDependantJars: "+relDependantJars
+  return relDependantJars
+}
+
+def String mkManifestClassPath(Project proj) {
+  // The manifest's classpath needs to include the project's:
+  // - immediate-only dependant edgent jars (not transitive and not their ext deps)
+  // - immediate dependant external jars and their transitive deps
+  // - the core_ext_dependency jars
+  
+  // TODO note: core_ext jars and their staging path ...
+  
+  def depProjJars = getRelDirectDependantProjJars proj
+  depProjJars = depProjJars.collect { stripJarNameVersion it }
+  
+  // TODO def projExtJars = getRelProjExtDependantJars proj
+  def projExtJars = []
+  
+  // unfortunate to include these if project didn't declare them as a dependency
+  // TODO related to come:  sample common jars
+  def coreExtJars = getRelCoreExtDependantJars proj
+    
+  def jars = []
+  jars.addAll depProjJars
+  jars.addAll projExtJars
+  jars.addAll coreExtJars
+    
+  def classPathStr = jars.join(' ')
+  //println "#### "+proj+" manifest classPath: "+classPathStr
+  return classPathStr
+}
+
+// ==================================================================
+// floundering trying to get a project's direct dependant project's
+// jars using the gradle object model.
+//
+// A hacky way now seems to be:
+// - identify the direct dependant projects
+// - formulate the jar name for each
+// - get all of the configuration's files (ends up transitive) and
+//   filter to select only those for direct dependent projects
+
+def Collection getDirectDependantProjJarsXXX(Project tgtProj) {
+println "#### tgtProj: " + tgtProj
+
+  def directDependantProjects = tgtProj.configurations.compile.dependencies
+            .withType ProjectDependency.class
+println "#### directDependantProjects: " + directDependantProjects
+
+  def dependantProjConfigs =  directDependantProjects.collect { it.projectConfiguration }
+println "#### configs: "+dependantProjConfigs
+  def dependantProjPublishArtifacts = dependantProjConfigs.collect { it.artifacts }
+println "#### dependantProjPublishArtifacts: "+dependantProjPublishArtifacts
+  def files = dependantProjPublishArtifacts.collect { it.files.getAsPath() }
+println "#### files: "+files
+
+  directDependantProjects = directDependantProjects.collect { it.dependencyProject }
+  
+  def jars = directDependantProjects.collect { getProjJar it }
+  println "#### jars: " + jars
+  return jars
+}
+// ==================================================================
 
 /* Configure subprojects */
 subprojects {
@@ -80,11 +247,14 @@ subprojects {
   apply plugin: 'java'
   apply plugin: "jacoco"
   ext.artifact = project.name
-  //group = 'org.apache.edgent'
  
   if (buildFile.isFile() && !buildFile.exists()) {
     configurations.create('default')
     return
+  }
+  
+  assemble { // in configure phase...
+    recordProjectJar(project)
   }
 
   if (["javax.websocket-client", "javax.websocket-server", "edgent.javax.websocket"].contains(project.name)) {
@@ -151,8 +321,12 @@ subprojects {
       attributes(
               'Implementation-Title': "${-> baseName}",
               'Implementation-Vendor': build_vendor,
+              // TODO inclusion of DSTAMP/TSTAMP results in regeneration
+              // of a jar when none of its contents/dependencies have changed.
+              // If possible use a canned DSTAMP/TSTAMP for non-"release" tasks
+              // to make the dev cycle more efficient at the expense of the TSTAMP.
               'Implementation-Version': "${commithash}-${DSTAMP}-${TSTAMP}",
-              // TODO Class-Path attribute
+              'Class-Path': mkManifestClassPath(project),
       )
     }
     metaInf {
@@ -167,49 +341,45 @@ subprojects {
     if(it.path == ":test:fvtiot" ||  it.path == ":providers:development") {
       dependsOn ":console:servlets"
     }
+  }
+  jar.doFirst {
     configure jarOptions
   }
 
   task copyJar(type: Copy) {
     description = "Copy subproject's assembled artifacts to target_dir (implicitly builds jars due to 'from jar')"
-    def projectGroup = "$project.group".replace("edgent.", "")
-
-    if (["api", "providers", "runtime", "spi"].contains(projectGroup)) {
-      // println "copyJar(cfg) lib $project.group $projectGroup $project.name $jar.archiveName"
+    
+    def relProjDirInTarget = getRelProjectDirInTargetDir(project, 'lib')
+    def absProjDirInTarget = "$target_java8_dir/$relProjDirInTarget"
+    
+    if (relProjDirInTarget != null) {
       from jar
-      into "${rootProject.ext.target_java8_dir}/lib"
+      into absProjDirInTarget
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
+    }
+
+    def simpleProjectGroup = getSimpleProjectGroup project
+    
+    // Copy war when appropriate
+    if (project.path == ':console:servlets') {
+      doLast {
+        copy {
+          from war
+          into "${rootProject.ext.target_java8_dir}/$simpleProjectGroup/webapps"
+        }
+      }
     } 
-    else if (["samples"].contains(projectGroup)) {
-      // println "copyJar(cfg) samples $project.group $projectGroup $project.name $jar.archiveName"
-      from jar
-      into "${rootProject.ext.target_java8_dir}/$projectGroup/lib"
-      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
-
+    
+    // Copy SRC when appropriate
+    if (simpleProjectGroup == 'samples') {
       //Copy Sample SRC to dist
       doLast {
         copy {
           from(sourceSets.main.allSource.srcDirs) { include '**/*.java' }
-          into "${rootProject.ext.target_java8_dir}/$projectGroup/src/$project.name/src/main/java/"
+          into "${rootProject.ext.target_java8_dir}/$simpleProjectGroup/src/$project.name/src/main/java/"
         }
       }
     } 
-    else {
-      // println "copyJar(cfg) other $project.group $projectGroup $project.name $jar.archiveName"
-      from jar
-      into "${rootProject.ext.target_java8_dir}/$projectGroup/$project.name/lib"
-      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
-      
-      // Copy console.war  (should be more general but this works for now)
-      if (projectGroup == 'console' && project.name == 'servlets') {
-        doLast {
-          copy {
-            from war
-            into "${rootProject.ext.target_java8_dir}/$projectGroup/webapps"
-          }
-        }
-      } 
-    }
   }
   
   task sourceJar(type: Jar) {
