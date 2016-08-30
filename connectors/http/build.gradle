@@ -15,7 +15,7 @@ dependencies {
   compile project(':api:topology')
   compile 'org.apache.httpcomponents:httpclient:4.5.1'
   compile 'org.apache.httpcomponents:httpcore:4.4.4'
-  compile ext_classpath
+  compile core_ext_dependencies
   testCompile project(':providers:direct')
 }
 

@@ -14,5 +14,5 @@
 dependencies {
   compile project(':api:execution')
   compile project(':api:function')
-  compile ext_classpath
+  compile core_ext_dependencies
 }

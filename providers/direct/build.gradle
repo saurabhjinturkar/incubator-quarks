@@ -18,7 +18,7 @@ dependencies {
   compile project(':runtime:appservice')
   compile project(':runtime:etiao')
   compile project(':runtime:jsoncontrol')
-  compile ext_classpath
+  compile core_ext_dependencies
   testCompile project(':utils:metrics')
   testCompile project(':runtime:appservice')
 }

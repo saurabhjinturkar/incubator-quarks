@@ -19,7 +19,7 @@ dependencies {
   testCompile project(':providers:direct')
   testCompile project(':connectors:javax.websocket-client')
   testCompile project(':connectors:javax.websocket-server')
-  testRuntime ext_classpath
+  testRuntime core_ext_dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct', ':connectors:common'

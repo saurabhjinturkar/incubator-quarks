@@ -20,7 +20,7 @@ dependencies {
   compile project(':providers:development')
   compile project(':samples:apps')
   compile project(':connectors:iotp')
-  compile ext_classpath
+  compile core_ext_dependencies
 }
 
 tasks.build.doFirst(){

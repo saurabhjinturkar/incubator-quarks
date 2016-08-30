@@ -20,5 +20,5 @@ dependencies {
   compile 'org.eclipse.jetty:jetty-util:9.3.6.v20151106'
   compile 'org.eclipse.jetty:jetty-webapp:9.3.6.v20151106'
   compile 'org.eclipse.jetty:jetty-xml:9.3.6.v20151106'
-  compile ext_classpath
+  compile core_ext_dependencies
 }

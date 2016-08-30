@@ -12,5 +12,5 @@
  * limitations under the License.
  */
 dependencies {
-  compile ext_classpath
+  compile core_ext_dependencies
 }

@@ -18,7 +18,7 @@ plugins.apply 'war'
 dependencies {
   providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
   providedCompile project(':utils:streamscope')
-  providedCompile ext_classpath
+  providedCompile core_ext_dependencies
 }
 
 war {

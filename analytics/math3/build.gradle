@@ -14,7 +14,7 @@
 dependencies {
   compile project(':api:topology')
   compile 'org.apache.commons:commons-math3:3.4.1'
-  compile ext_classpath
+  compile core_ext_dependencies
   testCompile project(':providers:direct')
 }
 

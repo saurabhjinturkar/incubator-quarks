@@ -15,7 +15,7 @@ dependencies {
   compile project(':api:topology')
   compile project(':connectors:common')
   testCompile project(':providers:direct')
-  testRuntime ext_classpath
+  testRuntime core_ext_dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct', ':connectors:common'

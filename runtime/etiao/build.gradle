@@ -15,7 +15,7 @@ dependencies {
   compile project(':api:execution')
   compile project(':api:graph')
   compile project(':spi:graph')
-  compile ext_classpath
+  compile core_ext_dependencies
 }
 
 addCompileTestDependencies ':api:graph'

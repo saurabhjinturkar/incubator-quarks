@@ -17,7 +17,7 @@ dependencies {
   compile project(':connectors:common')
   compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
   testCompile project(':providers:direct')
-  testRuntime ext_classpath
+  testRuntime core_ext_dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct', ':connectors:common'

@@ -15,5 +15,5 @@ archivesBaseName = project.name
 
 dependencies {
   compile 'javax.websocket:javax.websocket-api:1.0'
-  testRuntime ext_classpath
+  testRuntime core_ext_dependencies
 }

@@ -15,7 +15,7 @@ dependencies {
   compile project(':api:execution')
   compile project(':api:graph')
   compile project(':api:oplet')
-  compile ext_classpath
+  compile core_ext_dependencies
 }
 
 //Build a jar file containing the applications to test the ApplicationService

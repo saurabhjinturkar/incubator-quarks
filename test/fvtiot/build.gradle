@@ -15,7 +15,7 @@ dependencies {
   compile project(':providers:iot')
   compile project(':runtime:appservice')
   compile project(':runtime:jsoncontrol')
-  compile ext_classpath
+  compile core_ext_dependencies
 }
 
 addCompileTestDependencies ':apps:iot'

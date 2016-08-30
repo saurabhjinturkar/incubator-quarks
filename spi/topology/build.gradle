@@ -13,5 +13,5 @@
  */
 dependencies {
   compile project(':api:topology')
-  compile ext_classpath
+  compile core_ext_dependencies
 }
