@@ -105,7 +105,7 @@ Running the reports target produces two reports:
 
 Work is ongoing to replace the Ant based build system with a Gradle based one
 [EDGENT-139].  Delivered functionality is expected to work though is not yet
-be complete.
+complete.
 
 **TODO: The primary build process is using Gradle, any pull request is expected to
 maintain the build success of `clean, assemble, test, reports`.**
@@ -130,7 +130,7 @@ unique tasks:
 * `reports` : Generate JUnit and Code Coverage reports in `build\distributions\reports`. Use after executing the `test` target. 
   * `reports\tests\overview-summary.html` - JUnit test report
   * `reports\coverage\index.html` - Code coverage report
-* `release` : Build a release bundle in `build/release-edgent`, **TODO: that includes subsets of the Edgent jars that run on Java 7 (`build/distributions/java7`) and Android (`build/distributions/android`)**.
+* `release` : Build a release bundle in `build/release-edgent`, that includes subsets of the Edgent jars that run on Java 7 (`build/distributions/java7`) and Android (`build/distributions/android`).
 
 The build process has been tested on Linux and MacOSX.
 

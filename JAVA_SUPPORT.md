@@ -9,6 +9,11 @@ Building a release `ant release` produces three sets of Jars under
 * target/java7 - Java 7 SE
 * target/android - Android
 
+[WIP] Building a release `./gradlew release` produces three sets of Jars under
+* build/distributions/java8 - Java 8 SE
+* build/distributions/java7 - Java 7 SE
+* build/distributions/android - Android
+
 This page documents which jars are expected to work in each environment.
 
 ## Core
@@ -37,6 +42,8 @@ This page documents which jars are expected to work in each environment.
 | Jar | Java 8 SE | Java 7 SE | Android | Notes |
 |---|---|---|---|---|
 |edgent.connectors.common.jar | yes | yes | yes | |
+|edgent.connectors.command.jar | yes | | | |
+|edgent.connectors.csv.jar | yes | | | |
 |edgent.connectors.file.jar | yes | | | |
 |edgent.connectors.http.jar | yes | yes | yes | |
 |edgent.connectors.iotf.jar | yes | yes | yes | |
@@ -68,6 +75,7 @@ This page documents which jars are expected to work in each environment.
 | Jar | Java 8 SE | Java 7 SE | Android | Notes |
 |---|---|---|---|---|
 |edgent.utils.metrics.jar | yes | | | |
+|edgent.utils.streamscope.jar | yes | | | |
 
 ### Development Console
 

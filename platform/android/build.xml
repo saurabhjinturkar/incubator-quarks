@@ -38,7 +38,7 @@
   <target name="copyFrom7" depends="init">
     <copy todir="${edgent.android.target}">
        <fileset dir="${edgent7.target}"
-           excludes="scripts/** lib/edgent.runtime.jmxcontrol.jar"
+           excludes="scripts/** lib/edgent.runtime.jmxcontrol.jar lib/edgent.providers.development.jar console/**"
        />
 
     </copy>
@@ -46,6 +46,10 @@
     <!-- They get built there and are processed through the retrolambda -->
     <delete dir="${edgent8.target}/android"/>
     <delete dir="${edgent7.target}/android"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="${edgent.android.target}"/>
   </target>
 
 </project>
