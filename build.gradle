@@ -272,11 +272,12 @@ def String mkManifestClassPath(Project proj) {
 }
 
 test {
-  println "\nHINT: to include tests than **/*Test.class you can: ./gradlew -Ptest.base.pattern='<path-pattern>.class' [project-scope:]test"
-  println "e.g. ./gradlew -Ptest.base.pattern='**/*TestManual.class' test"
-  println "e.g. ./gradlew -Ptest.base.pattern='**/MqttOpenTest.class' :connectors:mqtt:test"
-  println "To force a rerun of previously successful test task you can first specify the 'cleanTest' task"
-  println "e.g., ./gradlew :connectors:mqtt:cleanTest :connectors:mqtt:test"
+  println "\nHINTs: Use the '--tests <testClassNamePattern>[.<testMethodNamePattern>]' option to select specific test classes or methods."
+  println "    ./gradlew :api:topology:test --tests '*JsonFunctionsTest'"
+  println "    ./gradlew :api:topology:test --tests '*JsonFunctionsTest.testBytes'"
+  println "Use the 'cleanTest' task to force a rerun of a previously successful test task:"
+  println "    ./gradlew :api:topology:cleanTest :api:topology:test"
+  println "    ./gradlew cleanTest test"
   println ""
   sleep 1
 }
@@ -349,12 +350,9 @@ subprojects {
       dependsOn ":console:servlets"
     }
     
-    // see HINT in rootProject test task
-    def test_base_pattern = rootProject.hasProperty('test.base.pattern')
-         ? rootProject.getProperty('test.base.pattern')
-         : '**/*Test.class'
-         
-    include test_base_pattern
+    filter {
+      includeTestsMatching '*Test'  // can override via --tests command line option
+    }
 
     systemProperty 'edgent.test.top.dir.file.path', rootProject.projectDir
     systemProperty 'edgent.test.root.dir', rootProject.projectDir

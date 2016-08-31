@@ -113,7 +113,7 @@ maintain the build success of `clean, assemble, test, reports`.**
 The Gradle wrapper `edgent/{gradlew,gradlew.bat}` should be used to ensure an appropriate
 version of Gradle is used.  e.g.  `$ ./gradlew clean build`
 
-The top-level Gradle file is `edgent/build.gradle` and contains several
+The top-level Gradle file is `edgent/build.gradle` and it contains several
 unique tasks: 
 
 * `assemble` (default) : Build all code and Javadoc into `build\distributions`. The build will fail on any code error or Javadoc warning or error.
@@ -121,10 +121,12 @@ unique tasks:
 * `build` : essentially like "assemble test reports"
 * `clean` : Clean the project
 * `test` : Run the JUnit tests, if any test fails the test run stops.
-  * use a project test task and optionally the `--tests` option to run a subset of the tests:
+  * use a project test task and optionally the `--tests` option to run a subset of the tests.  Multiple `--tests` options may be specified following each test task.
     * `./gradlew <project>:test`
     * `./gradlew <project>:test --tests '*.SomeTest'`
     * `./gradlew <project>:test --tests '*.SomeTest.someMethod'`
+  * use the `cleanTest` task to force rerunning a previously successful test task (without forcing a rerun of all of the task's dependencies):
+    * `./gradlew [<project>:]cleanTest [<project>:]test`
 * `reports` : Generate JUnit and Code Coverage reports in `build\distributions\reports`. Use after executing the `test` target. 
   * `reports\tests\overview-summary.html` - JUnit test report
   * `reports\coverage\index.html` - Code coverage report
