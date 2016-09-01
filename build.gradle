@@ -788,6 +788,8 @@ task releaseTarGz(type: Tar) {
   from "$target_dir/README.md"
   from "$target_dir/version.txt"
   from target_dir
+  exclude '**/test/svt/'
+  exclude '**/connectors/javax.websocket-server/' // just part of wsclient test harness
   doLast {
     ant.checksum algorithm: 'md5', file: archivePath
     ant.checksum algorithm: 'sha1', file: archivePath

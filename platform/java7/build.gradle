@@ -37,7 +37,7 @@ clean {
 }
 
 ant_retro7.doFirst { 
-  println "Performing a long running ant task (run with --info to see it all)..."
+  println "Performing a longer running ant task (e.g., ~30sec; run with --info to see it all)..."
 }
 
 task addJava7Target {
