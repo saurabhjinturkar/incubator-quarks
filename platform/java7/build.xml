@@ -268,25 +268,13 @@
 		<retro7.test.setup tdir="runtime/jsoncontrol" />
 		<retro7.test.setup tdir="runtime/jobregistry" />
 		<retro7.test.setup tdir="utils/metrics"  ldir="utils/metrics/lib"/>
-        <!-- utils/streamscope - why not java7? -->
 		<retro7.test.setup tdir="providers/direct" />
-        <!-- providers/development - why not java7? -->
 		<retro7.test.setup tdir="connectors/common" ldir="connectors/common/lib"/>
 		<retro7.test.setup tdir="connectors/iotp"  ldir="connectors/iotp/lib"/>
 		<retro7.test.setup tdir="connectors/http"  ldir="connectors/http/lib"/>
 		<retro7.test.setup tdir="connectors/pubsub"  ldir="connectors/pubsub/lib"/>
-        <!-- connectors/command - why not java7? -->
-        <!-- connectors/csv - why not java7? -->
-        <!-- connectors/file - why not java7? -->
-        <!-- connectors/jdbc - why not java7? -->
-        <!-- connectors/mqtt - why not java7? -->
-        <!-- connectors/kafka - why not java7? -->
-        <!-- connectors/wsclient - why not java7? -->
-        <!-- connectors/javax.websocket-client - why not java7? -->
 		<retro7.test.setup tdir="apps/iot"  ldir="apps/iot/lib"/>
 		<retro7.test.setup tdir="apps/runtime"  ldir="apps/runtime/lib"/>
-        <!-- analytics/math3 - why not java7? -->
-        <!-- analytics/sensors - why not java7? -->
 	</target>
 
         <!--
@@ -310,25 +298,13 @@
 		<retro7.test.run tdir="runtime/jsoncontrol" />
 		<retro7.test.run tdir="runtime/jobregistry" />
 		<retro7.test.run tdir="utils/metrics"  ldir="utils/metrics/lib"/>
-        <!-- utils/streamscope - why not java7? -->
 		<retro7.test.run tdir="providers/direct" />
-        <!-- providers/development - why not java7? -->
 		<retro7.test.run tdir="connectors/common" ldir="connectors/common/lib"/>
 		<retro7.test.run tdir="connectors/iotp"  ldir="connectors/iotp/lib"/>
 		<retro7.test.run tdir="connectors/http"  ldir="connectors/http/lib"/>
 		<retro7.test.run tdir="connectors/pubsub"  ldir="connectors/pubsub/lib"/>
-        <!-- connectors/command - why not java7? -->
-        <!-- connectors/csv - why not java7? -->
-        <!-- connectors/file - why not java7? -->
-        <!-- connectors/jdbc - why not java7? -->
-        <!-- connectors/mqtt - why not java7? -->
-        <!-- connectors/kafka - why not java7? -->
-        <!-- connectors/wsclient - why not java7? -->
-        <!-- connectors/javax.websocket-client - why not java7? -->
 		<retro7.test.run tdir="apps/iot"  ldir="apps/iot/lib"/>
 		<retro7.test.run tdir="apps/runtime"  ldir="apps/runtime/lib"/>
-        <!-- analytics/math3 - why not java7? -->
-        <!-- analytics/sensors - why not java7? -->
 	</target>
 
 	<target name="clean">
