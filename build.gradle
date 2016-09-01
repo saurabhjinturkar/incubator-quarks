@@ -67,7 +67,8 @@ ext {
   // TODO can these be deduced by the absence of a build.gradle for the project?
   aggregatorOnlyProjects = [
     ':analytics', ':api', ':apps',
-    ':connectors', ':console', ':providers',
+    ':connectors', ':console',
+    ':platform', ':providers',
     ':runtime', ':samples', ':spi',
     ':test', ':utils'
   ]
@@ -810,10 +811,12 @@ task cleanAll {
 
 task release {
   description = 'Assemble distribution artifacts, populate target_dir, and create a release tgz'
-  dependsOn cleanAll, addMiscDistFiles, assemble, releaseTarGz
+  dependsOn cleanAll, addMiscDistFiles, assemble,
+       ':platform:java7:addJava7Target', ':platform:android:addAndroidTarget',
+       releaseTarGz
   addMiscDistFiles.mustRunAfter cleanAll
-  all.mustRunAfter addMiscDistFiles
-  releaseTarGz.mustRunAfter assemble
+  assemble.mustRunAfter addMiscDistFiles
+  releaseTarGz.mustRunAfter assemble,':platform:java7:addJava7Target',':platform:android:addAndroidTarget'
 }
 
 task reports {

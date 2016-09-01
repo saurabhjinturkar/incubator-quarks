@@ -1,0 +1,74 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+defaultTasks 'addJava7Target'
+
+// Avoid creating/staging an empty jar (this is a 'java' subproject) 
+jar {
+  deleteAllActions()
+}
+
+// let the existing ant script do all of the work
+
+ant.importBuild('build.xml') { antTargetName ->
+  'ant_' + antTargetName
+}
+
+ant.properties['edgent8.target'] = target_java8_dir
+ant.properties['edgent7.target'] = target_java7_dir
+ant.properties['ext.dir'] = target_java8_ext_dir
+ant.properties['slf4j.ext.dir'] = ""
+ant.properties['gson.ext.dir'] = ""
+ant.properties['metrics.ext.dir'] = ""
+
+clean {
+  dependsOn ant_clean
+}
+
+ant_retro7.doFirst { 
+  println "Performing a long running ant task (run with --info to see it all)..."
+}
+
+task addJava7Target {
+  description = "Assemble distribution artifacts for java7 (from java8 artifacts)"
+  dependsOn ':assemble', clean, ant_retro7
+  ant_retro7.mustRunAfter clean
+  ant_retro7.mustRunAfter ':assemble'
+  
+  // TODO the following isn't cutting it for adding up-to-date for this task
+  // so as to avoid unnecessarily running clean,retro7
+  // ... well things just don't quite work the way I hoped.
+  // A task's dependencies are run before a task is checked for UTD
+  // inputs.dir(target_java8_dir)
+  // outputs.dir(target_java7_dir)
+}
+
+// unlike the above, this has the benefit(?) of producing the ant output to stdout
+// But it requires 'ant' to be in the path and doesn't (can't?) use
+// the ant that's embedded with gradle hmm...
+//
+//task java7XXX(type: Exec) {
+//  description = "Assemble distribution artifacts for java7 (from java8 artifacts)"
+//  dependsOn ':assemble'
+//  workingDir 'platform/java7'
+//  commandLine 'ant', 'clean', 'retro7',
+//     '-Dedgent8.target=../../build/distributions/java8',
+//     '-Dedgent7.target=../../build/distributions/java7',
+//     '-Dext.dir=../../build/distributions/java8/ext',
+//     '-Dslf4j.ext.dir=""',
+//     '-Dgson.ext.dir=""',
+//     '-Dmetrics.ext.dir=""'
+//}
+
+

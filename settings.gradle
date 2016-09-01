@@ -64,5 +64,7 @@ include 'samples:console'
 include 'samples:scenarios'
 include 'test:fvtiot'
 include 'test:svt'
+include 'platform:java7'
+include 'platform:android'
 
 rootProject.name = build_name
