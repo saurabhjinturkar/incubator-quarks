@@ -18,7 +18,7 @@ under the License.
 */
 package org.apache.edgent.android.hardware.runtime;
 
-import edgent.function.Consumer;
+import org.apache.edgent.function.Consumer;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;

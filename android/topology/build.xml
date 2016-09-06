@@ -29,6 +29,7 @@
 
   <path id="compile.classpath">
     <pathelement location="${edgent.lib}/edgent.api.topology.jar" />
+    <pathelement location="${edgent.lib}/edgent.api.oplet.jar" />
   </path>
 
 

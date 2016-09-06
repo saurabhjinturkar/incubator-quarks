@@ -21,9 +21,9 @@ package org.apache.edgent.android.hardware;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
-import edgent.android.hardware.runtime.SensorSourceSetup;
-import edgent.topology.TStream;
-import edgent.topology.TopologyElement;
+import org.apache.edgent.android.hardware.runtime.SensorSourceSetup;
+import org.apache.edgent.topology.TStream;
+import org.apache.edgent.topology.TopologyElement;
 
 /**
  * Create streams from sensors.

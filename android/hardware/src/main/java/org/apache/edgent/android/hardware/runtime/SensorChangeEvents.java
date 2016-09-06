@@ -22,7 +22,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 
-import edgent.function.Consumer;
+import org.apache.edgent.function.Consumer;
 
 /**
  * Sensor event listener that submits sensor

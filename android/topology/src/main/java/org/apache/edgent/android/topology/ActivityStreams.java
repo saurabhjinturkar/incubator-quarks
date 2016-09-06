@@ -19,12 +19,12 @@ under the License.
 package org.apache.edgent.android.topology;
 
 import android.app.Activity;
-import edgent.android.oplet.RunOnUIThread;
-import edgent.function.Consumer;
-import edgent.function.Function;
-import edgent.topology.TSink;
-import edgent.topology.TStream;
-import edgent.topology.plumbing.PlumbingStreams;
+import org.apache.edgent.android.oplet.RunOnUIThread;
+import org.apache.edgent.function.Consumer;
+import org.apache.edgent.function.Function;
+import org.apache.edgent.topology.TSink;
+import org.apache.edgent.topology.TStream;
+import org.apache.edgent.topology.plumbing.PlumbingStreams;
 
 /**
  * Stream utilities for an Android {@code Activity}.

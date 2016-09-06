@@ -19,7 +19,7 @@ under the License.
 package org.apache.edgent.android.oplet;
 
 import android.app.Activity;
-import edgent.oplet.core.Pipe;
+import org.apache.edgent.oplet.core.Pipe;
 
 public class RunOnUIThread<T> extends Pipe<T,T> {
 
