@@ -583,7 +583,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/lib", includes: "edgent.api.*.jar")
           } else {
-            fileset(dir: "api", includes: "**/*.class")
+            fileset(dir: "api", includes: "**/*.class", excludes: "**/test/**")
           }
         }
         sourcefiles {
@@ -599,7 +599,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/lib", includes: "edgent.spi.*.jar")
           } else {
-            fileset(dir: "spi", includes: "**/*.class")
+            fileset(dir: "spi", includes: "**/*.class", excludes: "**/test/**")
           }
         }
         sourcefiles {
@@ -612,7 +612,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/lib", includes: "edgent.runtime.*.jar")
           } else {
-            fileset(dir: "runtime", includes: "**/*.class")
+            fileset(dir: "runtime", includes: "**/*.class", excludes: "**/test/**")
           }
         }
         sourcefiles {
@@ -625,7 +625,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/utils", includes: "**/edgent.utils.*.jar")
           } else { 
-            fileset(dir: "utils", includes: "**/*.class")
+            fileset(dir: "utils", includes: "**/*.class", excludes: "**/test/**")
           }
         }
         sourcefiles {
@@ -638,7 +638,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/connectors", includes: "**/edgent.connectors.*.jar")
           } else { 
-            fileset(dir: "connectors", includes: "**/*.class")
+            fileset(dir: "connectors", includes: "**/*.class", excludes: "**/test/**")
           }
         }
         sourcefiles {
@@ -661,7 +661,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/lib", includes: "edgent.providers.*.jar")
           } else {
-            fileset(dir: "providers", includes: "**/*.class")
+            fileset(dir: "providers", includes: "**/*.class", excludes: "**/test/**")
           }
         }
         sourcefiles {
@@ -674,7 +674,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/analytics", includes: "**/edgent.analytics.*.jar")
           } else {
-            fileset(dir: "analytics", includes: "**/*.class")
+            fileset(dir: "analytics", includes: "**/*.class", excludes: "**/test/**")
           }
         }
         sourcefiles {
@@ -687,7 +687,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/console", includes: "**/edgent.console.*.jar")
           } else {
-            fileset(dir: "console", includes: "**/*.class")
+            fileset(dir: "console", includes: "**/*.class", excludes: "**/test/**")
           }
         }
         sourcefiles {
