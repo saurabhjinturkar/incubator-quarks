@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package org.apache.edgent.tests.connectors.wsclient.javax.websocket;
+package org.apache.edgent.test.connectors.wsclient.javax.websocket;
 
 import java.io.IOException;
 import java.net.URI;
