@@ -15,3 +15,8 @@ dependencies {
   compile project(':api:oplet')
   compile core_ext_dependencies
 }
+
+test {
+  // this project lacks non-abstract test classes and this task fails if attempted 
+  enabled = false
+}

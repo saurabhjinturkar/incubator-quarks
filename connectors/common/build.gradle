@@ -18,3 +18,8 @@ dependencies {
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct'
+
+test {
+  // this project lacks tests and this task fails if attempted 
+  enabled = false
+}
