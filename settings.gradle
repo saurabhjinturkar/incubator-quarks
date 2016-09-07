@@ -66,5 +66,9 @@ include 'test:fvtiot'
 include 'test:svt'
 include 'platform:java7'
 include 'platform:android'
+if (System.env.ANDROID_SDK_PLATFORM != null) {
+  include 'android:topology'
+  include 'android:hardware'
+}
 
 rootProject.name = build_name
