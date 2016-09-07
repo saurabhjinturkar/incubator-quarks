@@ -66,6 +66,7 @@ ext {
   
   // TODO can these be deduced by the absence of a build.gradle for the project?
   aggregatorOnlyProjects = [
+    ':android',
     ':analytics', ':api', ':apps',
     ':connectors', ':console',
     ':platform', ':providers',
@@ -584,7 +585,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/lib", includes: "edgent.api.*.jar")
           } else {
-            fileset(dir: "api", includes: "**/*.class", excludes: "**/test/**,**/AgentJar*")
+            fileset(dir: "api", includes: "**/build/**/*.class", excludes: "**/test/**,**/AgentJar*")
           }
         }
         sourcefiles {
@@ -600,7 +601,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/lib", includes: "edgent.spi.*.jar")
           } else {
-            fileset(dir: "spi", includes: "**/*.class", excludes: "**/test/**,**/AgentJar*")
+            fileset(dir: "spi", includes: "**/build/**/*.class", excludes: "**/test/**,**/AgentJar*")
           }
         }
         sourcefiles {
@@ -613,7 +614,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/lib", includes: "edgent.runtime.*.jar")
           } else {
-            fileset(dir: "runtime", includes: "**/*.class", excludes: "**/test/**,**/AgentJar*")
+            fileset(dir: "runtime", includes: "**/build/**/*.class", excludes: "**/test/**,**/AgentJar*")
           }
         }
         sourcefiles {
@@ -626,7 +627,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/utils", includes: "**/edgent.utils.*.jar")
           } else { 
-            fileset(dir: "utils", includes: "**/*.class", excludes: "**/test/**,**/AgentJar*")
+            fileset(dir: "utils", includes: "**/build/**/*.class", excludes: "**/test/**,**/AgentJar*")
           }
         }
         sourcefiles {
@@ -639,7 +640,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/connectors", includes: "**/edgent.connectors.*.jar")
           } else { 
-            fileset(dir: "connectors", includes: "**/*.class", excludes: "**/test/**,**/AgentJar*")
+            fileset(dir: "connectors", includes: "**/build/**/*.class", excludes: "**/test/**,**/AgentJar*")
           }
         }
         sourcefiles {
@@ -662,7 +663,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/lib", includes: "edgent.providers.*.jar")
           } else {
-            fileset(dir: "providers", includes: "**/*.class", excludes: "**/test/**,**/AgentJar*")
+            fileset(dir: "providers", includes: "**/build/**/*.class", excludes: "**/test/**,**/AgentJar*")
           }
         }
         sourcefiles {
@@ -675,7 +676,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/analytics", includes: "**/edgent.analytics.*.jar")
           } else {
-            fileset(dir: "analytics", includes: "**/*.class", excludes: "**/test/**,**/AgentJar*")
+            fileset(dir: "analytics", includes: "**/build/**/*.class", excludes: "**/test/**,**/AgentJar*")
           }
         }
         sourcefiles {
@@ -688,7 +689,7 @@ task jacocoTestReport << {
           if (jococoClassfilesFromJars) {
             fileset(dir: "${target_java8_dir}/console", includes: "**/edgent.console.*.jar")
           } else {
-            fileset(dir: "console", includes: "**/*.class", excludes: "**/test/**,**/AgentJar*")
+            fileset(dir: "console", includes: "**/build/**/*.class", excludes: "**/test/**,**/AgentJar*")
           }
         }
         sourcefiles {
@@ -734,6 +735,7 @@ task aggregateJavadoc(type: Javadoc) {
   exclude "**/edgent/connectors/**/runtime"
   exclude "**/edgent/console"
   exclude "**/edgent/samples/scenarios/iotp/range/sensor"
+  exclude "**/android/**"
   
   // doc-files aren't picked up automatically so get them now.
   doLast {
