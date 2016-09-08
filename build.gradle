@@ -273,15 +273,17 @@ def String mkManifestClassPath(Project proj) {
   return classPathStr
 }
 
-test {
-  println "\nHINTs: Use the '--tests <testClassNamePattern>[.<testMethodNamePattern>]' option to select specific test classes or methods."
-  println "    ./gradlew :api:topology:test --tests '*JsonFunctionsTest'"
-  println "    ./gradlew :api:topology:test --tests '*JsonFunctionsTest.testBytes'"
-  println "Use the 'cleanTest' task to force a rerun of a previously successful test task:"
-  println "    ./gradlew :api:topology:cleanTest :api:topology:test"
-  println "    ./gradlew cleanTest test"
-  println ""
-  sleep 1
+gradle.taskGraph.whenReady {taskGraph ->
+  if (taskGraph.hasTask(test)) {
+    println "\nHINTs: Use the '--tests <testClassNamePattern>[.<testMethodNamePattern>]' option to select specific test classes or methods."
+    println "    ./gradlew :api:topology:test --tests '*JsonFunctionsTest'"
+    println "    ./gradlew :api:topology:test --tests '*JsonFunctionsTest.testBytes'"
+    println "Use the 'cleanTest' task to force a rerun of a previously successful test task:"
+    println "    ./gradlew :api:topology:cleanTest :api:topology:test"
+    println "    ./gradlew cleanTest test"
+    println ""
+    sleep 2
+  }
 }
 
 /* Configure subprojects */
