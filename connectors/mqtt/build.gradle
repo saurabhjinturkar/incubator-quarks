@@ -12,12 +12,13 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile project(':connectors:iot')
-  compile project(':connectors:common')
-  compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
-  testCompile project(':providers:direct')
-  testRuntime core_ext_dependencies
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirProjectJarDependency 'compile', ':connectors:iot'
+  addTargetDirProjectJarDependency 'compile', ':connectors:common'
+  addProjectExtDependency 'compile', 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+  
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct', ':connectors:common'

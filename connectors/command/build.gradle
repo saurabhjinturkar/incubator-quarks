@@ -12,10 +12,11 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile project(':connectors:common')
-  testCompile project(':providers:direct')
-  testRuntime core_ext_dependencies
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirProjectJarDependency 'compile', ':connectors:common'
+  
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct', ':connectors:common'

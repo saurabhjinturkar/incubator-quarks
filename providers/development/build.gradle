@@ -12,11 +12,13 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':providers:direct')
-  compile project(':console:server')
-  compile project(':utils:metrics')
-  compile project(':utils:streamscope')
-  compile project(':runtime:jmxcontrol')
+  addTargetDirProjectJarDependency 'compile', ':providers:direct'
+  addTargetDirProjectJarDependency 'compile', ':console:server'
+  addTargetDirProjectJarDependency 'compile', ':utils:metrics'
+  addTargetDirProjectJarDependency 'compile', ':utils:streamscope'
+  addTargetDirProjectJarDependency 'compile', ':runtime:jmxcontrol'
+
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':utils:streamscope'

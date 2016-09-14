@@ -16,9 +16,11 @@
 // based on System.env.ANDROID_SDK_PLATFORM
 
 dependencies {
-  compile project(':api:topology')
-  compile project(':api:oplet')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirProjectJarDependency 'compile', ':api:oplet'
   compile files("${System.env.ANDROID_SDK_PLATFORM}/android.jar")
+
+  // N.B. root project adds test common dependencies
 }
 
 test {

@@ -12,11 +12,13 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile project(':connectors:iot')
-  compile 'com.ibm.messaging:watson-iot:0.1.1'
-  compile core_ext_dependencies
-  testCompile project(':providers:direct')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirProjectJarDependency 'compile', ':connectors:iot'
+  addProjectExtDependency 'compile', 'com.ibm.messaging:watson-iot:0.1.5'
+  addTargetDirCoreExtJarDependencies 'compile'
+  
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct'

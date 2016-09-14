@@ -16,8 +16,10 @@
 // based on System.env.ANDROID_SDK_PLATFORM
 
 dependencies {
-  compile project(':api:topology')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
   compile files("${System.env.ANDROID_SDK_PLATFORM}/android.jar")
+  
+  // N.B. root project adds test common dependencies
 }
 
 test {

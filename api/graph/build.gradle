@@ -12,8 +12,10 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:oplet')
-  compile core_ext_dependencies
+  addTargetDirProjectJarDependency 'compile', ':api:oplet'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  // N.B. root project adds test common dependencies
 }
 
 test {

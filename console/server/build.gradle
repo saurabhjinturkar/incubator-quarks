@@ -12,13 +12,17 @@
  * limitations under the License.
  */
 dependencies {
-  compile 'org.eclipse.jetty:jetty-http:9.3.6.v20151106'
-  compile 'org.eclipse.jetty:jetty-io:9.3.6.v20151106'
-  compile 'org.eclipse.jetty:jetty-security:9.3.6.v20151106'
-  compile 'org.eclipse.jetty:jetty-server:9.3.6.v20151106'
-  compile 'org.eclipse.jetty:jetty-servlet:9.3.6.v20151106'
-  compile 'org.eclipse.jetty:jetty-util:9.3.6.v20151106'
-  compile 'org.eclipse.jetty:jetty-webapp:9.3.6.v20151106'
-  compile 'org.eclipse.jetty:jetty-xml:9.3.6.v20151106'
-  compile core_ext_dependencies
+  addProjectExtDependency 'compile', 'org.eclipse.jetty:jetty-http:9.3.6.v20151106'
+  addProjectExtDependency 'compile', 'org.eclipse.jetty:jetty-io:9.3.6.v20151106'
+  addProjectExtDependency 'compile', 'org.eclipse.jetty:jetty-security:9.3.6.v20151106'
+  addProjectExtDependency 'compile', 'org.eclipse.jetty:jetty-server:9.3.6.v20151106'
+  addProjectExtDependency 'compile', 'org.eclipse.jetty:jetty-servlet:9.3.6.v20151106'
+  addProjectExtDependency 'compile', 'org.eclipse.jetty:jetty-util:9.3.6.v20151106'
+  addProjectExtDependency 'compile', 'org.eclipse.jetty:jetty-webapp:9.3.6.v20151106'
+  addProjectExtDependency 'compile', 'org.eclipse.jetty:jetty-xml:9.3.6.v20151106'
+  addTargetDirCoreExtJarDependencies 'compile'
+  
+  // TODO runtime dependsOn ":console:servlets"  ???  
+
+  // N.B. root project adds test common dependencies
 }

@@ -21,11 +21,6 @@ allprojects {
 
   repositories {
     mavenCentral()
-    maven {
-      // TODO - is this the right repo to use?
-      // related?... watson-iot-0.1.1.jar ends up referencing org.eclipse.paho.client.mqttv3-1.0.3-SNAPSHOT.jar
-      url 'https://repo.eclipse.org/content/repositories/paho-snapshots/'
-    }
   }
   
   project.version = build_version
@@ -78,41 +73,33 @@ ext {
     project -> !aggregatorOnlyProjects.contains(project.path)
   }
   
-  // for manifest classpath hackery
-  jarNameToProjectMap = [:]  // e.g., "edgent.connectors.iotp-0.4.0.jar" => Project(':component:iotp')
-  projectToJarNameMap = [:]
-  
   // Edgent core external dependencies
   core_ext_dependencies = ['com.google.code.gson:gson:2.2.4',
                    'org.slf4j:slf4j-api:1.7.12',
                    'io.dropwizard.metrics:metrics-core:3.1.2']
-  copied_core_ext_dependencies_jars = false
   
   // Edgent Samples external dependencies
   samples_ext_dependencies = ['org.slf4j:slf4j-jdk14:1.7.12']
-  copied_samples_ext_dependencies_jars = false
 
   // Edgent tests external dependencies
-  tests_ext_dependencies = ['org.slf4j:slf4j-jdk14:1.7.12']
-  copied_tests_ext_dependencies_jars = false
+  test_common_dependencies = ['org.slf4j:slf4j-jdk14:1.7.12']
   
   common_ext_dependencies = [
     core_ext_dependencies,
     samples_ext_dependencies,
-    // tests_ext_dependencies, // omit as tests aren't included in release tgz
+    // test_common_dependencies, // omit as tests aren't included in release tgz
   ].flatten()
 }
 
-def recordProjectJar(Project proj) {
-  // manifest classpath hackery: update maps of project's jar <=> Project
-  // This, and use of these maps, is fallout from floundering
-  // trying to leverage the gradle object model for dealing with
-  // project (and dependent project) artifacts and/or other nice
-  // gradle declaritive-isms for dealing with this.
-  def jarName = "${proj.group}.${proj.name}-${project.version}.jar"
-  jarNameToProjectMap[jarName] = proj
-  projectToJarNameMap[proj] = jarName
-  //println "#### $proj.path updated jar <=> project maps: $jarName"
+// Declare the common_ext_dependencies as dependencies of the root project
+// to easily copy them (their resolved paths) to the target dir
+dependencies {
+  compile common_ext_dependencies
+}
+task copyCommonExtJars(type: Copy) {
+  description = "Copy common external jars to target_java8_ext_dir"
+  from configurations.compile.files
+  into target_java8_ext_dir
 }
 
 def String mkJarNameFromSpec(String jarSpec) {
@@ -120,90 +107,15 @@ def String mkJarNameFromSpec(String jarSpec) {
   return jarSpec.split(':')[1] + '-' + jarSpec.split(':')[2] + '.jar'
 }
 
-def String stripJarNameVersion(String jarName) {
-  // e.g., edgent.api.topology-0.4.0.jar => edgent.api.topology.jar
-  return jarName.substring(0, jarName.lastIndexOf('-')) + '.jar'
-}
-
-def String getSimpleProjectGroup(Project proj) {
-  // e.g., 'edgent.api' => 'api'
-  return "$proj.group".replace("edgent.", "")
-}
-
-// create a path to dir2 relative to dir1
-// e.g., dir1:'lib', dir2:'connectors/iotp/lib' => ../connectors/iotp/lib
-def String mkRelativePath(File dir1, File dir2) {
-  def relPath = dir1.toPath().relativize(dir2.toPath())
-  //println "#### relPath: "+relPath+"   dir1:"+dir1+" dir2:"+dir2
-  return relPath.toString()
-}
-def String mkRelativePath(String dir1, String dir2) {
-  return mkRelativePath(new File(dir1), new File(dir2))
-}
-
-// e.g., =>  "lib" or "<component>/<subcomponent>/lib"
-def String getTargetRelProjDir(Project proj, String kind) {  // kind: "lib", "ext"
-  // the general case location
-  def simpleProjectGroup = getSimpleProjectGroup(proj);
-  def relProjDir = "$simpleProjectGroup/$proj.name/$kind"
-   
-  // special cases
-  if (target_java8_lib_groups.contains(simpleProjectGroup)) {
-    relProjDir = "$kind"
-  }
-  else if ('samples' == simpleProjectGroup) {
-    relProjDir = "$simpleProjectGroup/$kind"
-  }
-   
-  return relProjDir
-}
-
-// Get paths relative to the project's dir in the target-dir
-// to the project's immediate-only dependant project's jars
-// in their project's dir in the target dir
-// 
-// e.g., returns ['../../../lib/edgent.api.topology.jar', ...]
-def Collection getTargetRelDirectDependantProjJars(Project proj) {
-
-  def directDependantProjects = proj.configurations.compile.dependencies
-            .withType(ProjectDependency.class)
-            .collect { it.dependencyProject }
-  //println "#### $proj.path directDependantProjects: $directDependantProjects"
-  
-  def directDependantProjJars = directDependantProjects.collect {
-    def relProjDirInTarget = getTargetRelProjDir(it, 'lib')
-    def jarName = projectToJarNameMap[it]
-    "$relProjDirInTarget/$jarName"
-  }
-  
-  // make relative paths from the project's dir in targetDir to the
-  // jars in the dependent projects' dir in targetDir
-  def myProjDirInTargetDir = getTargetRelProjDir(proj, 'lib')
-  def relDependantJars = directDependantProjJars.collect {
-    mkRelativePath(myProjDirInTargetDir, it)
-  }
-  //println "#### $proj.path relDependantJars: $relDependantJars"
-  return relDependantJars
-}
-
-// e.g., returns ['../../../ext/gson-2.2.4.jar', ...]
-def Collection getTargetRelDependantCommonExtJars(Project proj, Collection ext_dependencies) {
-  // make relative paths from the project's dir in targetDir to the
-  // "ext" dir in targetDir (target_java8_ext_dir)
-  def myProjDirInTargetDir = getTargetRelProjDir(proj, 'lib')
-  def relDependantJars = ext_dependencies.collect {
-    jarSpec ->
-      def jarName = mkJarNameFromSpec jarSpec
-      def relativeDependantJarDir = mkRelativePath(myProjDirInTargetDir, 'ext')
-      "$relativeDependantJarDir/$jarName"
-  }
-  //println "#### $proj.path relDependantJars: $relDependantJars"
-  return relDependantJars
-}
-
 def getProjectExtDepFiles(Project proj) { // project's direct ext deps and their transitive deps
   // TODO suspect this is picking up ext dependencies of transitive **project** dependencies???
+  
+  // handle ext jar deps expressed via "compile <external-dependency-spec>"
   def allExtDepFiles = proj.configurations.runtime.files { it instanceof ExternalDependency }
+  
+  // handle ext jar deps expressed via addTargetDirExtJarDependency
+  allExtDepFiles.addAll proj.files(proj.directTargetDirExtJarDependencies)
+  
   logger.info "$proj.path allExtDepFiles: "+allExtDepFiles
   return allExtDepFiles
 }
@@ -219,58 +131,34 @@ def getProjectNonCommonExtDepFiles(Project proj) {
   return filteredExtDepFiles
 }
 
-// Get paths relative to the project's lib dir in the target-dir
-// to the project's immediate external jar dependencies (and their dependencies
-// transitively) in the project's ext dir in the target dir
-//
-// Should NOT include any external dependencies from the project's dependant *projects* (transitively)
-// TODO fix that
-// 
-// e.g., returns ['../ext/jetty-...', ...]
-def Collection getTargetRelDependantProjExtJars(Project proj) {
-  def myProjLibDirInTargetDir = getTargetRelProjDir(proj, 'lib')
-  def myProjExtDirInTargetDir = getTargetRelProjDir(proj, 'ext')
-  def relProjExtDirPath = mkRelativePath(myProjLibDirInTargetDir, myProjExtDirInTargetDir)
-    
-  // assumes updateTargetDir task copies all the project's ext dependencies
-  // to <projectDirInTarget>/ext
-  
-  def relProjExtDeps = getProjectNonCommonExtDepFiles(proj).collect {
-    file -> "$relProjExtDirPath/$file.name"
-  }
-  //println "#### $proj.path relProjExtDeps: $relProjExtDeps"
-  return relProjExtDeps
-}
-
 def String mkManifestClassPath(Project proj) {
   // The manifest's classpath needs to include the project's:
-  // - immediate-only dependant edgent jars (not transitive and not their ext deps)
-  // - "other" dependant external jars - e.g., samples_ext_dependencies
-  // - immediate dependant external jars and their transitive deps
-  // - the core_ext_dependencies jars
-  
-  def depProjJars = getTargetRelDirectDependantProjJars proj
-  depProjJars = depProjJars.collect { stripJarNameVersion it }
-  
-  def projExtJars = getTargetRelDependantProjExtJars proj
-  
-  // unfortunate to include these if project didn't declare them as a dependency
-  def coreExtJars = getTargetRelDependantCommonExtJars(proj, core_ext_dependencies)
-  
-  def otherExtJars = []
-  if (proj.path ==~ '^:samples.*') {
-     otherExtJars.addAll getTargetRelDependantCommonExtJars(proj, samples_ext_dependencies)
+  // - immediate-only dependant edgent jars (not transitive and not their ext deps
+  //   since our project jars are build with a manifest-classpath that
+  //   handles the project's "private" dependencies)
+  // - immediate dependant external jars and their transitive deps (since
+  //   these don't seem to have a manifest classpath that takes care of their
+  //   dependencies)
+  // - common_ext_dependencies jars when declared as dependencies
+  //
+  // proj.configurations.runtime.files (mostly) captures all of the above
+  // since do to our project build.gradle use of our various add*Dependency().
+
+  def depJars = proj.configurations.runtime.files
+    
+  // assume that any deps still in the gradle cache are project private ext deps
+  // (that will-get/have-been copied into the project's ext dir in the targetdir) 
+  def projExtDir = "$target_java8_dir/$proj.targetRelProjExtDir"
+  depJars = depJars.collect { file ->
+    if (file.toString().contains('/.gradle/caches/')) {
+      return proj.file("$projExtDir/"+file.getName())
+    }
+    return file
   }
     
-  def jars = []
-  jars.addAll depProjJars
-  jars.addAll otherExtJars
-  jars.addAll projExtJars
-  jars.addAll coreExtJars
-    
-  def classPathStr = jars.join(' ')
-  //println "#### $proj.path manifest-classPath: $classPathStr"
-  return classPathStr
+  def cp = proj.mkRelativePaths(depJars).join(' ')
+  logger.info "$proj.path manifest-classPath: $cp"
+  return cp
 }
 
 gradle.taskGraph.whenReady {taskGraph ->
@@ -303,22 +191,116 @@ subprojects {
     return
   }
   
-  assemble { // in configure phase...
-    recordProjectJar(project)
+  ext.simpleGroupName = project.group.replace('edgent.', '') // e.g., 'edgent.api' => 'api'
+
+  ext.mkRelativePaths = { Collection files ->
+    // make all files paths relative to the project's lib dir in targetdir
+    // well... unless this is for a war, which resides in the group's "webapps"
+    // dir instead of project's lib dir.  See :console:servlets build.gradle.
+    def projLibDir = project.file("$target_java8_dir/$targetRelProjLibDir")
+    if (project.pluginManager.hasPlugin('war')) {
+      projLibDir = project.file("$target_java8_dir/$project.simpleGroupName/webapps")
+    }
+    files.collect {  projLibDir.toPath().relativize(it.toPath()) }
   }
 
-  if (["javax.websocket-client", "javax.websocket-server", "edgent.javax.websocket"].contains(project.name)) {
-    archivesBaseName = "${project.name}"
-  } else {
-    archivesBaseName = "${rootProject.name}${project.path.replace(':', '.')}"
+  ext.targetRelProjDir = { String kind ->  // kind: "lib", "ext"
+    // use targetRelProject{Lib,Ext}Dir
+    // e.g., =>  "lib" or "<component>/<subcomponent>/lib"
+    // the general case location
+    def relProjDir = "$simpleGroupName/$project.name/$kind"
+   
+    // special cases
+    if (target_java8_lib_groups.contains(simpleGroupName)) {
+      relProjDir = "$kind"
+    }
+    else if ('samples' == simpleGroupName) {
+      relProjDir = "samples/$kind"
+    }
+   
+    return relProjDir
+  }
+  ext.targetRelProjLibDir = targetRelProjDir('lib')
+  ext.targetRelProjExtDir = targetRelProjDir('ext')
+  
+  // N.B. regarding the various add*Dependency() methods
+  //
+  // The methods need to be used in project build.gradle "dependencies" declarations.
+  // e.g.,
+  //   dependencies {
+  //     addTargetDirProjectJarDependency 'compile', ':api:topology' # NOT compile project(':api:topology')
+  //     addProjectExtDependency 'compile', 'com.ibm.messaging:watson-iot:0.1.5'  # NOT compile 'com.ibm.messaging:watson-iot:0.1.5'
+  //     addProjectExtDependency 'compile', 'org.apache.kafka:kafka_2.10:0.8.2.2@jar'
+  //     addTargetDirCoreExtDependencies 'compile'
+  //     addMyTargetDirProjectJarDependency 'testCompile'
+  //     // N.B. root project adds test common dependencies
+  //   }
+  // 
+  // These methods play a role in the policies:
+  // - Edgent projects depend on other project's jars in the target-dir, not their classes
+  // - Edgent project jars have a manifest-classpath that handles
+  //   the project's "private" inter-project dependencies
+  //   as well as the project's "private" external component dependencies.
+  // - We build a target dir that includes the project's jar as well as
+  //   the project's external dependency jars
+  // - The tests compile and run against the project jars in the target dir
+  //   (as external/integration test code would).
+  // - The samples compile and run against the project jars in the target dir
+  //   (as user code would).
+  
+  ext.directTargetDirExtJarDependencies = [] 
+
+  ext.addTargetDirProjectJarDependency = { config,proj ->
+    // add a dependency on a project's jar in the target-dir
+    def jarPath = project(proj).jar.archivePath
+    
+    // add the jar as a dependency and ensure it's present when we need it
+    // ? script error with: dependencies { "$config" files(jarPath) builtBy "${proj}:assemble" }
+    dependencies { "$config" files(jarPath) }
+    def task = "${config}Java"
+    if (config == "testCompile") {
+      task = "compileTestJava"
+    }
+    else if (config == "providedCompile") {
+      task = "compileJava"
+    }
+    "$task" { dependsOn "${proj}:assemble" }
   }
 
-  dependencies {
-    testCompile 'junit:junit:4.10'
-    testRuntime 'org.slf4j:slf4j-jdk14:1.7.12'
+  ext.addMyTargetDirProjectJarDependency = { config ->
+    // add a dependency on my project's jar in the target dir
+    addTargetDirProjectJarDependency(config, project.path)
+  }
+  
+  ext.addTargetDirExtJarDependency = { config,jarName ->
+    // add a dependency on a target_java8_ext_dir jarName
+    // record the addition
+    def jar = "$target_java8_ext_dir/$jarName"
+    if (!directTargetDirExtJarDependencies.contains(jar)) {
+      directTargetDirExtJarDependencies.add jar
+    }
+    
+    // add the jar as a dependency
+    dependencies { "$config" files(jar) }
+    compileJava { dependsOn ':copyCommonExtJars' }
+  }
+  
+  ext.addTargetDirCoreExtJarDependencies = { config ->
+    core_ext_dependencies.collect { depSpec ->
+      mkJarNameFromSpec(depSpec)
+    }.each { jarName ->
+      addTargetDirExtJarDependency config, jarName
+    }
+  }
+
+  ext.addProjectExtDependency = { config,externalDepSpec ->
+    // for declaring project private external dependencies
+    // ends up (transitively) copying the dependency to the project's ext dir
+    dependencies { "$config" externalDepSpec }
   }
 
   ext.addCompileTestDependencies = { String... deps ->
+    // add a dependency on other project's testClasses
     deps.each { dep ->
       dependencies {
         testCompile project(dep).sourceSets.test.output
@@ -347,13 +329,6 @@ subprojects {
   }
 
   test {
-    // TODO fix this - this dependency handling shouldn't occur here,
-    // rather :console:server should dependOn :console:servlets
-    // (really the server doesn't exist w/o the servlets)
-    if(it.path == ":test:fvtiot" ||  it.path == ":providers:development") {
-      dependsOn ":console:servlets"
-    }
-    
     filter {
       includeTestsMatching '*Test'  // can override via --tests command line option
     }
@@ -368,18 +343,79 @@ subprojects {
       html.enabled = true
     }
   }
+  
+  dependencies {
+    // common dependencies for tests
+    testCompile 'junit:junit:4.10'
+    addMyTargetDirProjectJarDependency 'testCompile'
+    if (project.path != ':api:function') {
+      addTargetDirExtJarDependency 'testRuntime', 'slf4j-jdk14-1.7.12.jar'
+    }
+    else {
+      // the add... induces UnsupportedOperationException elsewhere in script when processing :api:function:jar ???
+      // can't figure it out but cleaning directTargetDirExtJarDependencies
+      // avoids it ???... with seemingly no other consequences.
+      addTargetDirExtJarDependency 'testRuntime', 'slf4j-jdk14-1.7.12.jar'
+      project.directTargetDirExtJarDependencies = []
+    }
+
+    // common dependencies for samples
+    if (project.path ==~ '^:samples.*') {
+      addTargetDirProjectJarDependency 'compile', ':providers:development'
+      addTargetDirProjectJarDependency 'compile', ':providers:direct'
+
+      addTargetDirCoreExtJarDependencies 'compile'      
+      addTargetDirExtJarDependency 'runtime', 'slf4j-jdk14-1.7.12.jar'
+    }
+  }
+
+  jar {
+    // adjust jar task config and also augment the task to do our additional processing
+    
+    // generate the project's jar into the target dir location
+    // with the appropriate name and manifest.
+    // TODO - gradle/maven best practice has version in jarname
+    
+    archiveName = "${project.group}.${project.name}.${extension}"
+    if (["javax.websocket-client", "javax.websocket-server", "edgent.javax.websocket"].contains(project.name)) {
+      archiveName = "${project.name}.${extension}"
+    }
+    destinationDir = file("$target_java8_dir/" + targetRelProjLibDir)
+
+    doFirst {
+      configure jarOptions
+    }
+    
+    doLast {
+      // Copy the project jar's "private" external dependencies (transitively)
+      // into the project's ext dir in the target-dir.
+      
+      // FYI we're getting more transitive ext deps than the ant build
+      // in some cases - e.g., for watson iot we "knew" we only needed a subset
+      // of all watson iot deps known to maven
+      
+      def projectExtDir = targetRelProjExtDir
+      def nonCommonExtFiles = getProjectNonCommonExtDepFiles(project)
+      logger.info "$project.path copying projExtDepFiles jars: "+nonCommonExtFiles.collect { it.getName() }
+      copy {
+        from nonCommonExtFiles
+        includeEmptyDirs = false
+        into "$target_java8_dir/$projectExtDir"
+      }
+    }
+  }
 
   ext.jarOptions = {
     manifest {
       attributes(
-              'Implementation-Title': "${-> baseName}",
-              'Implementation-Vendor': build_vendor,
-              // TODO inclusion of DSTAMP/TSTAMP results in regeneration
-              // of a jar when none of its contents/dependencies have changed.
-              // If possible use a canned DSTAMP/TSTAMP for non-"release" tasks
-              // to make the dev cycle more efficient at the expense of the TSTAMP.
-              'Implementation-Version': "${commithash}-${DSTAMP}-${TSTAMP}",
-              'Class-Path': mkManifestClassPath(project),
+        'Implementation-Title': "${-> baseName}",
+        'Implementation-Vendor': build_vendor,
+        // TODO inclusion of DSTAMP/TSTAMP results in regeneration
+        // of a jar when none of its contents/dependencies have changed.
+        // If possible use a canned DSTAMP/TSTAMP for non-"release" tasks
+        // to make the dev cycle more efficient at the expense of the TSTAMP.
+        'Implementation-Version': "${commithash}-${DSTAMP}-${TSTAMP}",
+        'Class-Path': mkManifestClassPath(project),
       )
     }
     metaInf {
@@ -387,101 +423,17 @@ subprojects {
       from rootProject.file('NOTICE')
     }
   }
-  jar {
-    // TODO fix this - this dependency handling shouldn't occur here,
-    // rather :console:server should dependOn :console:servlets
-    // (really the server doesn't exist w/o the servlets)
-    if(it.path == ":test:fvtiot" ||  it.path == ":providers:development") {
-      dependsOn ":console:servlets"
-    }
-  }
-  jar.doFirst {
-    configure jarOptions
-  }
 
-  task updateTargetDir() {
-    description = "Copy subproject's assembled artifacts to target_dir (implicitly builds jars due to 'from jar')"    
-    doLast {
-      def simpleProjectGroup = getSimpleProjectGroup(project)
-      
-      // Copy the project's jar or war
-      def relProjDirInTarget = getTargetRelProjDir(project, 'lib')
-      if (relProjDirInTarget != null) {
-        if (project.pluginManager.hasPlugin('war')) {
-          copy {
-            from war
-            into "$target_java8_dir/$simpleProjectGroup/webapps"
-          }
-        }
-        else {
-          copy {
-            from jar
-            into "$target_java8_dir/$relProjDirInTarget"
-            rename("$jar.archiveName", "$jar.baseName.$jar.extension")
-          }
-        }
-      }
+  assemble.doLast {
+    // augment assemble with our additional target dir update processing
     
-      // Copy SRC when appropriate
-      if (simpleProjectGroup == 'samples') {
-        copy {
-          from(sourceSets.main.allSource.srcDirs) { include '**/*.java' }
-          into "$target_java8_dir/$simpleProjectGroup/src/$project.name/src/main/java/"
-        }
-      }
-
-      // Copy the project's external dependencies (transitively)
-      // TODO we're getting more transitive ext deps
-      // in some cases - e.g., for watson iot we "knew" we only needed a subset
-      // of all watson iot deps known to maven
-      
-      def projectExtDir = getTargetRelProjDir(project, 'ext')
-      def nonCommonExtFiles = getProjectNonCommonExtDepFiles(project)
-      logger.info "$project.path copying extDepFiles jars: "+nonCommonExtFiles.collect { it.getName() }
-      //println "#### $project.path copying extDepFiles jars: "+nonCommonExtFiles.collect { it.getName() }
+    // Copy SRC into target dir when appropriate
+    if (project.path ==~ '^:samples.*') {
       copy {
-        from nonCommonExtFiles
-        includeEmptyDirs = false
-        into "$target_java8_dir/$projectExtDir"
+        from(sourceSets.main.allSource.srcDirs) { include '**/*.java' }
+        into "$target_java8_dir/$project.simpleGroupName/src/$project.name/src/main/java/"
       }
-    
-      // Copy core_ext_dependencies jars once
-      if (!copied_core_ext_dependencies_jars) {
-        copied_core_ext_dependencies_jars = true
-        def coreExtJarNames = core_ext_dependencies.collect {
-          mkJarNameFromSpec it
-        }
-        def coreExtDeps = getProjectExtDepFiles(project).findAll {
-          coreExtJarNames.contains(it.getName())
-        }
-        logger.info "$project.path copying core_ext_dependencies_jars: "+coreExtDeps.collect { it.getName() }
-        //println "#### $project.path copying core_ext_dependencies_jars: "+coreExtDeps.collect { it.getName() }
-        copy {
-          from coreExtDeps
-          includeEmptyDirs = false
-          into target_java8_ext_dir
-        }
-      }
-
-      // Copy samples_ext_dependencies jars once
-      if ('samples' == simpleProjectGroup && !copied_samples_ext_dependencies_jars) {
-        copied_samples_ext_dependencies_jars = true
-        def samplesExtJarNames = samples_ext_dependencies.collect {
-          mkJarNameFromSpec it
-        }
-        def commonExtDeps = getProjectExtDepFiles(project).findAll {
-          samplesExtJarNames.contains(it.getName())
-        }
-        logger.info "$project.path copying samples_ext_dependencies_jars: "+commonExtDeps.collect { it.getName() }
-        //println "#### $project.path copying samples_ext_dependencies_jars: "+commonExtDeps.collect { it.getName() }
-        copy {
-          from commonExtDeps
-          includeEmptyDirs = false
-          into target_java8_ext_dir
-        }
-      }
-      
-    } // doLast
+    }
   }
   
   task sourceJar(type: Jar) {
@@ -490,7 +442,7 @@ subprojects {
     classifier = 'sources'
   }  
 
-  // support for 'gradle publishToMavanLocal' etc 
+  // support for 'gradle publishToMavenLocal' etc 
   // TODO publishing test.{fvt,svt} and samples ... doesn't seem desirable? e.g., we're excluding test.{fvt,svt} jars from the tgz
   publishing {
     publications {
@@ -508,9 +460,6 @@ subprojects {
       }
     }
   }  
-  
-  // assemble: inject updating target_dir 
-  assemble.finalizedBy updateTargetDir
 }
 
 task copyScripts(type: Copy) {
