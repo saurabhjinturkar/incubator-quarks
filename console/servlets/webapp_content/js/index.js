@@ -707,16 +707,16 @@ var makeRows = function() {
 		 n.targetLinks.forEach(function(trg){
 			sources.push(trg.sourceIdx.idx);
  	  		if (trg.tags && trg.tags.length > 0) {
-   	  			sourceStreams = trg.tags;
+   	  			sourceStreams.push(trg.tags);
    	  		}
 		 });
 		 var targets = [];
 		 var targetStreams = [];
 		 n.sourceLinks.forEach(function(src){
-			 targets.push(src.targetIdx.idx);
-	   	  		if (src.tags && src.tags.length > 0) {
-	   	  			targetStreams = src.tags;
-	   	  		}
+			targets.push(src.targetIdx.idx);
+   	  		if (src.tags && src.tags.length > 0) {
+   	  			targetStreams.push(src.tags);
+   	  		}
 		 });
    	  	var kind = parseOpletKind(n.invocation.kind);
 
@@ -975,7 +975,7 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
 		d.targetLinks.forEach(function(trg){
 			sources.push(trg.sourceIdx.idx.toString());
  	  		if (trg.tags && trg.tags.length > 0) {
-   	  			sourceStreams = trg.tags;
+   	  			sourceStreams.push(trg.tags);
    	  		}
 		});
 		var targets = [];
@@ -983,9 +983,9 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
 
 		d.sourceLinks.forEach(function(src){
 			targets.push(src.targetIdx.idx);
-	   	  		if (src.tags && src.tags.length > 0) {
-	   	  			targetStreams = src.tags;
-	   	  		}
+   	  		if (src.tags && src.tags.length > 0) {
+   	  			targetStreams.push(src.tags);
+   	  		}
 		});
 
 		valueStr += "<td class='smallCenter'>" + sources.toString() + "</td>";
