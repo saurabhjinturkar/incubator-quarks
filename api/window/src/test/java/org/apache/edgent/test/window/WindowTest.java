@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -370,11 +371,12 @@ public class WindowTest {
         
         window.registerScheduledExecutorService(new ScheduledThreadPoolExecutor(5));
 
-        ses.scheduleAtFixedRate(() -> {
+        ScheduledFuture sf = ses.scheduleAtFixedRate(() -> {
             window.insert(1);
         }, 0, 10, TimeUnit.MILLISECONDS);
 
         Thread.sleep(11000);
+        sf.cancel(true);
         double tolerance = .08;
         for(int i = 0; i < numBatches.size(); i++){
             assertTrue("Values:" + numBatches.toString(), withinTolerance(100.0, numBatches.get(i).doubleValue(), tolerance));
@@ -408,18 +410,19 @@ public class WindowTest {
         
         window.registerScheduledExecutorService(new ScheduledThreadPoolExecutor(5));
 
-        int[] count = {1};
-        ses.scheduleAtFixedRate(() -> {
-            window.insert(count[0]++ % 5);
+        ScheduledFuture sf = ses.scheduleAtFixedRate(() -> {
+        	for(int i = 0; i < 5; i++)
+        		window.insert(i);
         }, 0, 1, TimeUnit.MILLISECONDS);
 
         Thread.sleep(11000);
-        double tolerance = .08;
+        sf.cancel(true);
+        double tolerance = .12;
         
         for(Integer key : numBatches.keySet()){
         	List<Long> batch = numBatches.get(key);
         	for(Long l : batch){
-        		assertTrue("Values:" + batch.toString(), withinTolerance(200.0, l.doubleValue(), tolerance));
+        		assertTrue("Values:" + batch.toString(), withinTolerance(1000.0, l.doubleValue(), tolerance));
         	}
         }
     }
@@ -449,7 +452,7 @@ public class WindowTest {
         
         window.registerScheduledExecutorService(new ScheduledThreadPoolExecutor(5));
 
-        ses.scheduleAtFixedRate(new Runnable(){
+        ScheduledFuture sf = ses.scheduleAtFixedRate(new Runnable(){
             private int count = 0;
             @Override
             public void run() {
@@ -461,6 +464,7 @@ public class WindowTest {
         }, 0, 10, TimeUnit.MILLISECONDS);
 
         Thread.sleep(11000);
+        sf.cancel(true);
         int numTuples = 0;
         for(int i = 0; i < batches.size() - 1; i++){
             List<Integer> batch = batches.get(i);
