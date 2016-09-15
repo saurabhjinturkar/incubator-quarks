@@ -677,15 +677,11 @@ task aggregateJavadoc(type: Javadoc) {
     group("Edgent SPI", "org.apache.edgent.topology.spi", "org.apache.edgent.topology.spi.*")
   }
   source subprojects.collect { project -> project.sourceSets.main.allJava }
-  classpath = files(subprojects.collect
-          { project -> project.sourceSets.main.compileClasspath }
-  )
-  // Eliminate implementation packages/classes from the javadoc.
-  // TODO achieve the effect w/o causing warnings from the javadoc run
   exclude "**/edgent/connectors/**/runtime"
   exclude "**/edgent/console"
   exclude "**/edgent/samples/scenarios/iotp/range/sensor"
   exclude "**/android/**"
+  classpath = files(filteredSubprojects.collect { it.jar.archivePath })
   
   // doc-files aren't picked up automatically so get them now.
   doLast {
@@ -753,6 +749,7 @@ task releaseTarGz(type: Tar) {
 assemble {
   description = "Assemble distribution artifacts and populate the target_dir with jars, doc, etc. Like 'build' w/o 'test'"
   dependsOn filteredSubprojects*.assemble, aggregateJavadoc, copyScripts
+  aggregateJavadoc.mustRunAfter filteredSubprojects*.assemble
 }
 
 task all(dependsOn: assemble) {
