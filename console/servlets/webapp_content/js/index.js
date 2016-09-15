@@ -509,7 +509,7 @@ var displayRowsTooltip = function(newRequest) {
 			} else if (newKey === "Oplet kind"){
 				content += "<td class='left' tabindex=0>" + row[newKey] + "</td>";
 			} else {
-				content += "<td class='center' tabindex=0>" + row[newKey] + "</td>";
+				content += "<td class='center' tabindex=0 style='white-space:nowrap;'>" + row[newKey] + "</td>";
 			}
 		}
 		firstTime = false;
@@ -526,7 +526,7 @@ var displayRowsTooltip = function(newRequest) {
 		"<body>";
 		var buttonStr = '<button title="Pause table refresh" id="pauseTableRefresh" type="button">Pause table refresh</button>';
 		var closeWinStr = '<button title="Close window" id="closeTablePropsWindow" type="button">Close window</button>';
-		var tableHdr = "<table id='allPropsTable' tabindex=0 style='width: 675px;margin: 10px;table-layout:fixed;word-wrap: break-word;'><caption>Oplet properties</caption>";
+		var tableHdr = "<table id='allPropsTable' tabindex=0 style='margin: 10px;table-layout:fixed;word-wrap: break-word;'><caption>Oplet properties</caption>";
 		
 		var str = htmlStr + buttonStr + closeWinStr + tableHdr + headerStr + content + "</table></body><html>";
 		propWindow = window.open("", "Properties", "width=825,height=500,scrollbars=yes,dependent=yes");
@@ -703,19 +703,21 @@ var makeRows = function() {
 	var theRows = [];
 	 nodes.forEach(function(n) {
 		 var sources = [];
-	   	 var sourceStreams = [];
+	   	 var sourceStreamsMap = new Map();
 		 n.targetLinks.forEach(function(trg){
-			sources.push(trg.sourceIdx.idx);
+			var source = trg.sourceIdx.idx.toString();
+			sources.push(source);
  	  		if (trg.tags && trg.tags.length > 0) {
-   	  			sourceStreams.push(trg.tags);
+   	  			sourceStreamsMap.set(source, trg.tags);
    	  		}
 		 });
 		 var targets = [];
-		 var targetStreams = [];
+		 var targetStreamsMap = new Map();
 		 n.sourceLinks.forEach(function(src){
-			targets.push(src.targetIdx.idx);
+			var target = src.targetIdx.idx.toString();
+			targets.push(target);
    	  		if (src.tags && src.tags.length > 0) {
-   	  			targetStreams.push(src.tags);
+   	  			targetStreamsMap.set(target, src.tags);
    	  		}
 		 });
    	  	var kind = parseOpletKind(n.invocation.kind);
@@ -729,10 +731,36 @@ var makeRows = function() {
    	  		value = formatNumber(n.value);
    	  	}
    	  	
+		var sStreamString = "";
+		if (sourceStreamsMap.size == 0) {
+			sStreamString = "None";
+		} else if (sourceStreamsMap.size == 1) {
+			for (var value of sourceStreamsMap.values()) {
+				sStreamString = value.join(", ");
+			}
+		} else {
+			for (var [key, value] of sourceStreamsMap) {
+				sStreamString += "[" + key + "] " + value.join(", ") + "<br/>";
+			}
+		}
+
+		var tStreamString = "";
+		if (targetStreamsMap.size == 0) {
+			tStreamString = "None";
+		} else if (targetStreamsMap.size == 1) {
+			for (var value of targetStreamsMap.values()) {
+				tStreamString = value.join(", ");
+			}
+		} else {
+			for (var [key, value] of targetStreamsMap) {
+				tStreamString += "[" + key + "] " + value.join(", ") + "<br/>";
+			}
+		}
+
    	  	var rowObj = {"Name": n.idx, "Oplet kind": kind, "Tuple count": formatNumber(n.value), 
    	  			"Sources": sources.toString(), "Targets": targets.toString(), 
-   	  			"Source stream tags": sourceStreams.toString() === "" ? "None" : sourceStreams.toString(), 
-   	  			"Target stream tags": targetStreams.toString() === "" ? "None" : targetStreams.toString()};
+   	  			"Source stream tags": sStreamString,
+   	  			"Target stream tags": tStreamString};
 		theRows.push(rowObj);
 	 });
 	return theRows;
@@ -971,29 +999,54 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
 			+ formatNumber(d.value) + "</td>";
 
 		var sources = [];
-		var sourceStreams = [];
+		var sourceStreamsMap = new Map();
 		d.targetLinks.forEach(function(trg){
-			sources.push(trg.sourceIdx.idx.toString());
- 	  		if (trg.tags && trg.tags.length > 0) {
-   	  			sourceStreams.push(trg.tags);
-   	  		}
+            var source = trg.sourceIdx.idx.toString();
+            sources.push(source);
+            if (trg.tags && trg.tags.length > 0) {
+                sourceStreamsMap.set(source, trg.tags);
+            }
 		});
 		var targets = [];
-		var targetStreams = [];
-
+        var targetStreamsMap = new Map();
 		d.sourceLinks.forEach(function(src){
-			targets.push(src.targetIdx.idx);
+			var target = src.targetIdx.idx.toString();
+			targets.push(target);
    	  		if (src.tags && src.tags.length > 0) {
-   	  			targetStreams.push(src.tags);
+   	  			targetStreamsMap.set(target, src.tags);
    	  		}
 		});
 
 		valueStr += "<td class='smallCenter'>" + sources.toString() + "</td>";
 		valueStr += "<td class='smallCenter'>" + targets.toString() + "</td>";
-		var sStreamString = sourceStreams.toString() === "" ? "None" : sourceStreams.toString();
-		valueStr += "<td class='smallCenter'>" + sStreamString + "</td>";
-		var tStreamString = targetStreams.toString() === "" ? "None" : targetStreams.toString();
-		valueStr += "<td class='smallCenter'>" + tStreamString + "</td>";
+		
+		var sStreamString = "";
+		if (sourceStreamsMap.size == 0) {
+			sStreamString = "None";
+		} else if (sourceStreamsMap.size == 1) {
+			for (var value of sourceStreamsMap.values()) {
+				sStreamString = value.join(", ");
+			}
+		} else {
+			for (var [key, value] of sourceStreamsMap) {
+				sStreamString += "[" + key + "] " + value.join(", ") + "<br/>";
+			}
+		}
+		valueStr += "<td class='smallCenter' style='white-space:nowrap;'>" + sStreamString + "</td>";
+
+		var tStreamString = "";
+		if (targetStreamsMap.size == 0) {
+			tStreamString = "None";
+		} else if (targetStreamsMap.size == 1) {
+			for (var value of targetStreamsMap.values()) {
+				tStreamString = value.join(", ");
+			}
+		} else {
+			for (var [key, value] of targetStreamsMap) {
+				tStreamString += "[" + key + "] " + value.join(", ") + "<br/>";
+			}
+		}
+		valueStr += "<td class='smallCenter' style='white-space:nowrap;'>" + tStreamString + "</td>";
 
 		valueStr += "</tr></table></div>";
 		var str = headStr + valueStr;
