@@ -40,8 +40,8 @@ these additional development software tools.
 * Jacoco 0.7.5: The JUnit tests have code coverage enabled by default, using Jacoco, tested with version 0.7.5. - http://www.eclemma.org/jacoco/
 
 The Apache Ant `build.xml` files are setup to assume that the Junit and Jacoco jars are copied into `$HOME/.ant/lib`.
-```
-> ls $HOME/.ant/lib
+``` sh
+$ ls $HOME/.ant/lib
 jacocoagent.jar  jacocoant.jar  junit-4.10.jar
 ```
 
@@ -84,7 +84,7 @@ If your test may randomly fail because for example it depends on publicly availa
 or is timing dependent, and if timing variances on the Travis CI servers may make it more likely
 for your tests to fail, you may disable the test from being executed on Travis CI using the 
 following statement:
-```
+``` Java
     @Test
     public void testMyMethod() {
         assumeTrue(!Boolean.getBoolean("edgent.build.ci"));
@@ -104,14 +104,17 @@ Running the reports target produces two reports:
 ### [WIP] Building With Gradle
 
 Work is ongoing to replace the Ant based build system with a Gradle based one
-[EDGENT-139].  Delivered functionality is expected to work though is not yet
+[EDGENT-139](https://issues.apache.org/jira/browse/EDGENT-139).  Delivered functionality is expected to work though is not yet
 complete.
 
 **TODO: The primary build process is using Gradle, any pull request is expected to
 maintain the build success of `clean, assemble, test, reports`.**
 
 The Gradle wrapper `edgent/{gradlew,gradlew.bat}` should be used to ensure an appropriate
-version of Gradle is used.  e.g.  `$ ./gradlew clean build`
+version of Gradle is used,  e.g.:
+``` sh
+$ ./gradlew clean build
+```
 
 The top-level Gradle file is `edgent/build.gradle` and it contains several
 unique tasks: 
@@ -122,11 +125,11 @@ unique tasks:
 * `clean` : Clean the project
 * `test` : Run the JUnit tests, if any test fails the test run stops.
   * use a project test task and optionally the `--tests` option to run a subset of the tests.  Multiple `--tests` options may be specified following each test task.
-    * `./gradlew <project>:test`
-    * `./gradlew <project>:test --tests '*.SomeTest'`
-    * `./gradlew <project>:test --tests '*.SomeTest.someMethod'`
+    * `$ ./gradlew <project>:test`
+    * `$ ./gradlew <project>:test --tests '*.SomeTest'`
+    * `$ ./gradlew <project>:test --tests '*.SomeTest.someMethod'`
   * use the `cleanTest` task to force rerunning a previously successful test task (without forcing a rerun of all of the task's dependencies):
-    * `./gradlew [<project>:]cleanTest [<project>:]test`
+    * `$ ./gradlew [<project>:]cleanTest [<project>:]test`
 * `reports` : Generate JUnit and Code Coverage reports in `build\distributions\reports`. Use after executing the `test` target. 
   * `reports\tests\overview-summary.html` - JUnit test report
   * `reports\coverage\index.html` - Code coverage report
@@ -141,8 +144,8 @@ To build on Windows probably needs some changes, please get involved and contrib
 Initial support for publishing to a local Maven repository has been added.
 Use the following to do the publish.
 
-```
-./gradlew publishToMavenLocal
+``` sh
+$ ./gradlew publishToMavenLocal
 ```
 
 The component jars / wars are published as well as their sources.
@@ -258,7 +261,7 @@ into the repo at the ASF. One way is described here:
 
 Notes with the above PR merge directions:
   * use an https url unless you have a ssh key setup at GitHub:
-    `git remote add mirror https://github.com/apache/incubator-edgent.git`
+    `$ git remote add mirror https://github.com/apache/incubator-edgent.git`
 
 ### Using Eclipse
 
