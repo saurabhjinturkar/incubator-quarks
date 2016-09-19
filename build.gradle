@@ -426,12 +426,9 @@ subprojects {
       // The project's tests are supposed to run against its target-dir jar.
       // We must remove the project's $buildDir/{classes,resources}/main
       // from the classpath so they're not used.  
-      // To be safe, just remove any project's {classes,resources}/main from
-      // the test classpath. 
 
       classpath = project.sourceSets.test.runtimeClasspath
-      classpath = classpath.filter { ! ( it.path.endsWith("classes/main")
-                                         || it.path.endsWith("resources/main") )} 
+      classpath -= project.sourceSets.main.output
 
       // Hmm... for some reason the classpath (when printed here) also includes
       // the project's src build/libs/ jar and by the default name
@@ -443,7 +440,7 @@ subprojects {
       // Adjust accordingly.
       
       classpath = classpath.filter { ! it.path.startsWith(project.libsDir.path) } 
-      classpath = files(project.jar.archivePath) + classpath  // our jar first
+      classpath = files(project.jar.archivePath) + classpath
       logger.debug "$project.path test.classpath: " + classpath.collect { it.toString() }
     }
   }
