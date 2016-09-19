@@ -225,9 +225,14 @@ an Eclipse Jetty based implementation:
 <li>{@code <edgent-target>/connectors/javax.websocket-client/lib/javax.websocket-client.jar}</li>
 </ul>
 <p>
+Include jars for any Edgent analytic features you use:
+<ul>
+<li>{@code <edgent-target>/analytics/math3/lib/edgent.analytics.math3.jar}</li>
+<li>{@code <edgent-target>/analytics/sensors/lib/edgent.analytics.sensors.jar}</li>
+</ul>
 Include jars for any Edgent utility features you use:
 <ul>
-<li>{@code <edgent-target>/utils/metrics/lib/edgent.utils.metrics.jar} - for the {@code edgent.metrics} package</li>
+<li>{@code <edgent-target>/utils/metrics/lib/edgent.utils.metrics.jar} - for the {@code org.apache.edgent.metrics} package</li>
 </ul>
 Edgent uses <a href="www.slf4j.org">slf4j</a> for logging,
 leaving the decision of the actual logging implementation to your application

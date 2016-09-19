@@ -11,6 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 dependencies {
-  compile core_ext_dependencies
+  // none
+
+  // N.B. root project adds test common dependencies
 }

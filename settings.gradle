@@ -70,5 +70,8 @@ if (System.env.ANDROID_SDK_PLATFORM != null) {
   include 'android:topology'
   include 'android:hardware'
 }
+else {
+  logger.lifecycle 'ANDROID_SDK_PLATFORM ev not set. Omitting android:{topology,hardware} projects.'
+}
 
 rootProject.name = build_name

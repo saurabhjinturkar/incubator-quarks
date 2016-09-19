@@ -12,10 +12,13 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:execution')
-  compile project(':api:graph')
-  compile project(':api:oplet')
-  compile core_ext_dependencies
+  addTargetDirProjectJarDependency 'compile', ':api:execution'
+  addTargetDirProjectJarDependency 'compile', ':api:function'
+  addTargetDirProjectJarDependency 'compile', ':api:graph'
+  addTargetDirProjectJarDependency 'compile', ':api:oplet'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  // N.B. root project adds test common dependencies
 }
 
 //Build a jar file containing the applications to test the ApplicationService

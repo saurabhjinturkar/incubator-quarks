@@ -14,7 +14,8 @@
 archivesBaseName = project.name
 
 dependencies {
-  compile project(':connectors:javax.websocket-client')
-  compile 'org.eclipse.jetty.websocket:javax-websocket-server-impl:9.3.6.v20151106'
-  testRuntime core_ext_dependencies
+  addTargetDirProjectJarDependency 'compile', ':connectors:javax.websocket-client'
+  addProjectExtDependency 'compile', 'org.eclipse.jetty.websocket:javax-websocket-server-impl:9.3.6.v20151106'
+  
+  // N.B. root project adds test common dependencies
 }

@@ -12,10 +12,12 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:execution')
-  compile project(':api:graph')
-  compile project(':spi:graph')
-  compile core_ext_dependencies
+  addTargetDirProjectJarDependency 'compile', ':api:execution'
+  addTargetDirProjectJarDependency 'compile', ':api:graph'
+  addTargetDirProjectJarDependency 'compile', ':spi:graph'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:graph'

@@ -12,13 +12,15 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':providers:direct')
-  compile project(':runtime:jsoncontrol')
-  compile project(':runtime:appservice')
-  compile project(':connectors:iot')
-  compile project(':connectors:pubsub')
-  compile project(':apps:iot')
-  compile project(':apps:runtime')
+  addTargetDirProjectJarDependency 'compile', ':providers:direct'
+  addTargetDirProjectJarDependency 'compile', ':runtime:jsoncontrol'
+  addTargetDirProjectJarDependency 'compile', ':runtime:appservice'
+  addTargetDirProjectJarDependency 'compile', ':connectors:iot'
+  addTargetDirProjectJarDependency 'compile', ':connectors:pubsub'
+  addTargetDirProjectJarDependency 'compile', ':apps:iot'
+  addTargetDirProjectJarDependency 'compile', ':apps:runtime'
+
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology'
