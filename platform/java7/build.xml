@@ -30,16 +30,15 @@
 
 	<property name="input.dir" location="classes.in"/>
 	<property name="output.dir" location="classes.out"/>
-	<property name="test.classes.dir" location="classes.test"/>
 	<property name="ext.dir" location="${edgent}/ext"/>
 	
-    <property name="slf4j.version" location="1.7.12"/>
-    <property name="gson.version" location="2.2.4"/>
-    <property name="metrics.version" location="3.1.2"/>
+    <property name="slf4j.version" value="1.7.12"/>
+    <property name="gson.version" value="2.2.4"/>
+    <property name="metrics.version" value="3.1.2"/>
 
-	<property name="slf4j.ext.dir" location="slf4j-${slf4j.version}/"/>
-    <property name="gson.ext.dir" location="google-gson-${gson.version}/"/>
-    <property name="metrics.ext.dir" location="metrics-${metrics.version}/"/>
+	<property name="slf4j.ext.dir" value="slf4j-${slf4j.version}/"/>
+    <property name="gson.ext.dir" value="google-gson-${gson.version}/"/>
+    <property name="metrics.ext.dir" value="metrics-${metrics.version}/"/>
 
 	<path id="edgent.classpath">
         <pathelement location="${ext.dir}/${slf4j.ext.dir}slf4j-api-${slf4j.version}.jar"/>
@@ -64,7 +63,7 @@
 
 			<unzip dest="${input.dir}" src="${edgent8.target}/@{qdir}/@{qjar}"/>
 
-			<exec executable="java">
+			<exec executable="java" failonerror="true">
 				<arg value="-Dretrolambda.inputDir=${input.dir}"/>
 				<arg value="-Dretrolambda.classpath=${edgent8.target}/@{qdir}/@{qjar}:${qcp}"/>
 				<arg value="-Dretrolambda.outputDir=${output.dir}"/>
@@ -194,7 +193,10 @@
 			<delete dir="${edgent}/@{tdir}/test7.classes"/>
 			<mkdir dir="${edgent}/@{tdir}/test7.classes"/>
 
-			<exec executable="java">
+            <!-- <echo message="#### qcp7 ${qcp7}"/> -->
+            <!-- <echo message="#### qcp ${qcp}"/> -->
+            <!-- <echo message="#### tccp ${tccp}"/> -->
+			<exec executable="java" failonerror="true">
 				<arg value="-Dretrolambda.inputDir=${edgent}/@{tdir}/test.classes"/>
 				<arg value="-Dretrolambda.classpath=${qcp7}:${qcp}:${tccp}"/>
 				<arg value="-Dretrolambda.outputDir=${edgent}/@{tdir}/test7.classes"/>
@@ -263,6 +265,7 @@
 		<retro7.test.setup tdir="api/topology" />
 		<retro7.test.setup tdir="spi/graph" />
 		<retro7.test.setup tdir="spi/topology" />
+        <retro7.test.setup tdir="runtime/appservice" />
 		<retro7.test.setup tdir="runtime/etiao" />
 		<retro7.test.setup tdir="runtime/jmxcontrol" />
 		<retro7.test.setup tdir="runtime/jsoncontrol" />
@@ -293,6 +296,7 @@
 		<retro7.test.run tdir="api/topology" />
 		<retro7.test.run tdir="spi/graph" />
 		<retro7.test.run tdir="spi/topology" />
+        <retro7.test.run tdir="runtime/appservice" />
 		<retro7.test.run tdir="runtime/etiao" />
 		<retro7.test.run tdir="runtime/jmxcontrol" />
 		<retro7.test.run tdir="runtime/jsoncontrol" />

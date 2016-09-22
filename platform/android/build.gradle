@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-defaultTasks 'addAndroidTarget'
+defaultTasks 'addAndroidTargetDir'
 
 // Avoid creating/staging an empty jar (this is a 'java' subproject) 
 jar {
@@ -33,10 +33,10 @@ clean {
   dependsOn ant_clean
 }
 
-task addAndroidTarget {
+task addAndroidTargetDir {
   description = "Assemble distribution artifacts for android (from java7 artifacts)"
-  dependsOn ':platform:java7:addJava7Target', clean, ant_all
-  ant_all.mustRunAfter ':platform:java7:addJava7Target'
+  dependsOn ':platform:java7:addJava7TargetDir', clean, ant_all
+  ant_all.mustRunAfter ':platform:java7:addJava7TargetDir'
   ant_all.mustRunAfter clean
   
   // TODO the following isn't cutting it for adding up-to-date for this task
