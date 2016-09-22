@@ -69,7 +69,7 @@ ext {
     ':test', ':utils'
   ]
   
-  filteredSubprojects = subprojects*.findAll { 
+  filteredSubprojects = subprojects.findAll { 
     project -> !aggregatorOnlyProjects.contains(project.path)
   }
   
@@ -407,6 +407,8 @@ subprojects {
       from rootProject.file('NOTICE')
     }
   }
+  
+  ext.adjustTest7Classpath = false
 
   test {
     filter {
@@ -441,8 +443,77 @@ subprojects {
       
       classpath = classpath.filter { ! it.path.startsWith(project.libsDir.path) } 
       classpath = files(project.jar.archivePath) + classpath
+      
+      if (adjustTest7Classpath) {
+        // Add special java7 processing... (on top of the other test.doFirst classpath manipulations)
+      
+        // Change from using the normal test classes dir to the java7 test classes dir
+        classpath -= files(sourceSets.test.output.classesDir)
+        classpath = files(sourceSets.test.output.classesDir.toString().replace('test', 'java7Test')) + classpath
+      
+        // Switch from java8 jars to java7 jars
+        classpath = files(classpath.collect { it.toString().replace('java8', 'java7') })
+      }
       logger.debug "$project.path test.classpath: " + classpath.collect { it.toString() }
     }
+  }
+  
+  ext.unsupportedJava7TestProjects = [  // why not on all of these? (match ant_test7.run, see JAVA_SUPPORT.md)
+    // projects with no tests will be automatically avoided for java7 tests
+    // otherwise those that are not yet supported for java7 (not in ant_test7.{setup,run}) must be added here
+    ':api:graph',           // no runnable tests
+    ':analytics:math3',
+    ':analytics:sensors',
+    ':connectors:command',
+    ':connectors:csv',
+    ':connectors:file',
+    ':connectors:jdbc',
+    ':connectors:mqtt',
+    ':connectors:kafka',
+    ':connectors:serial',
+    ':connectors:wsclient',
+    ':connectors:wsclient-javax.websocket',
+    ':connectors:javax.websocket-client',
+    ':connectors:edgent.javax.websocket',
+    ':connectors:javax.websocket-server',
+    ':console:server',
+    ':console:servlets',
+    ':providers:development',
+    ':utils:streamscope',
+    ':test:fvtiot',         
+    ':test:svt',            
+  ]
+  
+  ext.j7TestClassesDir = file("$project.buildDir/classes/java7Test")
+  
+  task test7AdjustTestTask << {
+    if (! tasks.getByName('test').enabled
+        || unsupportedJava7TestProjects.contains(project.path)
+        || sourceSets.test.allSource.isEmpty()) {
+      test.enabled = false
+      return
+    }
+    adjustTest7Classpath = true
+    if (!j7TestClassesDir.exists()) {
+      // implicit dependency: :platform:java7:test7Compile
+      logger.error " ERROR: Run the test7Compile task.  $j7TestClassesDir does not exist."
+      throw new TaskExecutionException()
+    }
+    test {
+      testClassesDir = j7TestClassesDir
+      outputs.upToDateWhen { false } // always run - task is never "up to date"
+    }
+  }
+
+  task test7Run() {
+    description = "Run the test7Compile'd tests against the java7 target jars - run after :platform:java7:test7Compile and with JAVA_HOME==java7-VM"
+    // fwiw trying to leverage :platform:java7:ant_test7.run was problematic
+    
+    dependsOn ':platform:java7:verifyJava7Built', test7AdjustTestTask, test
+    // implicit dependency: :platform:java7:test7Compile
+    test.mustRunAfter = [ test7AdjustTestTask, ':platform:java7:verifyJava7Built' ]
+
+    outputs.upToDateWhen { false } // always run - never "up to date"
   }
 
   assemble.doLast {
@@ -503,6 +574,7 @@ dependencies {
 task createJunitReport << {
   description = "Generates a Junit report from all subprojects (use after 'test')"
 
+  ant.delete(dir: "${target_report_dir}/tests")
   ant.taskdef(name: 'junitreport',
           classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
           classpath: configurations.junitLibs.asPath)
@@ -513,8 +585,13 @@ task createJunitReport << {
   ant.move(file: "TESTS-TestSuites.xml", tofile: "${target_report_dir}/TESTS-TestSuites.xml")
 }
 
-task jacocoTestReport << {
+task jacocoTestReport {
   description = "Generates a coverage report from all subprojects (use after 'test')"
+  ext.test7AdjustJacocoReport = false
+}
+jacocoTestReport << {
+
+  ant.delete(dir: "${target_report_dir}/coverage")
 
   def libDir = new File("${target_java8_dir}", "lib")
   def utilsDir = new File("${target_java8_dir}", "utils")
@@ -546,18 +623,15 @@ task jacocoTestReport << {
       executionData.addToAntBuilder(ant, 'resources')
     }
 
-    // the 'test' task directly uses the built class files
-    // (test doesn't assemble jars nor populate target_dir with them)
-    jococoClassfilesFromJars = false;
+    platformTargetDir = target_java8_dir
+    if (test7AdjustJacocoReport) {
+      platformTargetDir = target_java7_dir
+    }
 
     structure(name: project.name) {
       group(name: "Edgent API") {
         classfiles {
-          if (jococoClassfilesFromJars) {
-            fileset(dir: "${target_java8_dir}/lib", includes: "edgent.api.*.jar")
-          } else {
-            fileset(dir: "api", includes: "**/build/classes/main/**/*.class")
-          }
+          fileset(dir: "$platformTargetDir/lib", includes: "edgent.api.*.jar")
         }
         sourcefiles {
           fileset(dir: "./api/function/src/main/java", includes: "**/*.java")
@@ -569,11 +643,7 @@ task jacocoTestReport << {
       }
       group(name: "Edgent SPI") {
         classfiles {
-          if (jococoClassfilesFromJars) {
-            fileset(dir: "${target_java8_dir}/lib", includes: "edgent.spi.*.jar")
-          } else {
-            fileset(dir: "spi", includes: "**/build/classes/main/**/*.class")
-          }
+          fileset(dir: "$platformTargetDir/lib", includes: "edgent.spi.*.jar")
         }
         sourcefiles {
           fileset(dir: "./spi/graph/src/main/java", includes: "**/*.java")
@@ -582,11 +652,7 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Runtime") {
         classfiles {
-          if (jococoClassfilesFromJars) {
-            fileset(dir: "${target_java8_dir}/lib", includes: "edgent.runtime.*.jar")
-          } else {
-            fileset(dir: "runtime", includes: "**/build/classes/main/**/*.class")
-          }
+          fileset(dir: "$platformTargetDir/lib", includes: "edgent.runtime.*.jar")
         }
         sourcefiles {
           fileset(dir: "./runtime/etiao/src/main/java", includes: "**/*.java")
@@ -595,11 +661,7 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Utilities") {
         classfiles {
-          if (jococoClassfilesFromJars) {
-            fileset(dir: "${target_java8_dir}/utils", includes: "**/edgent.utils.*.jar")
-          } else { 
-            fileset(dir: "utils", includes: "**/build/classes/main/**/*.class")
-          }
+          fileset(dir: "$platformTargetDir/utils", includes: "**/edgent.utils.*.jar")
         }
         sourcefiles {
           fileset(dir: "./utils/metrics/src/main/java", includes: "**/*.java")
@@ -608,11 +670,7 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Connectors") {
         classfiles {
-          if (jococoClassfilesFromJars) {
-            fileset(dir: "${target_java8_dir}/connectors", includes: "**/edgent.connectors.*.jar")
-          } else { 
-            fileset(dir: "connectors", includes: "**/build/classes/main/**/*.class")
-          }
+          fileset(dir: "$platformTargetDir/connectors", includes: "**/edgent.connectors.*.jar")
         }
         sourcefiles {
           fileset(dir: "./connectors/common/src/main/java", includes: "**/*.java")
@@ -631,41 +689,31 @@ task jacocoTestReport << {
       }
       group(name: "Edgent Providers") {
         classfiles {
-          if (jococoClassfilesFromJars) {
-            fileset(dir: "${target_java8_dir}/lib", includes: "edgent.providers.*.jar")
-          } else {
-            fileset(dir: "providers", includes: "**/build/classes/main/**/*.class")
-          }
+          fileset(dir: "$platformTargetDir/lib", includes: "edgent.providers.*.jar")
         }
         sourcefiles {
           fileset(dir: "./providers/direct/src/main/java", includes: "**/*.java")
           fileset(dir: "./providers/development/src/main/java", includes: "**/*.java")
         }
       }
-      group(name: "Edgent Analytics") {
-        classfiles {
-          if (jococoClassfilesFromJars) {
-            fileset(dir: "${target_java8_dir}/analytics", includes: "**/edgent.analytics.*.jar")
-          } else {
-            fileset(dir: "analytics", includes: "**/build/classes/main/**/*.class")
+      if (!test7AdjustJacocoReport) {
+        group(name: "Edgent Analytics") {
+          classfiles {
+            fileset(dir: "$platformTargetDir/analytics", includes: "**/edgent.analytics.*.jar")
+          }
+          sourcefiles {
+            fileset(dir: "./analytics/math3/src/main/java", includes: "**/*.java")
+            fileset(dir: "./analytics/sensors/src/main/java", includes: "**/*.java")
           }
         }
-        sourcefiles {
-          fileset(dir: "./analytics/math3/src/main/java", includes: "**/*.java")
-          fileset(dir: "./analytics/sensors/src/main/java", includes: "**/*.java")
-        }
-      }
-      group(name: "Edgent Console") {
-        classfiles {
-          if (jococoClassfilesFromJars) {
-            fileset(dir: "${target_java8_dir}/console", includes: "**/edgent.console.*.jar")
-          } else {
-            fileset(dir: "console", includes: "**/build/classes/main/**/*.class")
+        group(name: "Edgent Console") {
+          classfiles {
+            fileset(dir: "$platformTargetDir/console", includes: "**/edgent.console.*.jar")
           }
-        }
-        sourcefiles {
-          fileset(dir: "./console/server/src/main/java", includes: "**/*.java")
-          fileset(dir: "./console/servlets/src/main/java", includes: "**/*.java")
+          sourcefiles {
+            fileset(dir: "./console/server/src/main/java", includes: "**/*.java")
+            fileset(dir: "./console/servlets/src/main/java", includes: "**/*.java")
+          }
         }
       }
     }
@@ -769,7 +817,7 @@ task releaseTarGz(type: Tar) {
 
 assemble {
   description = "Assemble distribution artifacts and populate the target_dir with jars, doc, etc. Like 'build' w/o 'test'"
-  dependsOn filteredSubprojects*.assemble, aggregateJavadoc, copyScripts
+  dependsOn filteredSubprojects.assemble, aggregateJavadoc, copyScripts
   aggregateJavadoc.mustRunAfter filteredSubprojects*.assemble
 }
 
@@ -785,11 +833,11 @@ task cleanAll {
 task release {
   description = 'Assemble distribution artifacts, populate target_dir, and create a release tgz'
   dependsOn cleanAll, addMiscDistFiles, assemble,
-       ':platform:java7:addJava7Target', ':platform:android:addAndroidTarget',
+       ':platform:java7:addJava7TargetDir', ':platform:android:addAndroidTargetDir',
        releaseTarGz
   addMiscDistFiles.mustRunAfter cleanAll
   assemble.mustRunAfter addMiscDistFiles
-  releaseTarGz.mustRunAfter assemble,':platform:java7:addJava7Target',':platform:android:addAndroidTarget'
+  releaseTarGz.mustRunAfter assemble,':platform:java7:addJava7TargetDir',':platform:android:addAndroidTargetDir'
 }
 
 task reports {
@@ -797,11 +845,22 @@ task reports {
   dependsOn createJunitReport, jacocoTestReport
 }
 
+task test7AdjustJacocoReport << {
+  jacocoTestReport.test7AdjustJacocoReport = true
+  logger.lifecycle "### NOTE: [WIP] test7 jacoco reporting ###"
+}
+
+task test7Reports {
+  description = "Generate JUnit and Coverage reports of prior test run. Use after 'test7Run'"
+  dependsOn createJunitReport, test7AdjustJacocoReport, jacocoTestReport
+  jacocoTestReport.mustRunAfter test7AdjustJacocoReport
+}
+
 // build: inject test report generation and javadoc generation (for early problem detection)
 // make 'build' like "all test reports"
 build {
-  dependsOn filteredSubprojects*.build
-  finalizedBy reports // after build's test task
+  dependsOn filteredSubprojects.build, reports
+  reports.mustRunAfter filteredSubprojects.build 
 }
 
 task wrapper(type: Wrapper) {

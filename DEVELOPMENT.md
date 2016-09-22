@@ -93,13 +93,45 @@ following statement:
     }
 ```
 
-Closing ant reopening a pull request will kick off a new build against the pull request.
+Closing and reopening a pull request will kick off a new build against the pull request.
 
 ### Test reports
 
-Running the reports target produces two reports:
+Running the `reports` target produces two reports:
 * `reports/junit/index.html` - JUnit test report
 * `reports/coverage/index.html` - Code coverage report.
+
+### Testing Edgent with Java7
+
+All of the standard build system _tasks_ above must be run with
+`JAVA_HOME` set to use a Java8 VM.
+
+As noted above, the `release` task includes generation of Java7 
+compatible versions of the Edgent jars. After the release task has been run,
+Edgent may be tested in a Java7 context using some special _test7_ tasks.
+
+See [JAVA_SUPPORT](JAVA_SUPPORT.md) for information about what 
+Edgent features are supported in the different environments.
+
+``` sh
+ # run with JAVA_HOME set for Java8
+$ ant -buildfile platform/java7 test7.setup  # compile the Edgent tests to operate in a java7 environment
+
+ # run with JAVA_HOME set for Java7
+$ ant -buildfile platform/java7 test7.run    # run the tests with a java7 VM
+```
+
+[WIP] with the Gradle tooling
+``` sh
+ # run with JAVA_HOME set for Java8
+$ ./gradlew test7Compile  # compile the Edgent tests to operate in a java7 environment
+
+ # run with JAVA_HOME set for Java7
+$ ./gradlew test7Run      # run the tests with a java7 VM
+
+ # run with JAVA_HOME set for Java8
+$ ./gradlew test7Reports  # generate the junit and coverage tests
+```
 
 ### [WIP] Building With Gradle
 
