@@ -13,6 +13,8 @@
  */
  
 defaultTasks 'assemble'
+
+apply from: 'other.gradle'
  
 /* Configure root project */
 allprojects {
@@ -403,8 +405,17 @@ subprojects {
       )
     }
     metaInf {
-      from rootProject.file('LICENSE')
-      from rootProject.file('NOTICE')
+      with( copySpec {
+        rename { 'LICENSE' }
+        from rootProject.file('legal/apache-v2_0-license')
+      })
+      with( copySpec {
+        rename { 'NOTICE' }
+        from rootProject.file(
+          projectsWithPreApacheContribs.contains(project.path)
+            ? 'legal/ibm-contrib-notice'
+            : 'legal/apache-notice')
+      })
     }
   }
   
