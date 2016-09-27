@@ -8,18 +8,34 @@ This describes development of Apache Edgent itself, not how to develop Edgent ap
 The Edgent community welcomes contributions, please *Get Involved*!
  * http://edgent.incubator.apache.org/docs/community
 
+## Switching from Ant to Gradle
+
+We are getting close to being able to permanently switch over to a gradle based
+build environment [EDGENT-139](https://issues.apache.org/jira/browse/EDGENT-139).
+
+For a short time, both the gradle and ant build environments will be functional.
+The gradle build environment and the ant environment create artifacts in
+different places in the workspace so they do not interfere with each other.
+
+Once the 3rd party jars have been removed from the Edgent repository, the
+ant based environment and the current Eclipse based Edgent runtime development
+environment will no longer work.  [EDGENT-251](https://issues.apache.org/jira/browse/EDGENT-251)
+is in progress working on the Eclipse environment.
+
+Timeline:
+- Sep 27 - Start using the gradle build environment for developing Edgent.
+           See below for using gradle.
+- Oct 01 - switch travis-ci builds to using the gradle environment
+- ASAP   - Eclipse based Edgent runtime development doesn't use 3rd party jars in the repo
+- Nov 01 - remove the 3rd party jars from the Edgent repository.
+           The ant build environment and "old" Eclipse build environment no
+           longer function.
+
+It's recommended that developers of Edgent create a new workspace instead of
+reusing current ant-based Edgent workspaces.
+
 ## Renamed from Apache Quarks
-Apache Edgent is the new name. Things are in a state of transition until all
-of the pieces arrive.
-
-The "incubator-quarks" repository has been fully updated.
-
-Until the Apache infrastructure changes are done, continue to use
-the Quarks mailing list, website, and repositories:
-  * mailing list: dev at quarks.incubator.apache.org
-  * http://quarks.incubator.apache.org/
-  * https://git-wip-us.apache.org/repos/asf/incubator-quarks.git
-  * https://github.com/apache/incubator-quarks
+Apache Edgent is the new name and the conversion is complete.
 
 Code changes:
   * package names have the prefix "org.apache.edgent"
@@ -35,15 +51,6 @@ Once you have forked the repository and created your local clone you need to dow
 these additional development software tools.
 
 * Java 8 - The development setup assumes Java 8 and Linux. 
-* Apache Ant 1.9.4: The build uses Ant, the version it has been tested with is 1.9.4. - https://ant.apache.org/
-* JUnit 4.10: Java unit tests are written using JUnit, tested at version 4.10. - http://junit.org/
-* Jacoco 0.7.5: The JUnit tests have code coverage enabled by default, using Jacoco, tested with version 0.7.5. - http://www.eclemma.org/jacoco/
-
-The Apache Ant `build.xml` files are setup to assume that the Junit and Jacoco jars are copied into `$HOME/.ant/lib`.
-``` sh
-$ ls $HOME/.ant/lib
-jacocoagent.jar  jacocoant.jar  junit-4.10.jar
-```
 
 These are optional
 
@@ -53,20 +60,40 @@ the location of the Android platform so that ${ANDROID_SDK_PLATFORM}/android.jar
 
 ### Building
 
-The primary build process is using Ant, any pull request is expected to maintain
-the build success of `clean, all, test`.
+The primary build process is using [Gradle](https://gradle.org/), 
+any pull request is expected to maintain the build success of `clean, assemble, test`.
 
-The top-level Ant file `edgent/build.xml` has these main targets:
+The Gradle wrapper `edgent/{gradlew,gradlew.bat}` should be used.
+The wrapper ensures the appropriate version of gradle is used and it
+will automatically download it if needed.  e.g.:
+``` sh
+$ ./gradlew --version
+$ ./gradlew clean build
+```
 
-* `all` (default) : Build all code and Javadoc into `target`. The build will fail on any code error or Javadoc warning or error.
+The top-level Gradle file is `edgent/build.gradle` and it contains several
+unique tasks:
+
+* `assemble` (default) : Build all code and Javadoc into `build\distributions`. The build will fail on any code error or Javadoc warning or error.
+* `all` : synonym for `assemble`
+* `build` : essentially like "assemble test reports"
 * `clean` : Clean the project
-* `test` : Run the JUnit tests, if any test fails the test run stops. Takes around five minutes.
-* `reports` : Generate JUnit and Code Coverage reports, use after executing the `test` target.
-* `release` : Build a release bundle, that includes subsets of the Edgent jars that run on Java 7 (`target/java7`) and Android (`target/android`).
+* `test` : Run the JUnit tests, if any test fails the test run stops.  Use `--continue` to not stop on the first failure.
+  * use a project test task and optionally the `--tests` option to run a subset of the tests.  Multiple `--tests` options may be specified following each test task.
+    * `$ ./gradlew <project>:test`
+    * `$ ./gradlew <project>:test --tests '*.SomeTest'`
+    * `$ ./gradlew <project>:test --tests '*.SomeTest.someMethod'`
+  * use the `cleanTest` task to force rerunning a previously successful test task (without forcing a rerun of all of the task's dependencies):
+    * `$ ./gradlew [<project>:]cleanTest [<project>:]test`
+* `reports` : Generate JUnit and Code Coverage reports in `build\distributions\reports`. Use after executing the `test` target. 
+  * `reports\tests\overview-summary.html` - JUnit test report
+  * `reports\coverage\index.html` - Code coverage report
+* `release` : Build a release bundle in `build/release-edgent`, that includes subsets of the Edgent jars that run on Java 7 (`build/distributions/java7`) and Android (`build/distributions/android`).
 
 The build process has been tested on Linux and MacOSX.
 
 To build on Windows probably needs some changes, please get involved and contribute them!
+
 
 **Continuous Integration**
 
@@ -98,8 +125,8 @@ Closing and reopening a pull request will kick off a new build against the pull 
 ### Test reports
 
 Running the `reports` target produces two reports:
-* `reports/junit/index.html` - JUnit test report
-* `reports/coverage/index.html` - Code coverage report.
+* `builds/distributions/reports/tests/index.html` - JUnit test report
+* `builds/distributions/reports/coverage/index.html` - Code coverage report.
 
 ### Testing Edgent with Java7
 
@@ -115,15 +142,6 @@ Edgent features are supported in the different environments.
 
 ``` sh
  # run with JAVA_HOME set for Java8
-$ ant -buildfile platform/java7 test7.setup  # compile the Edgent tests to operate in a java7 environment
-
- # run with JAVA_HOME set for Java7
-$ ant -buildfile platform/java7 test7.run    # run the tests with a java7 VM
-```
-
-[WIP] with the Gradle tooling
-``` sh
- # run with JAVA_HOME set for Java8
 $ ./gradlew test7Compile  # compile the Edgent tests to operate in a java7 environment
 
  # run with JAVA_HOME set for Java7
@@ -133,45 +151,14 @@ $ ./gradlew test7Run      # run the tests with a java7 VM
 $ ./gradlew test7Reports  # generate the junit and coverage tests
 ```
 
-### [WIP] Building With Gradle
-
-Work is ongoing to replace the Ant based build system with a Gradle based one
-[EDGENT-139](https://issues.apache.org/jira/browse/EDGENT-139).  Delivered functionality is expected to work though is not yet
-complete.
-
-**TODO: The primary build process is using [Gradle](https://gradle.org/), any pull request is expected to
-maintain the build success of `clean, assemble, test, reports`.**
-
-The Gradle wrapper `edgent/{gradlew,gradlew.bat}` should be used.
-The wrapper ensures the appropriate version of gradle is used and it
-will automatically download it if needed.  e.g.:
+[DEPRECATED] using the Ant tooling
 ``` sh
-$ ./gradlew --version
-$ ./gradlew clean build
+ # run with JAVA_HOME set for Java8
+$ ant -buildfile platform/java7 test7.setup  # compile the Edgent tests to operate in a java7 environment
+
+ # run with JAVA_HOME set for Java7
+$ ant -buildfile platform/java7 test7.run    # run the tests with a java7 VM
 ```
-
-The top-level Gradle file is `edgent/build.gradle` and it contains several
-unique tasks: 
-
-* `assemble` (default) : Build all code and Javadoc into `build\distributions`. The build will fail on any code error or Javadoc warning or error.
-* `all` : synonym for `assemble`
-* `build` : essentially like "assemble test reports"
-* `clean` : Clean the project
-* `test` : Run the JUnit tests, if any test fails the test run stops.
-  * use a project test task and optionally the `--tests` option to run a subset of the tests.  Multiple `--tests` options may be specified following each test task.
-    * `$ ./gradlew <project>:test`
-    * `$ ./gradlew <project>:test --tests '*.SomeTest'`
-    * `$ ./gradlew <project>:test --tests '*.SomeTest.someMethod'`
-  * use the `cleanTest` task to force rerunning a previously successful test task (without forcing a rerun of all of the task's dependencies):
-    * `$ ./gradlew [<project>:]cleanTest [<project>:]test`
-* `reports` : Generate JUnit and Code Coverage reports in `build\distributions\reports`. Use after executing the `test` target. 
-  * `reports\tests\overview-summary.html` - JUnit test report
-  * `reports\coverage\index.html` - Code coverage report
-* `release` : Build a release bundle in `build/release-edgent`, that includes subsets of the Edgent jars that run on Java 7 (`build/distributions/java7`) and Android (`build/distributions/android`).
-
-The build process has been tested on Linux and MacOSX.
-
-To build on Windows probably needs some changes, please get involved and contribute them!
 
 #### Publish to Maven Repository
 
@@ -189,7 +176,34 @@ names of the jars in the target-dir / release tgz.
 E.g. `org.apache.edgent:edgent.api.topology:0.4.0`
 
 
-#### **TODO: Continuous Integration with Gradle**
+### [DEPRECATED] Ant specific Setup
+
+Once you have forked the repository and created your local clone you need to download
+these additional development software tools.
+
+* Apache Ant 1.9.4: The build uses Ant, the version it has been tested with is 1.9.4. - https://ant.apache.org/
+* JUnit 4.10: Java unit tests are written using JUnit, tested at version 4.10. - http://junit.org/
+* Jacoco 0.7.5: The JUnit tests have code coverage enabled by default, using Jacoco, tested with version 0.7.5. - http://www.eclemma.org/jacoco/
+
+The Apache Ant `build.xml` files are setup to assume that the Junit and Jacoco jars are copied into `$HOME/.ant/lib`.
+``` sh
+$ ls $HOME/.ant/lib
+jacocoagent.jar  jacocoant.jar  junit-4.10.jar
+```
+
+### [DEPRECATED] Building with Ant
+
+Any pull request is expected to maintain the build success of `clean, all, test`.
+
+The top-level Ant file `edgent/build.xml` has these main targets:
+
+* `all` (default) : Build all code and Javadoc into `target`. The build will fail on any code error or Javadoc warning or error.
+* `clean` : Clean the project
+* `test` : Run the JUnit tests, if any test fails the test run stops.
+* `reports` : Generate JUnit and Code Coverage reports, use after executing the `test` target.
+* `release` : Build a release bundle, that includes subsets of the Edgent jars that run on Java 7 (`target/java7`) and Android (`target/android`).
+
+The build process has been tested on Linux and MacOSX.
 
 
 ### Code Layout
