@@ -139,12 +139,14 @@ Work is ongoing to replace the Ant based build system with a Gradle based one
 [EDGENT-139](https://issues.apache.org/jira/browse/EDGENT-139).  Delivered functionality is expected to work though is not yet
 complete.
 
-**TODO: The primary build process is using Gradle, any pull request is expected to
+**TODO: The primary build process is using [Gradle](https://gradle.org/), any pull request is expected to
 maintain the build success of `clean, assemble, test, reports`.**
 
-The Gradle wrapper `edgent/{gradlew,gradlew.bat}` should be used to ensure an appropriate
-version of Gradle is used,  e.g.:
+The Gradle wrapper `edgent/{gradlew,gradlew.bat}` should be used.
+The wrapper ensures the appropriate version of gradle is used and it
+will automatically download it if needed.  e.g.:
 ``` sh
+$ ./gradlew --version
 $ ./gradlew clean build
 ```
 

@@ -547,13 +547,14 @@ task copyScripts(type: Copy) {
 }
 
 //Create Junit Report
+// need to setup classpath to junit/jacoco for ant.junitreport task
 configurations {
   junitLibs
 }
-dependencies {
-  junitLibs 'org.apache.ant:ant-junit:1.9.5'
-  junitLibs 'org.apache.ant:ant-junit4:1.9.5'
-  junitLibs 'org.jacoco:org.jacoco.ant:0.7.5.201505241946'
+dependencies { // versions with gradle 3.1
+  junitLibs 'org.apache.ant:ant-junit:1.9.6'
+  junitLibs 'org.apache.ant:ant-junit4:1.9.6'
+  junitLibs 'org.jacoco:org.jacoco.ant:0.7.7.201606060606'
 }
 
 task createJunitReport << {
@@ -564,7 +565,7 @@ task createJunitReport << {
           classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
           classpath: configurations.junitLibs.asPath)
   ant.junitreport(todir: './') {
-    fileset(dir: './', includes: '**/test-results/TEST-*.xml')
+    fileset(dir: './', includes: '**/test-results/test/TEST-*.xml')
     report(format: 'frames', todir: "${target_report_dir}/tests")
   }
   ant.move(file: "TESTS-TestSuites.xml", tofile: "${target_report_dir}/TESTS-TestSuites.xml")
