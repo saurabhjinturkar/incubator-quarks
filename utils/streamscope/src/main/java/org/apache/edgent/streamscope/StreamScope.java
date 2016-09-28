@@ -370,10 +370,12 @@ public class StreamScope<T> implements Consumer<T> {
    * @param isEnabled true to enable, false to disable.
    */
   public synchronized void setEnabled(boolean isEnabled) {
-    if (!isEnabled)
-      buffer.release();
-    buffer.allocate();
-    this.isEnabled = isEnabled;
+    if (this.isEnabled != isEnabled) {
+      if (!isEnabled)
+        buffer.release();
+      buffer.allocate();
+      this.isEnabled = isEnabled;
+    }
   }
   
   /**
