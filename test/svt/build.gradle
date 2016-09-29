@@ -11,9 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+def lib= "$target_java8_dir/$project.simpleGroupName/$project.name"
+
+//def lib="${project.distsDir}/lib"
+
 dependencies {
-  compile project(':providers:development')
-  compile project(':samples:apps')
-  compile project(':connectors:iotf')
-  compile ext_classpath
+  addTargetDirProjectJarDependency 'compile', ':providers:development'
+  addTargetDirProjectJarDependency 'compile', ':samples:apps'
+  addTargetDirProjectJarDependency 'compile', ':connectors:iotp'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  // N.B. root project adds test common dependencies
+}
+
+tasks.build.doFirst(){
+  mkdir lib 
+}
+
+tasks.build.doLast(){
+  delete lib
 }

@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.providers.direct" default="all"
+<project name="edgent.providers.direct" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -24,18 +24,19 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${lib}/quarks.api.topology.jar" />
-    <pathelement location="${lib}/quarks.spi.topology.jar" />
-    <pathelement location="${lib}/quarks.spi.graph.jar" />
-    <pathelement location="${lib}/quarks.runtime.etiao.jar" />
-    <pathelement location="${lib}/quarks.runtime.jsoncontrol.jar" />
+    <pathelement location="${lib}/edgent.api.topology.jar" />
+    <pathelement location="${lib}/edgent.spi.topology.jar" />
+    <pathelement location="${lib}/edgent.spi.graph.jar" />
+    <pathelement location="${lib}/edgent.runtime.etiao.jar" />
+    <pathelement location="${lib}/edgent.runtime.jsoncontrol.jar" />
   </path>
 
   <path id="test.compile.classpath">
     <pathelement location="${jar}" />
+    <pathelement location="${lib}/edgent.runtime.appservice.jar" />
     <pathelement location="../../api/topology/test.classes" />
     <pathelement location="../../utils/metrics/test.classes" />
-    <pathelement location="${quarks.utils}/metrics/lib/quarks.utils.metrics.jar" />
+    <pathelement location="${edgent.utils}/metrics/lib/edgent.utils.metrics.jar" />
     <path refid="compile.classpath"/>
   </path>
 

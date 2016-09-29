@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-quarks=../../..
+edgent=../../..
 
 # Runs the Sample JDBC Writer or Reader
 #
@@ -32,13 +32,13 @@ if [ ! -f $DERBY_HOME/lib/derby.jar ]; then
     exit 1;
 fi
 
-export CLASSPATH=${quarks}/samples/lib/quarks.samples.connectors.jar:$DERBY_HOME/lib/derby.jar
+export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar:$DERBY_HOME/lib/derby.jar
 
 app=$1; shift
 if [ "$app" == "writer" ]; then
-    java quarks.samples.connectors.jdbc.SimpleWriterApp jdbc.properties
+    java org.apache.edgent.samples.connectors.jdbc.SimpleWriterApp jdbc.properties
 elif [ "$app" == "reader" ]; then
-    java quarks.samples.connectors.jdbc.SimpleReaderApp jdbc.properties
+    java org.apache.edgent.samples.connectors.jdbc.SimpleReaderApp jdbc.properties
 else
     echo "unrecognized mode '$app'"
     echo "usage: $0 writer|reader"

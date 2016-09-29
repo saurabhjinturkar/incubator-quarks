@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.api.window" default="all"
+<project name="edgent.api.window" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -24,7 +24,7 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${lib}/quarks.api.function.jar"/>
+    <pathelement location="${lib}/edgent.api.function.jar"/>
   </path>
 
   <path id="test.compile.classpath">

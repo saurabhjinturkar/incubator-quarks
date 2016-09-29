@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-quarks=../../..
+edgent=../../..
 
 # Runs the File connector sample
 #
@@ -28,13 +28,13 @@ if [ ! -e $sampledir ]; then
     mkdir $sampledir
 fi 
 
-export CLASSPATH=${quarks}/samples/lib/quarks.samples.connectors.jar
+export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
 app=$1; shift
 if [ "$app" == "writer" ]; then
-    java quarks.samples.connectors.file.FileWriterApp $sampledir
+    java org.apache.edgent.samples.connectors.file.FileWriterApp $sampledir
 elif [ "$app" == "reader" ]; then
-    java quarks.samples.connectors.file.FileReaderApp $sampledir
+    java org.apache.edgent.samples.connectors.file.FileReaderApp $sampledir
 else
     echo "unrecognized mode '$app'"
     echo "usage: $0 'writer|reader'"

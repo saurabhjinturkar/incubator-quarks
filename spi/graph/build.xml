@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.spi.graph" default="all"
+<project name="edgent.spi.graph" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -24,8 +24,8 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${lib}/quarks.api.graph.jar" />
-    <pathelement location="${lib}/quarks.api.execution.jar" />
+    <pathelement location="${lib}/edgent.api.graph.jar" />
+    <pathelement location="${lib}/edgent.api.execution.jar" />
   </path>
 
   <path id="test.compile.classpath">

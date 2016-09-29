@@ -5,7 +5,7 @@
     <servlet>
         <display-name>Console Application</display-name>
         <servlet-name>ConsoleServlet</servlet-name>
-        <servlet-class>quarks.console.servlets.ConsoleServlet</servlet-class>
+        <servlet-class>org.apache.edgent.console.servlets.ConsoleServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
@@ -15,7 +15,7 @@
             <servlet>
    <display-name>Job Listing Service</display-name>
         <servlet-name>ConsoleJobServlet</servlet-name>
-        <servlet-class>quarks.console.servlets.ConsoleJobServlet</servlet-class>
+        <servlet-class>org.apache.edgent.console.servlets.ConsoleJobServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
@@ -25,7 +25,7 @@
     <servlet>
       	<display-name>Metrics Listing Service</display-name>
      	<servlet-name>ConsoleMetricsServlet</servlet-name>
-     	<servlet-class>quarks.console.servlets.ConsoleMetricsServlet</servlet-class>
+     	<servlet-class>org.apache.edgent.console.servlets.ConsoleMetricsServlet</servlet-class>
      	<load-on-startup>1</load-on-startup>
       </servlet>
      <servlet-mapping>

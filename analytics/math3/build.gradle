@@ -12,10 +12,12 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile 'org.apache.commons:commons-math3:3.4.1'
-  compile ext_classpath
-  testCompile project(':providers:direct')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addProjectExtDependency 'compile', 'org.apache.commons:commons-math3:3.4.1'
+  addTargetDirCoreExtJarDependencies 'compile'
+  
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct'

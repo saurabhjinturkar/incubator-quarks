@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-quarks=../../..
+edgent=../../..
 
 # Runs the MQTT Publisher or Subscriber client
 #
@@ -24,6 +24,6 @@ quarks=../../..
 # ./runmqttclient.sh sub
 # ./runmqttclient.sh -h
 
-export CLASSPATH=${quarks}/samples/lib/quarks.samples.connectors.jar
+export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
-java quarks.samples.connectors.mqtt.MqttClient $@
+java org.apache.edgent.samples.connectors.mqtt.MqttClient $@

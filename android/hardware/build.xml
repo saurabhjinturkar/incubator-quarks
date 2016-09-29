@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.android.hardware" default="all"
+<project name="edgent.android.hardware" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -28,7 +28,7 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${quarks.lib}/quarks.api.topology.jar" />
+    <pathelement location="${edgent.lib}/edgent.api.topology.jar" />
   </path>
 
 
@@ -49,7 +49,7 @@
   </path>
 
  <target name="all" if="env.ANDROID_SDK_PLATFORM">
-    <antcall target="quarks.common.all"/>
+    <antcall target="edgent.common.all"/>
  </target>
 
  <!-- no tests -->

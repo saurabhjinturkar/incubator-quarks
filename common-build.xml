@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.common"
+<project name="edgent.common"
   xmlns:jacoco="antlib:org.jacoco.ant"
   >
     <description>
@@ -23,12 +23,12 @@
 
 
     <!-- Assumption is that build files are two levels deep -->
-    <property name="quarks.dir" location="${basedir}/../.."/>
+    <property name="edgent.dir" location="${basedir}/../.."/>
 
-    <property name="quarks.tools" location="${quarks.dir}/tools"/>
+    <property name="edgent.tools" location="${edgent.dir}/tools"/>
 
-    <property name="target.dir" location="${quarks.dir}/target"/>
-    <property name="quarks.ext" location="${quarks.dir}/ext"/>
+    <property name="target.dir" location="${edgent.dir}/target"/>
+    <property name="edgent.ext" location="${edgent.dir}/ext"/>
 
     <!-- Project specific extension jars -->
     <property name="project.ext" location="${basedir}/ext"/>
@@ -36,12 +36,12 @@
     <property name="target.java8.dir" location="${target.dir}/java8"/>
     <property name="target.java8.ext" location="${target.java8.dir}/ext"/>
 
-    <property name="quarks.lib" location="${target.java8.dir}/lib"/>
+    <property name="edgent.lib" location="${target.java8.dir}/lib"/>
 
-   <!-- default to quarks lib  -->
+   <!-- default to edgent lib  -->
    <condition property="lib"
        value="${target.java8.dir}/${component.path}/lib"
-       else="${quarks.lib}">
+       else="${edgent.lib}">
        <isset property="component.path"/>
    </condition>
    <condition property="component.ext"
@@ -49,12 +49,12 @@
        <isset property="component.path"/>
    </condition>
 
-   <property name="quarks.analytics" location="${target.java8.dir}/analytics"/>
-   <property name="quarks.apps" location="${target.java8.dir}/apps"/>
-   <property name="quarks.connectors" location="${target.java8.dir}/connectors"/>
-   <property name="quarks.console" location="${target.java8.dir}/console"/>
-   <property name="quarks.utils" location="${target.java8.dir}/utils"/>
-   <property name="quarks.samples" location="${target.java8.dir}/samples"/>
+   <property name="edgent.analytics" location="${target.java8.dir}/analytics"/>
+   <property name="edgent.apps" location="${target.java8.dir}/apps"/>
+   <property name="edgent.connectors" location="${target.java8.dir}/connectors"/>
+   <property name="edgent.console" location="${target.java8.dir}/console"/>
+   <property name="edgent.utils" location="${target.java8.dir}/utils"/>
+   <property name="edgent.samples" location="${target.java8.dir}/samples"/>
 
     <property name="src" location="src/main/java"/>
     <property name="src.excludes" value=""/>
@@ -79,26 +79,26 @@
 
     <property name="full.compile.classpath.id" value="compile.classpath"/>
 
-    <!-- Core Quarks ext class path -->
-    <path id="quarks.ext.classpath">
+    <!-- Core Edgent ext class path -->
+    <path id="edgent.ext.classpath">
       <pathelement location="${target.java8.ext}/google-gson-2.2.4/gson-2.2.4.jar" />
       <pathelement location="${target.java8.ext}/slf4j-1.7.12/slf4j-api-1.7.12.jar"/>
       <pathelement location="${target.java8.ext}/metrics-3.1.2/metrics-core-3.1.2.jar"/>
     </path>
 
-    <!-- Quarks samples common class path -->
-    <path id="quarks.samples.classpath">
-      <pathelement location="${quarks.lib}/quarks.providers.development.jar"/>
-      <pathelement location="${quarks.lib}/quarks.providers.direct.jar"/>
+    <!-- Edgent samples common class path -->
+    <path id="edgent.samples.classpath">
+      <pathelement location="${edgent.lib}/edgent.providers.development.jar"/>
+      <pathelement location="${edgent.lib}/edgent.providers.direct.jar"/>
       <pathelement location="${target.java8.ext}/slf4j-1.7.12/slf4j-jdk14-1.7.12.jar"/>
     </path>
 
-    <!-- Quarks unit tests common class path -->
+    <!-- Edgent unit tests common class path -->
     <path id="test.common.classpath">
       <pathelement location="${target.java8.ext}/slf4j-1.7.12/slf4j-jdk14-1.7.12.jar"/>
     </path>
 
-    <!-- expects a property of component.path e.g. connectors/iotf -->
+    <!-- expects a property of component.path e.g. connectors/iotp -->
     <!-- only called by non-core components -->
     <macrodef name="setup.component">
 	<sequential>
@@ -117,7 +117,7 @@
        <setup.component/>
     </target>
 	
-	  <macrodef name="quarks.compile">
+	  <macrodef name="edgent.compile">
 	      <sequential>
 		    <javac debug="true" includeantruntime="no"
 		       srcdir="${src}" 
@@ -137,9 +137,9 @@
 	    <mkdir dir="${test.classes}"/>
 	    <mkdir dir="${target.java8.dir}"/>
 	    <mkdir dir="${target.java8.ext}"/>
-	    <mkdir dir="${quarks.lib}"/>
+	    <mkdir dir="${edgent.lib}"/>
 	    <copy todir="${target.java8.ext}">
-	       <fileset dir="${quarks.ext}"/>
+	       <fileset dir="${edgent.ext}"/>
 	    </copy>
 	  </target>
 	
@@ -151,13 +151,13 @@
 	  </target>
 
 	  <target name="compile" depends="init,project.component">
-	  	<quarks.compile/>
+	  	<edgent.compile/>
 	  </target>
 	
 	  <target name="jar" depends="compile">
 		<mkdir dir="${classes}/META-INF"/>
-		<copy file="${quarks.dir}/LICENSE" tofile="${classes}/META-INF/LICENSE"/>
-		<copy file="${quarks.dir}/NOTICE" tofile="${classes}/META-INF/NOTICE"/>
+		<copy file="${edgent.dir}/LICENSE" tofile="${classes}/META-INF/LICENSE"/>
+		<copy file="${edgent.dir}/NOTICE" tofile="${classes}/META-INF/NOTICE"/>
 	    <manifestclasspath property="jar.classpath" jarfile="${jar}"
 	        maxParentLevels="10">
 	      <classpath refid="compile.classpath"/>
@@ -166,7 +166,7 @@
 	      <manifest>
                 <attribute name="Implementation-Title" value="${ant.project.name}"/>
                 <attribute name="Implementation-Version" value="${commithash}-${DSTAMP}-${TSTAMP}"/>
-                <attribute name="Implementation-Vendor" value="quarks-edge@github.com"/>
+                <attribute name="Implementation-Vendor" value="Apache Software Foundation"/>
 	        <attribute name="Class-Path" value="${jar.classpath}"/>
 	      </manifest>
 	      <fileset dir="${classes}"/>
@@ -198,11 +198,13 @@
 	       <classpath>
 	         <path refid="test.classpath"/>
 	       </classpath>
-	       <sysproperty key="quarks.build.ci" value="${quarks.build.ci}"/>
+	       <sysproperty key="edgent.build.ci" value="${edgent.build.ci}"/>
+	       <!-- Allow tests to know the root directory -->
+	       <sysproperty key="edgent.test.root.dir" value="${edgent.dir}"/>
 	       <assertions><enable/></assertions>
 	       <formatter type="xml"/>
 	       <!-- Only use the brief formatter for a continuous integration build" -->
-	       <formatter type="brief" usefile="no" if="quarks.build.ci"/>
+	       <formatter type="brief" usefile="no" if="edgent.build.ci"/>
 	       <batchtest todir="${test.run.dir}">
 	          <fileset dir="${test.src}">
 	             <include name="${test.base.pattern}"/>

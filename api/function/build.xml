@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.api.function" default="all"
+<project name="edgent.api.function" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>

@@ -11,6 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+// N.B. if you add a subproject to a new 'aggregator only' project
+// adjust the 'aggregatorOnlyProjects' list in build.gradle
+
 include 'api:function'
 include 'api:execution'
 include 'api:window'
@@ -27,17 +31,19 @@ include 'runtime:jobregistry'
 include 'utils:metrics'
 include 'utils:streamscope'
 include 'providers:direct'
+include 'connectors:command'
 include 'connectors:common'
+include 'connectors:csv'
 include 'connectors:iot'
 include 'connectors:serial'
 include 'connectors:file'
 include 'connectors:http'
-include 'connectors:iotf'
+include 'connectors:iotp'
 include 'connectors:jdbc'
 include 'connectors:kafka'
 include 'connectors:mqtt'
 include 'connectors:pubsub'
-include 'connectors:quarks.javax.websocket'
+include 'connectors:edgent.javax.websocket'
 include 'connectors:javax.websocket-client'
 include 'connectors:javax.websocket-server'
 include 'connectors:wsclient'
@@ -58,5 +64,14 @@ include 'samples:console'
 include 'samples:scenarios'
 include 'test:fvtiot'
 include 'test:svt'
+include 'platform:java7'
+include 'platform:android'
+if (System.env.ANDROID_SDK_PLATFORM != null) {
+  include 'android:topology'
+  include 'android:hardware'
+}
+else {
+  logger.lifecycle 'ANDROID_SDK_PLATFORM ev not set. Omitting android:{topology,hardware} projects.'
+}
 
 rootProject.name = build_name

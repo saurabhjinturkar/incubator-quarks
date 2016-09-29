@@ -12,11 +12,13 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile 'org.apache.httpcomponents:httpclient:4.5.1'
-  compile 'org.apache.httpcomponents:httpcore:4.4.4'
-  compile ext_classpath
-  testCompile project(':providers:direct')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addProjectExtDependency 'compile', 'org.apache.httpcomponents:httpclient:4.5.1'
+  addProjectExtDependency 'compile', 'org.apache.httpcomponents:httpcore:4.4.4'
+  addTargetDirCoreExtJarDependencies 'compile'
+  
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct'

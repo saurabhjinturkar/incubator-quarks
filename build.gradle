@@ -11,50 +11,298 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+defaultTasks 'assemble'
+
+apply from: 'other.gradle'
+ 
 /* Configure root project */
-ext.commithash = {
-  try {
-    return "git rev-parse --short HEAD".execute().text.trim()
-  } catch (Exception e) {
-    return ''
+allprojects {
+  apply plugin: 'idea'
+  apply plugin: 'eclipse'
+
+  repositories {
+    mavenCentral()
   }
-}()
-def now = new Date()
-ext.DSTAMP = String.format('%tY%<tm%<td', now)
-ext.TSTAMP = String.format('%tH%<tM', now)
-ext.ext_classpath = ['com.google.code.gson:gson:2.2.4', 
-  'org.slf4j:slf4j-api:1.7.12', 
-  'io.dropwizard.metrics:metrics-core:3.1.2']
+  
+  project.version = build_version
+}
+
+apply plugin: 'java'
+
+
+ext {
+  commithash_error = ''
+  commithash = {
+    try {
+      return "git rev-parse --short HEAD".execute().text.trim()
+    } catch (Exception e) {
+      ext.commithash_error = e
+      return ''
+    }
+  }()
+  now = new Date()
+  DSTAMP = String.format('%tY%<tm%<td', now)
+  TSTAMP = String.format('%tH%<tM', now)
+                   
+  target_dir = "$distsDir"
+  target_java8_dir = "$target_dir/java8"
+  target_java8_ext_dir = "$target_java8_dir/ext"
+  target_java7_dir = "$target_dir/java7"
+  target_android_dir = "$target_dir/android"
+  target_docs_dir = "$target_dir/docs"
+  target_javadoc_dir = "$target_docs_dir/javadoc"
+  target_report_dir = "$target_dir/reports"
+ 
+  // project groups whose jars are to be placed in target_java8_lib
+  // instead of the default "$target_java8_dir/$simpleProjectGroup/$project.name/lib"
+  //         e.g., "$target_java8_dir/lib" for api/topology
+  //         "$target_java8_dir/connectors/iotp/lib" for connectors/iotp
+  //
+  target_java8_lib_groups = ["api", "providers", "runtime", "spi"]
+  
+  // TODO can these be deduced by the absence of a build.gradle for the project?
+  aggregatorOnlyProjects = [
+    ':android',
+    ':analytics', ':api', ':apps',
+    ':connectors', ':console',
+    ':platform', ':providers',
+    ':runtime', ':samples', ':spi',
+    ':test', ':utils'
+  ]
+  
+  filteredSubprojects = subprojects.findAll { 
+    project -> !aggregatorOnlyProjects.contains(project.path)
+  }
+  
+  // Edgent core external dependencies
+  core_ext_dependencies = ['com.google.code.gson:gson:2.2.4',
+                   'org.slf4j:slf4j-api:1.7.12',
+                   'io.dropwizard.metrics:metrics-core:3.1.2']
+  
+  // Edgent Samples external dependencies
+  samples_ext_dependencies = ['org.slf4j:slf4j-jdk14:1.7.12']
+
+  // Edgent tests external dependencies
+  test_common_dependencies = ['org.slf4j:slf4j-jdk14:1.7.12']
+  
+  common_ext_dependencies = [
+    core_ext_dependencies,
+    samples_ext_dependencies,
+    // test_common_dependencies, // omit as tests aren't included in release tgz
+  ].flatten()
+}
+
+// Declare the common_ext_dependencies as dependencies of the root project
+// to easily copy them (their resolved paths) to the target dir
+dependencies {
+  compile common_ext_dependencies
+}
+task copyCommonExtJars(type: Copy) {
+  description = "Copy common external jars to target_java8_ext_dir"
+  from configurations.compile.files
+  into target_java8_ext_dir
+}
+
+def String mkJarNameFromSpec(String jarSpec) {
+  // e.g. 'com.google.code.gson:gson:2.2.4' => gson-2.2.4.jar
+  return jarSpec.split(':')[1] + '-' + jarSpec.split(':')[2] + '.jar'
+}
+
+def getProjectExtDepFiles(Project proj) { // project's direct ext deps and their transitive deps
+  // TODO suspect this is picking up ext dependencies of transitive **project** dependencies???
+  
+  // handle ext jar deps expressed via "compile <external-dependency-spec>"
+  def allExtDepFiles = proj.configurations.runtime.files { it instanceof ExternalDependency }
+  
+  // handle ext jar deps expressed via addTargetDirExtJarDependency
+  allExtDepFiles.addAll proj.files(proj.directTargetDirExtJarDependencies)
+  
+  logger.info "$proj.path allExtDepFiles: "+allExtDepFiles
+  return allExtDepFiles
+}
+ 
+def getProjectNonCommonExtDepFiles(Project proj) {
+  // filter out "common" (target_java8_ext_dir) external dependencies
+  def commonExtJarNames = common_ext_dependencies.collect {
+    mkJarNameFromSpec it
+  }
+  def filteredExtDepFiles = getProjectExtDepFiles(proj).findAll {
+    ! commonExtJarNames.contains(it.getName())
+  }
+  return filteredExtDepFiles
+}
+
+def String mkManifestClassPath(Project proj) {
+  // The manifest's classpath needs to include the project's:
+  // - immediate-only dependant edgent jars (not transitive and not their ext deps
+  //   since our project jars are build with a manifest-classpath that
+  //   handles the project's "private" dependencies)
+  // - immediate dependant external jars and their transitive deps (since
+  //   these don't seem to have a manifest classpath that takes care of their
+  //   dependencies)
+  // - common_ext_dependencies jars when declared as dependencies
+  //
+  // proj.configurations.runtime.files (mostly) captures all of the above
+  // since do to our project build.gradle use of our various add*Dependency().
+
+  def depJars = proj.configurations.runtime.files
+    
+  // assume that any deps still in the gradle cache are project private ext deps
+  // (that will-get/have-been copied into the project's ext dir in the targetdir) 
+  def projExtDir = "$target_java8_dir/$proj.targetRelProjExtDir"
+  depJars = depJars.collect { file ->
+    if (file.toString().contains('/.gradle/caches/')) {
+      return proj.file("$projExtDir/"+file.getName())
+    }
+    return file
+  }
+    
+  def cp = proj.mkRelativePaths(depJars).join(' ')
+  logger.info "$proj.path manifest-classPath: $cp"
+  return cp
+}
+
+gradle.taskGraph.whenReady {taskGraph ->
+  if (taskGraph.hasTask(test)) {
+    println "\nHINTs: Use the '--tests <testClassNamePattern>[.<testMethodNamePattern>]' option to select specific test classes or methods."
+    println "    ./gradlew :api:topology:test --tests '*JsonFunctionsTest'"
+    println "    ./gradlew :api:topology:test --tests '*JsonFunctionsTest.testBytes'"
+    println "Use the 'cleanTest' task to force a rerun of a previously successful test task:"
+    println "    ./gradlew :api:topology:cleanTest :api:topology:test"
+    println "    ./gradlew cleanTest test"
+    println ""
+    sleep 2
+  }
+}
 
 /* Configure subprojects */
 subprojects {
-  if (!buildFile.exists()) {
+
+  // ignore aggregator only projects so we don't assemble empty jars, etc for them.
+  if (aggregatorOnlyProjects.contains(project.path)) {
+    return
+  }
+
+  apply plugin: 'maven-publish'
+  apply plugin: 'java'
+  apply plugin: "jacoco"
+ 
+  if (buildFile.isFile() && !buildFile.exists()) {
     configurations.create('default')
     return
   }
-  repositories {
-    mavenCentral()
-    maven {
-      url 'https://repo.eclipse.org/content/repositories/paho-snapshots/'
+  
+  ext.simpleGroupName = project.group.replace('edgent.', '') // e.g., 'edgent.api' => 'api'
+
+  ext.mkRelativePaths = { Collection files ->
+    // make all files paths relative to the project's lib dir in targetdir
+    // well... unless this is for a war, which resides in the group's "webapps"
+    // dir instead of project's lib dir.  See :console:servlets build.gradle.
+    def projLibDir = project.file("$target_java8_dir/$targetRelProjLibDir")
+    if (project.pluginManager.hasPlugin('war')) {
+      projLibDir = project.file("$target_java8_dir/$project.simpleGroupName/webapps")
+    }
+    files.collect {  projLibDir.toPath().relativize(it.toPath()) }
+  }
+
+  ext.targetRelProjDir = { String kind ->  // kind: "lib", "ext"
+    // use targetRelProject{Lib,Ext}Dir
+    // e.g., =>  "lib" or "<component>/<subcomponent>/lib"
+    // the general case location
+    def relProjDir = "$simpleGroupName/$project.name/$kind"
+   
+    // special cases
+    if (target_java8_lib_groups.contains(simpleGroupName)) {
+      relProjDir = "$kind"
+    }
+    else if ('samples' == simpleGroupName) {
+      relProjDir = "samples/$kind"
+    }
+   
+    return relProjDir
+  }
+  ext.targetRelProjLibDir = targetRelProjDir('lib')
+  ext.targetRelProjExtDir = targetRelProjDir('ext')
+  
+  // N.B. regarding the various add*Dependency() methods
+  //
+  // The methods need to be used in project build.gradle "dependencies" declarations.
+  // e.g.,
+  //   dependencies {
+  //     addTargetDirProjectJarDependency 'compile', ':api:topology' # NOT compile project(':api:topology')
+  //     addProjectExtDependency 'compile', 'com.ibm.messaging:watson-iot:0.1.5'  # NOT compile 'com.ibm.messaging:watson-iot:0.1.5'
+  //     addProjectExtDependency 'compile', 'org.apache.kafka:kafka_2.10:0.8.2.2@jar'
+  //     addTargetDirCoreExtDependencies 'compile'
+  //     addMyTargetDirProjectJarDependency 'testCompile'
+  //     // N.B. root project adds test common dependencies
+  //   }
+  // 
+  // These methods play a role in the policies:
+  // - Edgent projects depend on other project's jars in the target-dir, not their classes
+  // - Edgent project jars have a manifest-classpath that handles
+  //   the project's "private" inter-project dependencies
+  //   as well as the project's "private" external component dependencies.
+  // - We build a target dir that includes the project's jar as well as
+  //   the project's external dependency jars
+  // - The tests compile and run against the project jars in the target dir
+  //   (as external/integration test code would).
+  // - The samples compile and run against the project jars in the target dir
+  //   (as user code would).
+  
+  ext.directTargetDirExtJarDependencies = [] 
+
+  ext.addTargetDirProjectJarDependency = { config,proj ->
+    // add a dependency on a project's jar in the target-dir
+    def jarPath = project(proj).jar.archivePath
+    
+    // add the jar as a dependency and ensure it's present when we need it
+    // ? script error with: dependencies { "$config" files(jarPath) builtBy "${proj}:assemble" }
+    dependencies { "$config" files(jarPath) }
+    def task = "${config}Java"
+    if (config == "testCompile") {
+      task = "compileTestJava"
+    }
+    else if (config == "providedCompile") {
+      task = "compileJava"
+    }
+    "$task" { dependsOn "${proj}:assemble" }
+  }
+
+  ext.addMyTargetDirProjectJarDependency = { config ->
+    // add a dependency on my project's jar in the target dir
+    addTargetDirProjectJarDependency(config, project.path)
+  }
+  
+  ext.addTargetDirExtJarDependency = { config,jarName ->
+    // add a dependency on a target_java8_ext_dir jarName
+    // record the addition
+    def jar = "$target_java8_ext_dir/$jarName"
+    if (!directTargetDirExtJarDependencies.contains(jar)) {
+      directTargetDirExtJarDependencies.add jar
+    }
+    
+    // add the jar as a dependency
+    dependencies { "$config" files(jar) }
+    compileJava { dependsOn ':copyCommonExtJars' }
+  }
+  
+  ext.addTargetDirCoreExtJarDependencies = { config ->
+    core_ext_dependencies.collect { depSpec ->
+      mkJarNameFromSpec(depSpec)
+    }.each { jarName ->
+      addTargetDirExtJarDependency config, jarName
     }
   }
 
-  plugins.apply 'java'
-  plugins.apply 'jacoco'
-
-  archivesBaseName = "${rootProject.name}${project.path.replace(':','.')}"
-  version = build_version
-
-  jacoco {
-    toolVersion = '0.7.5.201505241946'
-  }
-
-  dependencies {
-    testCompile 'junit:junit:4.10'
-    testRuntime 'org.slf4j:slf4j-jdk14:1.7.12'
+  ext.addProjectExtDependency = { config,externalDepSpec ->
+    // for declaring project private external dependencies
+    // ends up (transitively) copying the dependency to the project's ext dir
+    dependencies { "$config" externalDepSpec }
   }
 
   ext.addCompileTestDependencies = { String... deps ->
+    // add a dependency on other project's testClasses
     deps.each { dep ->
       dependencies {
         testCompile project(dep).sourceSets.test.output
@@ -67,6 +315,7 @@ subprojects {
 
   sourceCompatibility = '1.8'
   targetCompatibility = '1.8'
+
   def compileOptions = {
     options.debugOptions.debugLevel = 'source,lines,vars'
     options.verbose = logger.isDebugEnabled()
@@ -80,12 +329,65 @@ subprojects {
   compileTestJava {
     configure compileOptions
   }
+  
+  dependencies {
+    // common dependencies for tests
+    testCompile 'junit:junit:4.10'
+    addMyTargetDirProjectJarDependency 'testCompile'
+    if (project.path != ':api:function') {
+      addTargetDirExtJarDependency 'testRuntime', 'slf4j-jdk14-1.7.12.jar'
+    }
+    else {
+      // the add... induces UnsupportedOperationException elsewhere in script when processing :api:function:jar ???
+      // can't figure it out but cleaning directTargetDirExtJarDependencies
+      // avoids it ???... with seemingly no other consequences.
+      addTargetDirExtJarDependency 'testRuntime', 'slf4j-jdk14-1.7.12.jar'
+      project.directTargetDirExtJarDependencies = []
+    }
 
-  test {
-    include '**/*Test.class'
-    systemProperty 'quarks.test.top.dir.file.path', rootProject.projectDir
-    testLogging {
-      exceptionFormat 'full'
+    // common dependencies for samples
+    if (project.path ==~ '^:samples.*') {
+      addTargetDirProjectJarDependency 'compile', ':providers:development'
+      addTargetDirProjectJarDependency 'compile', ':providers:direct'
+
+      addTargetDirCoreExtJarDependencies 'compile'      
+      addTargetDirExtJarDependency 'runtime', 'slf4j-jdk14-1.7.12.jar'
+    }
+  }
+
+  jar {
+    // adjust jar task config and also augment the task to do our additional processing
+    
+    // generate the project's jar into the target dir location
+    // with the appropriate name and manifest.
+    // TODO - gradle/maven best practice has version in jarname
+    
+    archiveName = "${project.group}.${project.name}.${extension}"
+    if (["javax.websocket-client", "javax.websocket-server", "edgent.javax.websocket"].contains(project.name)) {
+      archiveName = "${project.name}.${extension}"
+    }
+    destinationDir = file("$target_java8_dir/" + targetRelProjLibDir)
+
+    doFirst {
+      configure jarOptions
+    }
+    
+    doLast {
+      // Copy the project jar's "private" external dependencies (transitively)
+      // into the project's ext dir in the target-dir.
+      
+      // FYI we're getting more transitive ext deps than the ant build
+      // in some cases - e.g., for watson iot we "knew" we only needed a subset
+      // of all watson iot deps known to maven
+      
+      def projectExtDir = targetRelProjExtDir
+      def nonCommonExtFiles = getProjectNonCommonExtDepFiles(project)
+      logger.info "$project.path copying projExtDepFiles jars: "+nonCommonExtFiles.collect { it.getName() }
+      copy {
+        from nonCommonExtFiles
+        includeEmptyDirs = false
+        into "$target_java8_dir/$projectExtDir"
+      }
     }
   }
 
@@ -94,18 +396,282 @@ subprojects {
       attributes(
         'Implementation-Title': "${-> baseName}",
         'Implementation-Vendor': build_vendor,
+        // TODO inclusion of DSTAMP/TSTAMP results in regeneration
+        // of a jar when none of its contents/dependencies have changed.
+        // If possible use a canned DSTAMP/TSTAMP for non-"release" tasks
+        // to make the dev cycle more efficient at the expense of the TSTAMP.
         'Implementation-Version': "${commithash}-${DSTAMP}-${TSTAMP}",
-        // TODO Class-Path attribute
+        'Class-Path': mkManifestClassPath(project),
       )
     }
     metaInf {
-      from rootProject.file('LICENSE')
-      from rootProject.file('NOTICE')
-    } 
+      with( copySpec {
+        rename { 'LICENSE' }
+        from rootProject.file('legal/apache-v2_0-license')
+      })
+      with( copySpec {
+        rename { 'NOTICE' }
+        from rootProject.file(
+          projectsWithPreApacheContribs.contains(project.path)
+            ? 'legal/ibm-contrib-notice'
+            : 'legal/apache-notice')
+      })
+    }
   }
-  jar {
-    configure jarOptions
+  
+  ext.adjustTest7Classpath = false
+
+  test {
+    filter {
+      includeTestsMatching '*Test'  // can override via --tests command line option
+    }
+
+    systemProperty 'edgent.test.top.dir.file.path', rootProject.projectDir
+    systemProperty 'edgent.test.root.dir', rootProject.projectDir
+    testLogging {
+      exceptionFormat 'full'
+    }
+    reports {
+      junitXml.enabled = true
+      html.enabled = true
+    }
+    doFirst {
+      // The project's tests are supposed to run against its target-dir jar.
+      // We must remove the project's $buildDir/{classes,resources}/main
+      // from the classpath so they're not used.  
+
+      classpath = project.sourceSets.test.runtimeClasspath
+      classpath -= project.sourceSets.main.output
+
+      // Hmm... for some reason the classpath (when printed here) also includes
+      // the project's src build/libs/ jar and by the default name
+      // (e.g., build/libs/oplets-0.4.1.jar) yet we've configured the jar task
+      // to generate the jar in the target-dir with a different name.  
+      // It also lacks that target-dir jar we added as a dependency 
+      // via addMyTargetDirProjectJarDependency 'testCompile'
+      // ???  
+      // Adjust accordingly.
+      
+      classpath = classpath.filter { ! it.path.startsWith(project.libsDir.path) } 
+      classpath = files(project.jar.archivePath) + classpath
+      
+      if (adjustTest7Classpath) {
+        // Add special java7 processing... (on top of the other test.doFirst classpath manipulations)
+      
+        // Change from using the normal test classes dir to the java7 test classes dir
+        classpath -= files(sourceSets.test.output.classesDir)
+        classpath = files(sourceSets.test.output.classesDir.toString().replace('test', 'java7Test')) + classpath
+      
+        // Switch from java8 jars to java7 jars
+        classpath = files(classpath.collect { it.toString().replace('java8', 'java7') })
+      }
+      logger.debug "$project.path test.classpath: " + classpath.collect { it.toString() }
+    }
   }
+  
+  ext.j7TestClassesDir = file("$project.buildDir/classes/java7Test")
+  
+  task test7AdjustTestTask << {
+    if (! tasks.getByName('test').enabled
+        || unsupportedJava7TestProjects.contains(project.path)
+        || sourceSets.test.allSource.isEmpty()) {
+      test.enabled = false
+      return
+    }
+    adjustTest7Classpath = true
+    if (!j7TestClassesDir.exists()) {
+      // implicit dependency: :platform:java7:test7Compile
+      logger.error " ERROR: Run the test7Compile task.  $j7TestClassesDir does not exist."
+      throw new TaskExecutionException()
+    }
+    test {
+      testClassesDir = j7TestClassesDir
+      outputs.upToDateWhen { false } // always run - task is never "up to date"
+    }
+  }
+
+  task test7Run() {
+    description = "Run the test7Compile'd tests against the java7 target jars - run after :platform:java7:test7Compile and with JAVA_HOME==java7-VM"
+    // fwiw trying to leverage :platform:java7:ant_test7.run was problematic
+    
+    dependsOn ':platform:java7:verifyJava7Built', test7AdjustTestTask, test
+    // implicit dependency: :platform:java7:test7Compile
+    test.mustRunAfter = [ test7AdjustTestTask, ':platform:java7:verifyJava7Built' ]
+
+    outputs.upToDateWhen { false } // always run - never "up to date"
+  }
+
+  assemble.doLast {
+    // augment assemble with our additional target dir update processing
+    
+    // Copy SRC into target dir when appropriate
+    if (project.path ==~ '^:samples.*') {
+      copy {
+        from(sourceSets.main.allSource.srcDirs) { include '**/*.java' }
+        into "$target_java8_dir/$project.simpleGroupName/src/$project.name/src/main/java/"
+      }
+    }
+  }
+  
+  task sourceJar(type: Jar) {
+    // baseName-appendix-version-classifier.extension
+    from sourceSets.main.allJava
+    classifier = 'sources'
+  }  
+
+  // support for 'gradle publishToMavenLocal' etc 
+  // TODO publishing test.{fvt,svt} and samples ... doesn't seem desirable? e.g., we're excluding test.{fvt,svt} jars from the tgz
+  publishing {
+    publications {
+      mavenJava(MavenPublication) {
+        // specify dependencies like: org.apache.edgent:edgent.api.topology:0.4.0
+        groupId = build_group
+        artifactId = "${project.group}.${project.name}" 
+        artifact sourceJar
+        if (project.pluginManager.hasPlugin('war')) {
+          from components.web
+        }
+        else {
+          from components.java
+        }
+      }
+    }
+  }  
+}
+
+task copyScripts(type: Copy) {
+  description = 'Copy scripts to target_java8_dir'
+  includeEmptyDirs = false
+  from("scripts/") { include "**/*" }
+  into "$target_java8_dir/scripts/"
+}
+
+//Create Junit Report
+// need to setup classpath to junit/jacoco for ant.junitreport task
+configurations {
+  junitLibs
+}
+dependencies { // versions with gradle 3.1
+  junitLibs 'org.apache.ant:ant-junit:1.9.6'
+  junitLibs 'org.apache.ant:ant-junit4:1.9.6'
+  junitLibs 'org.jacoco:org.jacoco.ant:0.7.7.201606060606'
+}
+
+task createJunitReport << {
+  description = "Generates a Junit report from all subprojects (use after 'test')"
+
+  ant.delete(dir: "${target_report_dir}/tests")
+  ant.taskdef(name: 'junitreport',
+          classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
+          classpath: configurations.junitLibs.asPath)
+  ant.junitreport(todir: './') {
+    fileset(dir: './', includes: '**/test-results/test/TEST-*.xml')
+    report(format: 'frames', todir: "${target_report_dir}/tests")
+  }
+  ant.move(file: "TESTS-TestSuites.xml", tofile: "${target_report_dir}/TESTS-TestSuites.xml")
+}
+
+apply from: 'jacoco.gradle'
+apply from: 'javadoc.gradle'
+
+task addVersionDotTxt {
+  description = 'Add version.txt in target_dir'
+  doLast {
+    def map = [
+      DSTAMP: "$DSTAMP",
+      TSTAMP: "$TSTAMP",
+      commithash: "$commithash",
+      'commithash.error': "$commithash_error",
+      'edgent.version': "$build_version",
+      ]
+    def f = new File("$target_dir/version.txt");
+    f.createNewFile()
+    map.forEach { k,v -> f.append "$k=$v\n" }
+  }
+}
+
+task mkTargetDir << {
+    def d = new File(target_dir);
+    if( !d.exists() ) { d.mkdirs() }
+}
+
+task addMiscDistFiles {
+  description = 'Add misc things to target_dir'
+  dependsOn mkTargetDir, addVersionDotTxt
+  addVersionDotTxt.mustRunAfter mkTargetDir
+  doLast {
+    copy { from 'LICENSE'; into target_dir }
+    copy { from 'README.md'; into target_dir }
+  }
+}
+
+task releaseTarGz(type: Tar) {
+  description = 'Create tgz in target_dir'
+  archiveName = "${build_name}-v${build_version}-${DSTAMP}-${TSTAMP}.tgz"
+  compression = Compression.GZIP
+  destinationDir = new File("${target_dir}/../release-edgent")
+  duplicatesStrategy 'exclude'
+  into "${build_name}"
+  // make some things first in the tgz
+  from "$target_dir/LICENSE"
+  from "$target_dir/README.md"
+  from "$target_dir/version.txt"
+  from target_dir
+  exclude '**/test/svt/'
+  exclude '**/connectors/javax.websocket-server/' // just part of wsclient test harness
+  doLast {
+    ant.checksum algorithm: 'md5', file: archivePath
+    ant.checksum algorithm: 'sha1', file: archivePath
+    println "created $destinationDir/$archiveName"
+  }
+}  
+
+assemble {
+  description = "Assemble distribution artifacts and populate the target_dir with jars, doc, etc. Like 'build' w/o 'test'"
+  dependsOn filteredSubprojects.assemble, aggregateJavadoc, copyScripts
+  aggregateJavadoc.mustRunAfter filteredSubprojects*.assemble
+}
+
+task all(dependsOn: assemble) {
+  description = "alias for 'assemble'"
+}
+
+task cleanAll {
+  description = 'clean aggregator'  // "release dependsOn clean" only does top-level clean
+  dependsOn clean, filteredSubprojects*.clean
+}
+
+task release {
+  description = 'Assemble distribution artifacts, populate target_dir, and create a release tgz'
+  dependsOn cleanAll, addMiscDistFiles, assemble,
+       ':platform:java7:addJava7TargetDir', ':platform:android:addAndroidTargetDir',
+       releaseTarGz
+  addMiscDistFiles.mustRunAfter cleanAll
+  assemble.mustRunAfter addMiscDistFiles
+  releaseTarGz.mustRunAfter assemble,':platform:java7:addJava7TargetDir',':platform:android:addAndroidTargetDir'
+}
+
+task reports {
+  description = "Generate JUnit and Coverage reports of prior test run. Use after 'test'"
+  dependsOn createJunitReport, jacocoTestReport
+}
+
+task test7AdjustJacocoReport << {
+  jacocoTestReport.test7AdjustJacocoReport = true
+  logger.lifecycle "### NOTE: [WIP] test7 jacoco reporting ###"
+}
+
+task test7Reports {
+  description = "Generate JUnit and Coverage reports of prior test run. Use after 'test7Run'"
+  dependsOn createJunitReport, test7AdjustJacocoReport, jacocoTestReport
+  jacocoTestReport.mustRunAfter test7AdjustJacocoReport
+}
+
+// build: inject test report generation and javadoc generation (for early problem detection)
+// make 'build' like "all test reports"
+build {
+  dependsOn filteredSubprojects.build, reports
+  reports.mustRunAfter filteredSubprojects.build 
 }
 
 task wrapper(type: Wrapper) {

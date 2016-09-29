@@ -12,14 +12,16 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile project(':connectors:common')
-  compile project(':connectors:wsclient')
-  compile project(':connectors:quarks.javax.websocket')
-  testCompile project(':providers:direct')
-  testCompile project(':connectors:javax.websocket-client')
-  testCompile project(':connectors:javax.websocket-server')
-  testRuntime ext_classpath
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirProjectJarDependency 'compile', ':connectors:common'
+  addTargetDirProjectJarDependency 'compile', ':connectors:wsclient'
+  addTargetDirProjectJarDependency 'compile', ':connectors:edgent.javax.websocket'
+  
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  addTargetDirProjectJarDependency 'testCompile', ':connectors:javax.websocket-client'
+  addTargetDirProjectJarDependency 'testCompile', ':connectors:javax.websocket-server'
+  
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct', ':connectors:common'

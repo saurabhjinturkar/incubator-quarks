@@ -16,12 +16,12 @@
 # limitations under the License.
 #
 
-quarks=../../..
+edgent=../../..
 
 # Runs the SensorAnalytics sample application
 #
 # ./runSensorAnalytics.sh
 
-export CLASSPATH=${quarks}/samples/lib/quarks.samples.apps.jar
+export CLASSPATH=${edgent}/samples/lib/edgent.samples.apps.jar
 
-java quarks.samples.apps.sensorAnalytics.SensorAnalyticsApplication sensorAnalytics.properties
+java org.apache.edgent.samples.apps.sensorAnalytics.SensorAnalyticsApplication sensorAnalytics.properties

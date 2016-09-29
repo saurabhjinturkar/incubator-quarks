@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.runtime.appservice" default="all"
+<project name="edgent.runtime.appservice" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -24,9 +24,9 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${lib}/quarks.api.execution.jar" />
-    <pathelement location="${lib}/quarks.api.topology.jar" />
-    <path refid="quarks.ext.classpath" />
+    <pathelement location="${lib}/edgent.api.execution.jar" />
+    <pathelement location="${lib}/edgent.api.topology.jar" />
+    <path refid="edgent.ext.classpath" />
     <path refid="test.common.classpath"/>
   </path>
 

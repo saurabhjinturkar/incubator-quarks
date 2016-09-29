@@ -1,11 +1,11 @@
 Scripts for running the samples.
 
-The source code for the samples is in the <quarks-release>/samples directory.
+The source code for the samples is in the <edgent-release>/samples directory.
 
 The samples can be run via by their run*.sh
 shell scripts from this directory.  e.g.,
 
-$ ./runhelloquarks.sh
+$ ./runhelloedgent.sh
 
 Note: On Windows, use an environment like Cygwin 
 to run these linux shell scripts.

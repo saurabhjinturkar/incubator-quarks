@@ -12,10 +12,12 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':providers:iot')
-  compile project(':runtime:appservice')
-  compile project(':runtime:jsoncontrol')
-  compile ext_classpath
+  addTargetDirProjectJarDependency 'compile', ':providers:iot'
+  addTargetDirProjectJarDependency 'compile', ':runtime:appservice'
+  addTargetDirProjectJarDependency 'compile', ':runtime:jsoncontrol'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':apps:iot'

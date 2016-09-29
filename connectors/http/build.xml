@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.connectors.http" default="all"
+<project name="edgent.connectors.http" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -25,15 +25,15 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${quarks.lib}/quarks.api.topology.jar" />
+    <pathelement location="${edgent.lib}/edgent.api.topology.jar" />
     <fileset dir="${component.ext}" includes="*.jar"/>
-    <path refid="quarks.ext.classpath" />
+    <path refid="edgent.ext.classpath" />
   </path>
 
 
   <path id="test.compile.classpath">
     <pathelement location="${jar}" />
-    <pathelement location="${quarks.lib}/quarks.providers.direct.jar"/>
+    <pathelement location="${edgent.lib}/edgent.providers.direct.jar"/>
     <pathelement location="../../api/topology/test.classes"/>
     <pathelement location="../../providers/direct/test.classes"/>
     <path refid="compile.classpath"/>

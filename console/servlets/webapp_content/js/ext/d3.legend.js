@@ -165,7 +165,7 @@ d3.legend = function(g, chartSvg, pItems, legendTitle) {
     lb.attr("x",(lbbox.x-legendPadding))
         .attr("y",(lbbox.y-legendPadding))
         .attr("height",(lbbox.height+2*legendPadding))
-        .attr("width",(lbbox.width+2*legendPadding));
+        .attr("width",((lbbox.width+12) + 2*legendPadding));
     
     lTitleItems.attr("x", 0)
     	.attr("y", (lbbox.y - legendPadding - 15))

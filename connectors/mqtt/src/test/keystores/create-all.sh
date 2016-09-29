@@ -34,7 +34,7 @@ US
 MA
 Littleton
 IBM
-Quarks
+Edgent
 My Test Mosquitto CA
 foo@test.org
 xxEOFxx
@@ -48,7 +48,7 @@ US
 MA
 Littleton
 IBM
-Quarks
+Edgent
 My Test Mosquitto Server
 foo@test.org
 
@@ -68,7 +68,7 @@ US
 MA
 Littleton
 IBM
-Quarks
+Edgent
 My Test Mosquitto Client
 foo@test.org
 

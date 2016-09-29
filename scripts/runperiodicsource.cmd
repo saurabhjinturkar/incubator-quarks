@@ -16,5 +16,5 @@ REM See the License for the specific language governing permissions and
 REM limitations under the License.
 
 REM Runs PeriodSource
-set CLASSPATH=..\samples\lib\quarks.samples.topology.jar
-java quarks.samples.topology.PeriodicSource
+set CLASSPATH=..\samples\lib\edgent.samples.topology.jar
+java org.apache.edgent.samples.topology.PeriodicSource

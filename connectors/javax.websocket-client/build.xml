@@ -28,7 +28,7 @@
 
   <path id="compile.classpath">
     <fileset dir="${component.ext}" includes="*.jar"/>
-    <pathelement location="${quarks.connectors}/quarks.javax.websocket/lib/quarks.javax.websocket.jar"/>
+    <pathelement location="${edgent.connectors}/edgent.javax.websocket/lib/edgent.javax.websocket.jar"/>
   </path>
 
   <path id="test.compile.classpath">
@@ -39,7 +39,7 @@
   <path id="test.classpath">
     <pathelement location="${test.classes}" />
     <path refid="test.compile.classpath"/>
-    <path refid="quarks.ext.classpath" />
+    <path refid="edgent.ext.classpath" />
   </path>
 
 </project>

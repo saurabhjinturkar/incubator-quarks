@@ -16,20 +16,20 @@
 # limitations under the License.
 #
 
-quarks=../../..
+edgent=../../..
 
 # Runs the Sample MQTT Publisher or Subscriber
 #
 # ./runmqttsample.sh pub
 # ./runmqttsample.sh sub
 
-export CLASSPATH=${quarks}/samples/lib/quarks.samples.connectors.jar
+export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
 app=$1; shift
 if [ "$app" == "pub" ]; then
-    java quarks.samples.connectors.mqtt.SimplePublisherApp mqtt.properties
+    java org.apache.edgent.samples.connectors.mqtt.SimplePublisherApp mqtt.properties
 elif [ "$app" == "sub" ]; then
-    java quarks.samples.connectors.mqtt.SimpleSubscriberApp mqtt.properties
+    java org.apache.edgent.samples.connectors.mqtt.SimpleSubscriberApp mqtt.properties
 else
     echo "unrecognized mode '$app'"
     echo "usage: $0 pub|sub"

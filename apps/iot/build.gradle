@@ -12,8 +12,10 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile project(':connectors:pubsub')
-  compile project(':connectors:iot')
-  testCompile project(':providers:direct')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirProjectJarDependency 'compile', ':connectors:pubsub'
+  addTargetDirProjectJarDependency 'compile', ':connectors:iot'
+  
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  // N.B. root project adds test common dependencies
 }

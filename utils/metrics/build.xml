@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.utils.metrics" default="all" xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="edgent.utils.metrics" default="all" xmlns:jacoco="antlib:org.jacoco.ant">
     <description>
         Build the metrics add-on.
     </description>
@@ -23,13 +23,13 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${quarks.lib}/quarks.api.topology.jar"/>
-    <path refid="quarks.ext.classpath"/>
+    <pathelement location="${edgent.lib}/edgent.api.topology.jar"/>
+    <path refid="edgent.ext.classpath"/>
   </path>
 
   <path id="test.compile.classpath">
     <pathelement location="${jar}" />
-    <pathelement location="${quarks.lib}/quarks.providers.direct.jar"/>
+    <pathelement location="${edgent.lib}/edgent.providers.direct.jar"/>
     <pathelement location="../../api/topology/test.classes"/>
     <pathelement location="../../providers/direct/test.classes"/>
     <path refid="compile.classpath"/>

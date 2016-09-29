@@ -12,8 +12,27 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:execution')
-  compile project(':api:graph')
-  compile project(':api:oplet')
-  compile ext_classpath
+  addTargetDirProjectJarDependency 'compile', ':api:execution'
+  addTargetDirProjectJarDependency 'compile', ':api:function'
+  addTargetDirProjectJarDependency 'compile', ':api:graph'
+  addTargetDirProjectJarDependency 'compile', ':api:oplet'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  // N.B. root project adds test common dependencies
 }
+
+//Build a jar file containing the applications to test the ApplicationService
+task testApplicationJar{
+  doLast{
+    ant.jar(destfile: "test.classes/edgent.api.topology.APPS.TEST.jar") {
+      service(type: 'org.apache.edgent.topology.services.TopologyBuilder') {
+        provider(classname: 'org.apache.edgent.test.topology.services.TestApplications$AppOne')
+        provider(classname: 'org.apache.edgent.test.topology.services.TestApplications$AppTwo')
+        provider(classname: 'org.apache.edgent.test.topology.services.TestApplications$AppThree')
+      }
+    fileset (dir: "${buildDir}/classes/test/", includes: '**/*TestApplications$App*.class')
+    }
+  }
+}
+
+testClasses.dependsOn testApplicationJar

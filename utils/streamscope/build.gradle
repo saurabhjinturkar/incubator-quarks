@@ -12,8 +12,15 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile ext_classpath
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology'
+
+test {
+  // this project lacks tests and this task fails if attempted 
+  enabled = false
+}

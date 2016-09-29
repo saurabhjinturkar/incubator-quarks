@@ -12,9 +12,11 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile project(':runtime:jobregistry')
-  compile project(':runtime:appservice')
-  testCompile project(':providers:direct')
-  testCompile project(':runtime:jmxcontrol')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirProjectJarDependency 'compile', ':runtime:jobregistry'
+  addTargetDirProjectJarDependency 'compile', ':runtime:appservice'
+  
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  addTargetDirProjectJarDependency 'testCompile', ':runtime:jmxcontrol'
+  // N.B. root project adds test common dependencies
 }

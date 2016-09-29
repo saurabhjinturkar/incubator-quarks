@@ -15,9 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-quarks=..
+edgent=..
 
 # Runs SensorsReadingAggregates
 #
-export CLASSPATH="${quarks}/samples/lib/quarks.samples.topology.jar"
-java quarks.samples.topology.SensorsAggregates
+export CLASSPATH="${edgent}/samples/lib/edgent.samples.topology.jar"
+java org.apache.edgent.samples.topology.SensorsAggregates

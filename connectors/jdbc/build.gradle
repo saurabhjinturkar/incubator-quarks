@@ -12,9 +12,12 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile ext_classpath
-  testCompile project(':providers:direct')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirCoreExtJarDependencies 'compile'
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  
+  testCompile files("${System.env.DERBY_HOME}/lib/derby.jar")
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct', ':connectors:common'

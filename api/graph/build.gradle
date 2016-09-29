@@ -12,6 +12,13 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:oplet')
-  compile ext_classpath
+  addTargetDirProjectJarDependency 'compile', ':api:oplet'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  // N.B. root project adds test common dependencies
+}
+
+test {
+  // this project lacks non-abstract test classes and this task fails if attempted 
+  enabled = false
 }

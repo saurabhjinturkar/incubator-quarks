@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.console.servlets" default="all" xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="edgent.console.servlets" default="all" xmlns:jacoco="antlib:org.jacoco.ant">
   <description>
     Build the console servlet classes.
   </description>
@@ -29,20 +29,20 @@
 
   <property name="webapps.dir" location="${lib}/../../webapps" />
   <property name="warfile" location="${webapps.dir}/console.war" />
-  <target name="clean" depends="quarks.common.clean">
+  <target name="clean" depends="edgent.common.clean">
     <delete file="${warfile}" />
   </target>
 	
   <path id="compile.classpath">
-  	<pathelement location="${quarks.console}/server/ext/jetty-9.3.6/servlet-api-3.1.jar" />
+  	<pathelement location="${edgent.console}/server/ext/jetty-9.3.6/servlet-api-3.1.jar" />
 	<pathelement location="${ext}/slf4j-1.7.12/slf4j-api-1.7.12.jar"/>
-    <pathelement location="${quarks.utils}/streamscope/lib/quarks.utils.streamscope.jar"/>
-    <path refid="quarks.ext.classpath" />
+    <pathelement location="${edgent.utils}/streamscope/lib/edgent.utils.streamscope.jar"/>
+    <path refid="edgent.ext.classpath" />
   </path>
 
-  <target name="all" depends="quarks.common.all,war" />
+  <target name="all" depends="edgent.common.all,war" />
 
-  <target name="war" depends="quarks.common.all">
+  <target name="war" depends="edgent.common.all">
     <mkdir dir="${webapps.dir}"/>
     <war destfile="${warfile}" webxml="${webapp.web-inf}/console.xml">
       <fileset dir="${webapp.html}" />

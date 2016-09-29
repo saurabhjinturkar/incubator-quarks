@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.platform.java7" default="all"
+<project name="edgent.platform.java7" default="all"
   xmlns:jacoco="antlib:org.jacoco.ant"
   >
 	<description>
@@ -24,24 +24,31 @@
 
 	<property environment="env"/>
 
-	<property name="quarks" location="../.."/>
-	<property name="quarks8.target" location="${quarks}/target/java8"/>
-	<property name="quarks7.target" location="${quarks}/target/java7"/>
+	<property name="edgent" location="../.."/>
+	<property name="edgent8.target" location="${edgent}/target/java8"/>
+	<property name="edgent7.target" location="${edgent}/target/java7"/>
 
 	<property name="input.dir" location="classes.in"/>
 	<property name="output.dir" location="classes.out"/>
-	<property name="test.classes.dir" location="classes.test"/>
-	<property name="ext.dir" location="${quarks}/ext"/>
+	<property name="ext.dir" location="${edgent}/ext"/>
+	
+    <property name="slf4j.version" value="1.7.12"/>
+    <property name="gson.version" value="2.2.4"/>
+    <property name="metrics.version" value="3.1.2"/>
 
-	<path id="quarks.classpath">
-		<pathelement location="${ext.dir}/slf4j-1.7.12/slf4j-api-1.7.12.jar"/>
-		<pathelement location="${ext.dir}/google-gson-2.2.4/gson-2.2.4.jar"/>
-		<pathelement location="${ext.dir}/metrics-3.1.2/metrics-core-3.1.2.jar"/>
+	<property name="slf4j.ext.dir" value="slf4j-${slf4j.version}/"/>
+    <property name="gson.ext.dir" value="google-gson-${gson.version}/"/>
+    <property name="metrics.ext.dir" value="metrics-${metrics.version}/"/>
+
+	<path id="edgent.classpath">
+        <pathelement location="${ext.dir}/${slf4j.ext.dir}slf4j-api-${slf4j.version}.jar"/>
+        <pathelement location="${ext.dir}/${gson.ext.dir}gson-${gson.version}.jar"/>
+        <pathelement location="${ext.dir}/${metrics.ext.dir}metrics-core-${metrics.version}.jar"/>
 	</path>
-	<property name="qcp" refid="quarks.classpath"/>
+	<property name="qcp" refid="edgent.classpath"/>
 
 	<target name="init">
-		<mkdir dir="${quarks7.target}"/>
+		<mkdir dir="${edgent7.target}"/>
 	</target>
 
 	<macrodef name="retro7">
@@ -54,18 +61,18 @@
 			<mkdir dir="${input.dir}"/>
 			<mkdir dir="${output.dir}"/>
 
-			<unzip dest="${input.dir}" src="${quarks8.target}/@{qdir}/@{qjar}"/>
+			<unzip dest="${input.dir}" src="${edgent8.target}/@{qdir}/@{qjar}"/>
 
-			<exec executable="java">
+			<exec executable="java" failonerror="true">
 				<arg value="-Dretrolambda.inputDir=${input.dir}"/>
-				<arg value="-Dretrolambda.classpath=${quarks8.target}/@{qdir}/@{qjar}:${qcp}"/>
+				<arg value="-Dretrolambda.classpath=${edgent8.target}/@{qdir}/@{qjar}:${qcp}"/>
 				<arg value="-Dretrolambda.outputDir=${output.dir}"/>
 				<arg value="-Dretrolambda.defaultMethods=false"/>
 				<arg value="-jar"/>
 				<arg value="ext/retrolambda-2.1.0.jar"/>
 			</exec>
-			<mkdir dir="${quarks7.target}/@{qdir}"/>
-			<jar destfile="${quarks7.target}/@{qdir}/@{qjar}"
+			<mkdir dir="${edgent7.target}/@{qdir}"/>
+			<jar destfile="${edgent7.target}/@{qdir}/@{qjar}"
 	  filesonly="true"
 	  manifest="${input.dir}/META-INF/MANIFEST.MF"
 	  >
@@ -75,9 +82,9 @@
 	</macrodef>
 
 	<target name="all" depends="clean"
-    description="Compile Quarks and produce Java 7 jars using retrolambda. Must be run with a Java 8 virtual machine."
+    description="Compile Edgent and produce Java 7 jars using retrolambda. Must be run with a Java 8 virtual machine."
     >
-		<ant dir="${quarks}" inheritAll="false">
+		<ant dir="${edgent}" inheritAll="false">
 			<target name="clean"/>
 			<target name="all"/>
 		</ant>
@@ -85,8 +92,8 @@
 	</target>
 
 	<target name="retro7" >
-		<antcall target="retro7.quarks"/>
-		<antcall target="retro7.quarks.android"/>
+		<antcall target="retro7.edgent"/>
+		<antcall target="retro7.edgent.android"/>
 	</target>
 
         <!--
@@ -96,65 +103,83 @@
         Matching tests must also be added to test7.setup
         and test7.run
         -->
-	<target name="retro7.quarks" >
-		<retro7 qjar="quarks.api.function.jar" />
-		<retro7 qjar="quarks.api.execution.jar" />
-		<retro7 qjar="quarks.api.graph.jar" />
-		<retro7 qjar="quarks.api.window.jar" />
-		<retro7 qjar="quarks.api.oplet.jar" />
-		<retro7 qjar="quarks.api.topology.jar" />
-		<retro7 qjar="quarks.spi.graph.jar" />
-		<retro7 qjar="quarks.spi.topology.jar" />
-		<retro7 qjar="quarks.runtime.etiao.jar" />
-		<retro7 qjar="quarks.runtime.appservice.jar" />
-		<retro7 qjar="quarks.runtime.jmxcontrol.jar" />
-		<retro7 qjar="quarks.runtime.jsoncontrol.jar" />
-		<retro7 qjar="quarks.runtime.jobregistry.jar" />
+	<target name="retro7.edgent" >
+		<retro7 qjar="edgent.api.function.jar" />
+		<retro7 qjar="edgent.api.execution.jar" />
+		<retro7 qjar="edgent.api.graph.jar" />
+		<retro7 qjar="edgent.api.window.jar" />
+		<retro7 qjar="edgent.api.oplet.jar" />
+		<retro7 qjar="edgent.api.topology.jar" />
+		<retro7 qjar="edgent.spi.graph.jar" />
+		<retro7 qjar="edgent.spi.topology.jar" />
+		<retro7 qjar="edgent.runtime.etiao.jar" />
+		<retro7 qjar="edgent.runtime.appservice.jar" />
+		<retro7 qjar="edgent.runtime.jmxcontrol.jar" />
+		<retro7 qjar="edgent.runtime.jsoncontrol.jar" />
+		<retro7 qjar="edgent.runtime.jobregistry.jar" />
 
-		<retro7 qjar="quarks.utils.metrics.jar" qdir="utils/metrics/lib" />
-		<retro7 qjar="quarks.providers.direct.jar" />
-		<retro7 qjar="quarks.connectors.common.jar"  qdir="connectors/common/lib" />
-		<retro7 qjar="quarks.connectors.iot.jar" qdir="connectors/iot/lib" />
-		<retro7 qjar="quarks.connectors.iotf.jar" qdir="connectors/iotf/lib" />
-		<retro7 qjar="quarks.connectors.http.jar" qdir="connectors/http/lib" />
-		<retro7 qjar="quarks.connectors.pubsub.jar"  qdir="connectors/pubsub/lib" />
-		<retro7 qjar="quarks.apps.iot.jar"  qdir="apps/iot/lib" />
-		<retro7 qjar="quarks.apps.runtime.jar"  qdir="apps/runtime/lib" />
-		<retro7 qjar="quarks.providers.iot.jar" />
+		<retro7 qjar="edgent.utils.metrics.jar" qdir="utils/metrics/lib" />
+        <!-- utils/streamscope - why not java7? -->
+		<retro7 qjar="edgent.providers.direct.jar" />
+        <!-- providers/development - why not java7? -->
+		<retro7 qjar="edgent.connectors.common.jar"  qdir="connectors/common/lib" />
+		<retro7 qjar="edgent.connectors.iot.jar" qdir="connectors/iot/lib" />
+		<retro7 qjar="edgent.connectors.iotp.jar" qdir="connectors/iotp/lib" />
+		<retro7 qjar="edgent.connectors.http.jar" qdir="connectors/http/lib" />
+		<retro7 qjar="edgent.connectors.pubsub.jar"  qdir="connectors/pubsub/lib" />
+        <!-- connectors/command - why not java7? -->
+        <!-- connectors/csv - why not java7? -->
+        <!-- connectors/file - why not java7? -->
+        <!-- connectors/jdbc - why not java7? -->
+        <!-- connectors/mqtt - why not java7? -->
+        <!-- connectors/kafka - why not java7? -->
+        <!-- connectors/wsclient - why not java7? -->
+        <!-- connectors/javax.websocket-client - why not java7? -->
+		<retro7 qjar="edgent.apps.iot.jar"  qdir="apps/iot/lib" />
+		<retro7 qjar="edgent.apps.runtime.jar"  qdir="apps/runtime/lib" />
+        <!-- analytics/math3 - why not java7? -->
+        <!-- analytics/sensors - why not java7? -->
+		<retro7 qjar="edgent.providers.iot.jar" />
 
-                <retro7 qjar="quarks.samples.apps.jar" qdir="samples/lib" />
-                <retro7 qjar="quarks.samples.connectors.jar" qdir="samples/lib" />
-                <retro7 qjar="quarks.samples.console.jar" qdir="samples/lib" />
-                <retro7 qjar="quarks.samples.scenarios.jar" qdir="samples/lib" />
-                <retro7 qjar="quarks.samples.topology.jar" qdir="samples/lib" />
-                <retro7 qjar="quarks.samples.utils.jar" qdir="samples/lib" />
+                <retro7 qjar="edgent.samples.apps.jar" qdir="samples/lib" />
+                <retro7 qjar="edgent.samples.connectors.jar" qdir="samples/lib" />
+                <retro7 qjar="edgent.samples.console.jar" qdir="samples/lib" />
+                <retro7 qjar="edgent.samples.scenarios.jar" qdir="samples/lib" />
+                <retro7 qjar="edgent.samples.topology.jar" qdir="samples/lib" />
+                <retro7 qjar="edgent.samples.utils.jar" qdir="samples/lib" />
 
-		<mkdir dir="${quarks7.target}/ext"/>
-		<copy todir="${quarks7.target}/ext">
-			<fileset dir="${quarks8.target}/ext"/>
+		<mkdir dir="${edgent7.target}/ext"/>
+		<copy todir="${edgent7.target}/ext">
+			<fileset dir="${edgent8.target}/ext"/>
 		</copy>
 
-		<mkdir dir="${quarks7.target}/connectors/iotf/ext"/>
-		<copy todir="${quarks7.target}/connectors/iotf/ext">
-			<fileset dir="${quarks8.target}/connectors/iotf/ext"/>
+		<mkdir dir="${edgent7.target}/connectors/iotp/ext"/>
+		<copy todir="${edgent7.target}/connectors/iotp/ext">
+			<fileset dir="${edgent8.target}/connectors/iotp/ext"/>
 		</copy>
-		<mkdir dir="${quarks7.target}/connectors/mqtt/ext"/>
-		<copy todir="${quarks7.target}/connectors/mqtt/ext">
-			<fileset dir="${quarks8.target}/connectors/mqtt/ext"/>
+        <mkdir dir="${edgent7.target}/connectors/http/ext"/>
+        <copy todir="${edgent7.target}/connectors/http/ext">
+            <fileset dir="${edgent8.target}/connectors/http/ext"/>
+        </copy>
+		<!-- why mqtt/ext when connectors/mqtt not included above? -->
+		<mkdir dir="${edgent7.target}/connectors/mqtt/ext"/>
+		<copy todir="${edgent7.target}/connectors/mqtt/ext">
+			<fileset dir="${edgent8.target}/connectors/mqtt/ext"/>
 		</copy>
-		<mkdir dir="${quarks7.target}/analytics/math3/ext"/>
-		<copy todir="${quarks7.target}/analytics/math3/ext">
-			<fileset dir="${quarks8.target}/analytics/math3/ext"/>
+        <!-- why math3/ext when analytics/math3 not included above? -->
+		<mkdir dir="${edgent7.target}/analytics/math3/ext"/>
+		<copy todir="${edgent7.target}/analytics/math3/ext">
+			<fileset dir="${edgent8.target}/analytics/math3/ext"/>
 		</copy>
 
 	</target>
-	<target name="retro7.quarks.android" if="env.ANDROID_SDK_PLATFORM">
-		<retro7 qjar="quarks.android.topology.jar" qdir="android/topology/lib" />
-		<retro7 qjar="quarks.android.hardware.jar" qdir="android/hardware/lib" />
+	<target name="retro7.edgent.android" if="env.ANDROID_SDK_PLATFORM">
+		<retro7 qjar="edgent.android.topology.jar" qdir="android/topology/lib" />
+		<retro7 qjar="edgent.android.hardware.jar" qdir="android/hardware/lib" />
 	</target>
 
 	<path id="tc.classpath">
-		<dirset dir="${quarks}">
+		<dirset dir="${edgent}">
 			<include name="**/test.classes"/>
 		</dirset>
 	</path>
@@ -165,20 +190,23 @@
 		<attribute name="ldir" default="lib"/>
 		<sequential>
 			<echo message="Testing Setup: @{tdir}"/>
-			<delete dir="${quarks}/@{tdir}/test7.classes"/>
-			<mkdir dir="${quarks}/@{tdir}/test7.classes"/>
+			<delete dir="${edgent}/@{tdir}/test7.classes"/>
+			<mkdir dir="${edgent}/@{tdir}/test7.classes"/>
 
-			<exec executable="java">
-				<arg value="-Dretrolambda.inputDir=${quarks}/@{tdir}/test.classes"/>
+            <!-- <echo message="#### qcp7 ${qcp7}"/> -->
+            <!-- <echo message="#### qcp ${qcp}"/> -->
+            <!-- <echo message="#### tccp ${tccp}"/> -->
+			<exec executable="java" failonerror="true">
+				<arg value="-Dretrolambda.inputDir=${edgent}/@{tdir}/test.classes"/>
 				<arg value="-Dretrolambda.classpath=${qcp7}:${qcp}:${tccp}"/>
-				<arg value="-Dretrolambda.outputDir=${quarks}/@{tdir}/test7.classes"/>
+				<arg value="-Dretrolambda.outputDir=${edgent}/@{tdir}/test7.classes"/>
 				<arg value="-Dretrolambda.defaultMethods=true"/>
 				<arg value="-jar"/>
 				<arg value="ext/retrolambda-2.1.0.jar"/>
 			</exec>
-			<delete dir="${quarks}/@{tdir}/test.classes"/>
-			<move   file="${quarks}/@{tdir}/test7.classes"
-              tofile="${quarks}/@{tdir}/test.classes"/>
+			<delete dir="${edgent}/@{tdir}/test.classes"/>
+			<move   file="${edgent}/@{tdir}/test7.classes"
+              tofile="${edgent}/@{tdir}/test.classes"/>
 		</sequential>
 	</macrodef>
 
@@ -187,11 +215,11 @@
 		<attribute name="ldir" default="lib"/>
 		<sequential>
 			<echo message="Testing: @{tdir}"/>
-			<ant dir="${quarks}/@{tdir}" target="test.run" inheritAll="false">
-				<property name="lib" location="${quarks7.target}/@{ldir}"/>
-				<property name="quarks.lib" location="${quarks7.target}/lib"/>
-				<property name="quarks.utils" location="${quarks7.target}/utils"/>
-				<property name="quarks.connectors" location="${quarks7.target}/connectors"/>
+			<ant dir="${edgent}/@{tdir}" target="test.run" inheritAll="false">
+				<property name="lib" location="${edgent7.target}/@{ldir}"/>
+				<property name="edgent.lib" location="${edgent7.target}/lib"/>
+				<property name="edgent.utils" location="${edgent7.target}/utils"/>
+				<property name="edgent.connectors" location="${edgent7.target}/connectors"/>
 			</ant>
 		</sequential>
 	</macrodef>
@@ -200,7 +228,7 @@
            <fail message="Java 7 jars not built!">
              <condition>
                <not>
-                 <available file="${quarks7.target}/lib" type="dir"/>
+                 <available file="${edgent7.target}/lib" type="dir"/>
                </not>
              </condition>
            </fail>
@@ -212,23 +240,23 @@
         -->
         <!-- Ensure previous separate build steps built the Java 7 jars -->
 	<target name="test7.setup" depends="verify.java7.built"
-    description="Setup  Quarks tests for the Java 7.Must be run with Java 8 to run retrolambda."
+    description="Setup  Edgent tests for the Java 7.Must be run with Java 8 to run retrolambda."
     >
-		<path id="quarks.java7.classpath">
-			<fileset dir="${quarks7.target}/lib">
+		<path id="edgent.java7.classpath">
+			<fileset dir="${edgent7.target}/lib">
 				<include name="*.jar"/>
 			</fileset>
-			<fileset dir="${quarks7.target}/connectors">
+			<fileset dir="${edgent7.target}/connectors">
 				<include name="*/lib/*.jar"/>
 			</fileset>
-			<fileset dir="${quarks7.target}/utils">
+			<fileset dir="${edgent7.target}/utils">
 				<include name="*/lib/*.jar"/>
 			</fileset>
-			<fileset dir="${quarks7.target}/analytics">
+			<fileset dir="${edgent7.target}/analytics">
 				<include name="*/lib/*.jar"/>
 			</fileset>
 		</path>
-		<property name="qcp7" refid="quarks.java7.classpath"/>
+		<property name="qcp7" refid="edgent.java7.classpath"/>
 		<retro7.test.setup tdir="api/function"/>
 		<retro7.test.setup tdir="api/execution"/>
 		<retro7.test.setup tdir="api/graph" />
@@ -237,6 +265,7 @@
 		<retro7.test.setup tdir="api/topology" />
 		<retro7.test.setup tdir="spi/graph" />
 		<retro7.test.setup tdir="spi/topology" />
+        <retro7.test.setup tdir="runtime/appservice" />
 		<retro7.test.setup tdir="runtime/etiao" />
 		<retro7.test.setup tdir="runtime/jmxcontrol" />
 		<retro7.test.setup tdir="runtime/jsoncontrol" />
@@ -244,7 +273,7 @@
 		<retro7.test.setup tdir="utils/metrics"  ldir="utils/metrics/lib"/>
 		<retro7.test.setup tdir="providers/direct" />
 		<retro7.test.setup tdir="connectors/common" ldir="connectors/common/lib"/>
-		<retro7.test.setup tdir="connectors/iotf"  ldir="connectors/iotf/lib"/>
+		<retro7.test.setup tdir="connectors/iotp"  ldir="connectors/iotp/lib"/>
 		<retro7.test.setup tdir="connectors/http"  ldir="connectors/http/lib"/>
 		<retro7.test.setup tdir="connectors/pubsub"  ldir="connectors/pubsub/lib"/>
 		<retro7.test.setup tdir="apps/iot"  ldir="apps/iot/lib"/>
@@ -257,7 +286,7 @@
         -->
 	<!-- this must be preceeded by test7.setup (run with a Java 8 vm) -->
 	<target name="test7.run" depends="verify.java7.built"
-	    description="Run Quarks tests for the Java 7. Should be run with JAVA_HOME pointing to a Java 7 virtual machine, though can also be run with Java 8"
+	    description="Run Edgent tests for the Java 7. Should be run with JAVA_HOME pointing to a Java 7 virtual machine, though can also be run with Java 8"
 	    >
 		<retro7.test.run tdir="api/function"/>
 		<retro7.test.run tdir="api/execution"/>
@@ -267,6 +296,7 @@
 		<retro7.test.run tdir="api/topology" />
 		<retro7.test.run tdir="spi/graph" />
 		<retro7.test.run tdir="spi/topology" />
+        <retro7.test.run tdir="runtime/appservice" />
 		<retro7.test.run tdir="runtime/etiao" />
 		<retro7.test.run tdir="runtime/jmxcontrol" />
 		<retro7.test.run tdir="runtime/jsoncontrol" />
@@ -274,7 +304,7 @@
 		<retro7.test.run tdir="utils/metrics"  ldir="utils/metrics/lib"/>
 		<retro7.test.run tdir="providers/direct" />
 		<retro7.test.run tdir="connectors/common" ldir="connectors/common/lib"/>
-		<retro7.test.run tdir="connectors/iotf"  ldir="connectors/iotf/lib"/>
+		<retro7.test.run tdir="connectors/iotp"  ldir="connectors/iotp/lib"/>
 		<retro7.test.run tdir="connectors/http"  ldir="connectors/http/lib"/>
 		<retro7.test.run tdir="connectors/pubsub"  ldir="connectors/pubsub/lib"/>
 		<retro7.test.run tdir="apps/iot"  ldir="apps/iot/lib"/>
@@ -284,7 +314,7 @@
 	<target name="clean">
 		<delete dir="${input.dir}"/>
 		<delete dir="${output.dir}"/>
-		<delete dir="${quarks7.target}"/>
+		<delete dir="${edgent7.target}"/>
 	</target>
 
 </project>

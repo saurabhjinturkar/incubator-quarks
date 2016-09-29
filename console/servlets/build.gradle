@@ -16,14 +16,15 @@ distsDirName = 'webapps'
 plugins.apply 'war'
 
 dependencies {
-  providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
-  providedCompile project(':utils:streamscope')
-  providedCompile ext_classpath
+  addTargetDirProjectJarDependency 'providedCompile', ':utils:streamscope'
+  addProjectExtDependency 'providedCompile', 'javax.servlet:javax.servlet-api:3.1.0'
+  addTargetDirCoreExtJarDependencies 'providedCompile'
+
+  // N.B. root project adds test common dependencies
 }
 
 war {
-  configure jarOptions
-  destinationDir = project.distsDir
+  destinationDir = file("$target_java8_dir/$project.simpleGroupName/webapps")
   archiveName 'console.war'
   from file('webapp_content/html')
   into('resources') {
@@ -33,4 +34,10 @@ war {
     from file('webapp_content/js')
   }
   webXml = file('webapp_content/WEB-INF/console.xml')
+  
+  doFirst {
+    configure jarOptions
+  }
 }
+
+testClasses.dependsOn war

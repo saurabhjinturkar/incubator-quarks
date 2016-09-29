@@ -221,10 +221,9 @@ clearTupleMaxBucketIdx = function() {
 	max_bucket_idx = null;
 };
 
-
 metricFunction = function(selectedJobId, metricSelected, bUseWideWidth) {
 	stopLineChart();
-	// metric selected, i.e: name:Count,type:counter
+	// metricSelected, i.e: name:Count,type:counter
 	var queryString = "metrics?job=" + selectedJobId + "&metric=" + metricSelected;
 	
 	var metricName = metricSelected.split(",")[0].split(":")[1];
@@ -609,6 +608,10 @@ plotMetricChartType = function(jobId, metricSelected) {
 				     
 };
 
+/*
+ * This returns only the name and type of the metric
+ * i.e, name: Count, type: "counter" or type "meter"
+ */
 metricsAvailable = function(queryString, jobId, bIsNewJob) {
 	d3.xhr(queryString, function(error, responseData) {
 		  if (error) {

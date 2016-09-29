@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.analytics.math3" default="all"
+<project name="edgent.analytics.math3" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -27,14 +27,14 @@
   <property name="ext" location="../../ext"/>
 
   <path id="compile.classpath">
-    <pathelement location="${quarks.lib}/quarks.api.topology.jar"/>
+    <pathelement location="${edgent.lib}/edgent.api.topology.jar"/>
     <pathelement location="${component.ext}/commons-math3-3.4.1/commons-math3-3.4.1.jar"/>
-    <path refid="quarks.ext.classpath" />
+    <path refid="edgent.ext.classpath" />
   </path>
 
   <path id="test.compile.classpath">
     <pathelement location="${jar}" />
-    <pathelement location="${quarks.lib}/quarks.providers.direct.jar"/>
+    <pathelement location="${edgent.lib}/edgent.providers.direct.jar"/>
     <pathelement location="../../providers/direct/test.classes"/>
     <pathelement location="../../api/topology/test.classes"/>
     <path refid="compile.classpath"/>

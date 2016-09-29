@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.providers.development" default="all"
+<project name="edgent.providers.development" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -24,11 +24,11 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${quarks.lib}/quarks.providers.direct.jar" />
-    <pathelement location="${quarks.console}/server/lib/quarks.console.server.jar" />
-    <pathelement location="${quarks.utils}/metrics/lib/quarks.utils.metrics.jar" />
-    <pathelement location="${quarks.utils}/streamscope/lib/quarks.utils.streamscope.jar" />
-    <pathelement location="${lib}/quarks.runtime.jmxcontrol.jar" />
+    <pathelement location="${edgent.lib}/edgent.providers.direct.jar" />
+    <pathelement location="${edgent.console}/server/lib/edgent.console.server.jar" />
+    <pathelement location="${edgent.utils}/metrics/lib/edgent.utils.metrics.jar" />
+    <pathelement location="${edgent.utils}/streamscope/lib/edgent.utils.streamscope.jar" />
+    <pathelement location="${lib}/edgent.runtime.jmxcontrol.jar" />
   </path>
 
   <path id="test.compile.classpath">

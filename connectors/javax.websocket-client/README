@@ -7,5 +7,5 @@ implementation.
 To use this implementation, add the following to your classpath:
   connectors/javax.websocket-client/lib/javax.websocket-client.jar
   
-An implementation of quarks.javax.websocket.QuarksSslContainerProvider
+An implementation of org.apache.edgent.javax.websocket.EdgentSslContainerProvider
 is included in the jar and is loadable via java.util.ServiceLoader.

@@ -15,9 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-quarks=..
+edgent=..
 
 # Runs SimpleFilterTransform
 #
-export CLASSPATH="${quarks}/samples/lib/quarks.samples.topology.jar"
-java quarks.samples.topology.SimpleFilterTransform
+export CLASSPATH="${edgent}/samples/lib/edgent.samples.topology.jar"
+java org.apache.edgent.samples.topology.SimpleFilterTransform

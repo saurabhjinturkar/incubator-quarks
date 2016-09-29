@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.spi.topology" default="all"
+<project name="edgent.spi.topology" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -23,7 +23,7 @@
 
   <import file="../../common-build.xml"/>
   <path id="compile.classpath">
-    <pathelement location="${lib}/quarks.api.topology.jar" />
+    <pathelement location="${lib}/edgent.api.topology.jar" />
   </path>
 
   <path id="test.compile.classpath">

@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.api.oplet" default="all"
+<project name="edgent.api.oplet" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -24,9 +24,9 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${lib}/quarks.api.function.jar" />
-    <pathelement location="${lib}/quarks.api.execution.jar" />
-    <pathelement location="${lib}/quarks.api.window.jar" />
+    <pathelement location="${lib}/edgent.api.function.jar" />
+    <pathelement location="${lib}/edgent.api.execution.jar" />
+    <pathelement location="${lib}/edgent.api.window.jar" />
   </path>
 
   <path id="test.compile.classpath">

@@ -12,13 +12,16 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile project(':spi:topology')
-  compile project(':spi:graph')
-  compile project(':runtime:etiao')
-  compile project(':runtime:jsoncontrol')
-  compile ext_classpath
-  testCompile project(':utils:metrics')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  addTargetDirProjectJarDependency 'compile', ':spi:topology'
+  addTargetDirProjectJarDependency 'compile', ':spi:graph'
+  addTargetDirProjectJarDependency 'compile', ':runtime:appservice'
+  addTargetDirProjectJarDependency 'compile', ':runtime:etiao'
+  addTargetDirProjectJarDependency 'compile', ':runtime:jsoncontrol'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  addTargetDirProjectJarDependency 'testCompile', ':utils:metrics'
+  // N.B. root project adds test common dependencies
 }
 
-addCompileTestDependencies ':api:topology', ':utils:metrics'
+addCompileTestDependencies ':api:topology', ':utils:metrics', ':runtime:appservice'

@@ -3,7 +3,7 @@
 # More generated artifacts
 /target
 /test/svt/lib
-/release-quarks
+/release-edgent
 /reports
 
 # Mobile Tools for Java (J2ME)

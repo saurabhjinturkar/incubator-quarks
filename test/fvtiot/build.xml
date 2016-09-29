@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.test.fvtiot" default="all" xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="edgent.test.fvtiot" default="all" xmlns:jacoco="antlib:org.jacoco.ant">
     <description>
         FVT for iot scenario
     </description>
@@ -23,10 +23,10 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${quarks.lib}/quarks.providers.iot.jar"/>
-    <pathelement location="${quarks.lib}/quarks.runtime.appservice.jar"/>
-    <pathelement location="${quarks.lib}/quarks.runtime.jsoncontrol.jar"/>
-    <path refid="quarks.ext.classpath"/>
+    <pathelement location="${edgent.lib}/edgent.providers.iot.jar"/>
+    <pathelement location="${edgent.lib}/edgent.runtime.appservice.jar"/>
+    <pathelement location="${edgent.lib}/edgent.runtime.jsoncontrol.jar"/>
+    <path refid="edgent.ext.classpath"/>
   </path>
 
   <path id="test.compile.classpath">

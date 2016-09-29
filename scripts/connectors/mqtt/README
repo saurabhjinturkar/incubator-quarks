@@ -7,7 +7,7 @@ By default, the following MQTT broker configuration is assumed:
 See http://mqtt.org for the code and setup information for
 a mqtt broker.
 
-The source code for the samples is in the <quarks-release>/samples directory.
+The source code for the samples is in the <edgent-release>/samples directory.
 
 Running the simple sample
 -------------------------

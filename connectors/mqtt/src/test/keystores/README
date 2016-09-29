@@ -23,7 +23,7 @@ just that should you need to regenerate the files.
 mosquitto-SSL.conf.template file is a template mosquitto configuration
 file supporting non-SSL clients on port 1883, SSL on 8883,
 and SSL-client-auth on 8884.  To generate a conf file that works
-with these files in the quarks repository:
+with these files in the edgent repository:
 
     cd <this-keystores-directory>
     cat mosquitto-SSL.conf.template | 

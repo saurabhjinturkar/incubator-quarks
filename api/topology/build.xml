@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.api.topology" default="all"
+<project name="edgent.api.topology" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -24,10 +24,10 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${lib}/quarks.api.execution.jar"/>
-    <pathelement location="${lib}/quarks.api.graph.jar"/>
-    <pathelement location="${lib}/quarks.api.oplet.jar" />
-    <path refid="quarks.ext.classpath"/>
+    <pathelement location="${lib}/edgent.api.execution.jar"/>
+    <pathelement location="${lib}/edgent.api.graph.jar"/>
+    <pathelement location="${lib}/edgent.api.oplet.jar" />
+    <path refid="edgent.ext.classpath"/>
   </path>
 
   <path id="test.compile.classpath">
@@ -41,5 +41,17 @@
     <path refid="test.compile.classpath"/>
     <path refid="test.common.classpath" />
   </path>
-
+	
+  <!-- Build a jar file containing the applications to test the ApplicationService -->
+  <target name="test.compile" depends="edgent.common.test.compile,test.jar"/>
+  <target name="test.jar" depends="edgent.common.test.compile">
+    <jar destfile="${test.classes}/${ant.project.name}.APPS.TEST.jar">
+      <service type="org.apache.edgent.topology.services.TopologyBuilder">
+        <provider classname="org.apache.edgent.test.topology.services.TestApplications$AppOne" />
+        <provider classname="org.apache.edgent.test.topology.services.TestApplications$AppTwo" />
+        <provider classname="org.apache.edgent.test.topology.services.TestApplications$AppThree" />
+      </service>
+     <fileset dir="${test.classes}" includes="**/TestApplications*"/>
+    </jar>
+  </target>
 </project>

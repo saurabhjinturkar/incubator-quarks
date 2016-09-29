@@ -5,7 +5,7 @@ The file writer application writes a stream's tuples to files.
 The file reader application watches a directory for files and reads their
 contents into a stream of tuples.
 
-The source code for the samples is in the <quarks-release>/samples directory.
+The source code for the samples is in the <edgent-release>/samples directory.
 
 Use:
 

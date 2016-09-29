@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.test.svt" default="all" xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="edgent.test.svt" default="all" xmlns:jacoco="antlib:org.jacoco.ant">
     <description>
         SVT
     </description>
@@ -22,17 +22,17 @@
   <property name="lib" location="${basedir}/lib"/>
   <import file="../../common-build.xml"/>
 
-  <target name="init" depends="quarks.common.init">
+  <target name="init" depends="edgent.common.init">
      <mkdir dir="${lib}"/>
   </target>
-  <target name="clean" depends="quarks.common.clean">
+  <target name="clean" depends="edgent.common.clean">
      <delete dir="${lib}"/>
   </target>
 
   <path id="compile.classpath">
-    <pathelement location="${quarks.lib}/quarks.providers.development.jar"/>
-  	 <pathelement location="${target.java8.dir}/samples/lib/quarks.samples.apps.jar"/>
-  	 <pathelement location="${quarks.connectors}/iotf/lib/quarks.connectors.iotf.jar"/>
+    <pathelement location="${edgent.lib}/edgent.providers.development.jar"/>
+  	 <pathelement location="${target.java8.dir}/samples/lib/edgent.samples.apps.jar"/>
+  	 <pathelement location="${edgent.connectors}/iotp/lib/edgent.connectors.iotp.jar"/>
   </path>
 
   <path id="test.compile.classpath">

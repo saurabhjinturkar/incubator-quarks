@@ -75,7 +75,7 @@ _error() {
 
 
 ## Main script
-[ ! -n "${QUARKS:-}" ] && QUARKS=../..
+[ ! -n "${EDGENT:-}" ] && EDGENT=../..
 [ ! -n "${JAVA_HOME:-}" ] && _error "JAVA_HOME must be set"
 
 if [ $# -lt 2 ]; then

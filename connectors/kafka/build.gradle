@@ -12,11 +12,32 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:topology')
-  compile 'org.apache.kafka:kafka_2.10:0.8.2.2'
-  compile 'org.apache.kafka:kafka-clients:0.8.2.2'
-  compile ext_classpath
-  testCompile project(':providers:direct')
+  addTargetDirProjectJarDependency 'compile', ':api:topology'
+  
+  // The pom for kafka includes dependencies that don't make sense for us.
+  // In at least one case kafka dependencies include a slf4j *implementation* jar
+  // and that conflicts with our samples' binding to a particular
+  // version of slf4j implementation.
+  // This all seems like fallout from, I believe, the kafka jars containing
+  // the code for their cli tools too, and possibly tests, which need things like:
+  //   slf4j-log4j12, snappy-java, jline, jopt-simple, junit-3.8.1
+  //
+  // So at least for now, avoid transitive and just match our ant based config
+  //
+  // addProjectExtDependency 'compile', 'org.apache.kafka:kafka_2.10:0.8.2.2'
+  // addProjectExtDependency 'compile', 'org.apache.kafka:kafka-clients:0.8.2.2'
+  addProjectExtDependency 'compile', 'org.apache.kafka:kafka_2.10:0.8.2.2@jar'
+  addProjectExtDependency 'compile', 'org.apache.kafka:kafka-clients:0.8.2.2@jar'
+  addProjectExtDependency 'compile', 'log4j:log4j:1.2.16@jar'
+  addProjectExtDependency 'compile', 'com.yammer.metrics:metrics-core:2.2.0@jar'
+  addProjectExtDependency 'compile', 'org.scala-lang:scala-library:2.10.4@jar'
+  addProjectExtDependency 'compile', 'com.101tec:zkclient:0.3@jar'
+  addProjectExtDependency 'compile', 'org.apache.zookeeper:zookeeper:3.4.6@jar'
+  
+  addTargetDirCoreExtJarDependencies 'compile'
+  
+  addTargetDirProjectJarDependency 'testCompile', ':providers:direct'
+  // N.B. root project adds test common dependencies
 }
 
 addCompileTestDependencies ':api:topology', ':providers:direct', ':connectors:common'

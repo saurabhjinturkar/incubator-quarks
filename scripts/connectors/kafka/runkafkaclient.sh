@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-quarks=../../..
+edgent=../../..
 
 # Runs the Kafka Publisher or Subscriber Client
 #
@@ -24,6 +24,6 @@ quarks=../../..
 # ./runkafkaclient.sh sub
 # ./runkafkaclient.sh -h
 
-export CLASSPATH=${quarks}/lib/quarks.samples.connectors.jar
+export CLASSPATH=${edgent}/lib/edgent.samples.connectors.jar
 
-java quarks.samples.connectors.kafka.KafkaClient $@
+java org.apache.edgent.samples.connectors.kafka.KafkaClient $@

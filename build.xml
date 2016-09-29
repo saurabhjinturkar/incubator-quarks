@@ -14,16 +14,16 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks" default="all"
+<project name="edgent" default="all"
   xmlns:jacoco="antlib:org.jacoco.ant"
   >
     <description>
-        Top-level build.xml for Quarks.
+        Top-level build.xml for Edgent.
     </description>
 	
   <property name="release.base" location="release-${ant.project.name}"/>
 
-  <property name="quarks.version" value="0.4.0"/>
+  <property name="edgent.version" value="0.4.0"/>
 
   <property name="report.dir" location="reports"/>
   <property name="target.dir" location="target"/>
@@ -51,7 +51,7 @@
     <mkdir dir="${target.dir}"/>
     <echoproperties destfile="${target.dir}/version.txt">
        <propertyset>
-          <propertyref name="quarks.version"/>
+          <propertyref name="edgent.version"/>
           <propertyref name="DSTAMP"/>
           <propertyref name="TSTAMP"/>
           <propertyref name="commithash"/>
@@ -117,16 +117,18 @@
 
         <ant dir="providers/direct" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/common" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="connectors/command" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="connectors/csv" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/iot" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/serial" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/file" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/http" target="@{target}" useNativeBasedir="true"/>
-        <ant dir="connectors/iotf" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="connectors/iotp" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/jdbc" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/kafka" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/mqtt" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/pubsub" target="@{target}" useNativeBasedir="true"/>
-        <ant dir="connectors/quarks.javax.websocket" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="connectors/edgent.javax.websocket" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/javax.websocket-client" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/javax.websocket-server" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/wsclient" target="@{target}" useNativeBasedir="true"/>
@@ -170,12 +172,12 @@
             <include name="**/unittests/*/jacoco*.exec"/>
        </fileset>
     </executiondata>
-    <structure name="Quarks">
+    <structure name="Edgent">
 
-    <group name="Quarks API">
+    <group name="Edgent API">
       <classfiles>
          <fileset dir="${target.dir}/java8/lib">
-            <include name="quarks.api.*.jar"/>
+            <include name="edgent.api.*.jar"/>
          </fileset>
       </classfiles>
     <sourcefiles encoding="UTF-8">
@@ -186,10 +188,10 @@
         <fileset dir="${basedir}/api/topology/src/main/java" includes="**/*.java"/>
     </sourcefiles>
     </group>
-    <group name="Quarks SPI">
+    <group name="Edgent SPI">
       <classfiles>
          <fileset dir="${target.dir}/java8/lib">
-            <include name="quarks.spi.*.jar"/>
+            <include name="edgent.spi.*.jar"/>
          </fileset>
       </classfiles>
     <sourcefiles encoding="UTF-8">
@@ -197,10 +199,10 @@
         <fileset dir="${basedir}/spi/topology/src/main/java" includes="**/*.java"/>
     </sourcefiles>
     </group>
-    <group name="Quarks Runtime">
+    <group name="Edgent Runtime">
       <classfiles>
          <fileset dir="${target.dir}/java8/lib">
-            <include name="quarks.runtime.*.jar"/>
+            <include name="edgent.runtime.*.jar"/>
          </fileset>
       </classfiles>
     <sourcefiles encoding="UTF-8">
@@ -209,10 +211,10 @@
     </sourcefiles>
     </group>
 
-    <group name="Quarks Utilities">
+    <group name="Edgent Utilities">
       <classfiles>
          <fileset dir="${target.dir}/java8/utils">
-            <include name="**/quarks.utils.*.jar"/>
+            <include name="**/edgent.utils.*.jar"/>
          </fileset>
       </classfiles>
     <sourcefiles encoding="UTF-8">
@@ -220,17 +222,19 @@
         <fileset dir="${basedir}/utils/streamscope/src/main/java" includes="**/*.java"/>
     </sourcefiles>
     </group>
-    <group name="Quarks Connectors">
+    <group name="Edgent Connectors">
       <classfiles>
          <fileset dir="${target.dir}/java8/connectors">
-            <include name="**/quarks.connectors.*.jar"/>
+            <include name="**/edgent.connectors.*.jar"/>
          </fileset>
       </classfiles>
     <sourcefiles encoding="UTF-8">
         <fileset dir="${basedir}/connectors/common/src/main/java" includes="**/*.java"/>
+        <fileset dir="${basedir}/connectors/command/src/main/java" includes="**/*.java"/>
+        <fileset dir="${basedir}/connectors/csv/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/file/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/iot/src/main/java" includes="**/*.java"/>
-        <fileset dir="${basedir}/connectors/iotf/src/main/java" includes="**/*.java"/>
+        <fileset dir="${basedir}/connectors/iotp/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/jdbc/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/kafka/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/mqtt/src/main/java" includes="**/*.java"/>
@@ -240,10 +244,10 @@
     </sourcefiles>
     </group>
 
-    <group name="Quarks Providers">
+    <group name="Edgent Providers">
       <classfiles>
          <fileset dir="${target.dir}/java8/lib">
-            <include name="quarks.providers.*.jar"/>
+            <include name="edgent.providers.*.jar"/>
          </fileset>
       </classfiles>
     <sourcefiles encoding="UTF-8">
@@ -252,10 +256,10 @@
     </sourcefiles>
     </group>
 
-    <group name="Quarks Analytics">
+    <group name="Edgent Analytics">
       <classfiles>
          <fileset dir="${target.dir}/java8/analytics">
-            <include name="**/quarks.analytics.*.jar"/>
+            <include name="**/edgent.analytics.*.jar"/>
          </fileset>
       </classfiles>
     <sourcefiles encoding="UTF-8">
@@ -264,10 +268,10 @@
     </sourcefiles>
     </group>
 
-    <group name="Quarks Console">
+    <group name="Edgent Console">
       <classfiles>
          <fileset dir="${target.dir}/java8/console">
-            <include name="**/quarks.console.*.jar"/>
+            <include name="**/edgent.console.*.jar"/>
          </fileset>
       </classfiles>
     <sourcefiles encoding="UTF-8">
@@ -292,11 +296,11 @@
       author="true"
       version="true"
       use="true"
-      windowtitle="Quarks v${quarks.version}"
+      windowtitle="Edgent v${edgent.version}"
       additionalparam="-Xdoclint:none"
-      Overview="quarks_overview.html"
+      Overview="edgent_overview.html"
       failonwarning="true"
-      excludepackagenames="quarks.connectors.runtime,quarks.connectors.*.runtime,quarks.console.*,quarks.topology.spi.*,quarks.graph.spi.*,quarks.samples.scenarios.iotf.range.sensor"
+      excludepackagenames="org.apache.edgent.connectors.runtime,org.apache.edgent.connectors.*.runtime,org.apache.edgent.console.*,org.apache.edgent.samples.scenarios.iotp.range.sensor"
       >
       <sourcepath>
          <dirset dir="${basedir}">
@@ -316,17 +320,17 @@
         </fileset>
       </classpath>
 
-       <doctitle>Apache Quarks (incubating) v${quarks.version}</doctitle>
-       <footer><![CDATA[<a href="http://quarks.incubator.apache.org">Apache Quarks (incubating)</a>]]></footer>
+       <doctitle>Apache Edgent (incubating) v${edgent.version}</doctitle>
+       <footer><![CDATA[<a href="http://edgent.incubator.apache.org">Apache Edgent (incubating)</a>]]></footer>
        <bottom>Copyright &amp;copy; 2016 The Apache Software Foundation. All Rights Reserved - ${commithash}-${DSTAMP}-${TSTAMP}</bottom>
-       <group title="Quarks API" packages="quarks.execution,quarks.function,quarks.topology,quarks.topology.*,quarks.execution.*"/>
-       <group title="Quarks Providers" packages="quarks.providers.*"/>
-       <group title="Quarks Connectors" packages="quarks.connectors.*"/>
-       <group title="Quarks Samples" packages="quarks.samples.*"/>
-       <group title="Quarks Analytics" packages="quarks.analytics.*"/>
-       <group title="Quarks Utilities" packages="quarks.metrics,quarks.metrics.*,quarks.streamscope,quarks.streamscope.*"/>
-       <group title="Quarks Low-Level API" packages="quarks.graph,quarks.graph.*,quarks.oplet,quarks.oplet.*,quarks.window"/>
-       <group title="Quarks SPI" packages="quarks.*.spi.*"/>
+       <group title="Edgent API" packages="org.apache.edgent.execution,org.apache.edgent.function,org.apache.edgent.topology,org.apache.edgent.topology.json,org.apache.edgent.topology.mbeans,org.apache.edgent.topology.plumbing,org.apache.edgent.topology.services,org.apache.edgent.execution.*"/>
+       <group title="Edgent Providers" packages="org.apache.edgent.providers.*"/>
+       <group title="Edgent Connectors" packages="org.apache.edgent.connectors.*"/>
+       <group title="Edgent Samples" packages="org.apache.edgent.samples.*"/>
+       <group title="Edgent Analytics" packages="org.apache.edgent.analytics.*"/>
+       <group title="Edgent Utilities" packages="org.apache.edgent.metrics,edgent.metrics.*,org.apache.edgent.streamscope,org.apache.edgent.streamscope.*"/>
+       <group title="Edgent Low-Level API" packages="org.apache.edgent.graph,edgent.graph.*,org.apache.edgent.oplet,edgent.oplet.*,org.apache.edgent.window"/>
+       <group title="Edgent SPI" packages="org.apache.edgent.topology.spi,org.apache.edgent.topology.spi.*"/>
      </javadoc>
   </target>
 
@@ -338,11 +342,11 @@
       <ant dir="platform/android" target="all" useNativeBasedir="true"/>
 
       <mkdir dir="${release.dir}" />
-      <property name="releasefilename" value="${release.dir}/quarks-v${quarks.version}-${DSTAMP}-${TSTAMP}.tgz"/>
+      <property name="releasefilename" value="${release.dir}/edgent-v${edgent.version}-${DSTAMP}-${TSTAMP}.tgz"/>
       <tar compression="gzip" longfile="gnu" destfile="${releasefilename}">
-        <tarfileset dir="${target.dir}" prefix="quarks"
+        <tarfileset dir="${target.dir}" prefix="edgent"
          excludes="**/*.sh"/>
-        <tarfileset dir="${target.dir}" prefix="quarks"
+        <tarfileset dir="${target.dir}" prefix="edgent"
          includes="**/*.sh" filemode="755"/>
       </tar>
       <checksum file="${releasefilename}"/>

@@ -12,8 +12,10 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':api:function')
-  compile project(':api:execution')
-  compile project(':api:window')
-  compile ext_classpath
+  addTargetDirProjectJarDependency 'compile', ':api:function'
+  addTargetDirProjectJarDependency 'compile', ':api:execution'
+  addTargetDirProjectJarDependency 'compile', ':api:window'
+  addTargetDirCoreExtJarDependencies 'compile'
+
+  // N.B. root project adds test common dependencies
 }

@@ -3,3 +3,5 @@
 **/classes/
 **/unittests/
 /bin/
+jdbc/derby.log
+jdbc/JdbcStreamsTestDb

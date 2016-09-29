@@ -9,7 +9,7 @@ By default the samples require the following kafka broker configuration:
 See http://kafka.apache.org for the code and setup information for
 a Kafka broker.
 
-The source code for the samples is in the <quarks-release>/samples directory.
+The source code for the samples is in the <edgent-release>/samples directory.
 
 Running the simple sample
 -------------------------

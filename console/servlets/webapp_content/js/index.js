@@ -27,6 +27,9 @@ var refreshedRowValues = [];
 var stateTooltip = null;
 var rowsTooltip = null;
 
+var tableMetrics = null;
+var metricsTooltip = null;
+
 var tagsColors = {};
 var propWindow;
 
@@ -136,12 +139,14 @@ d3.select("#toggleTimer")
 		stopTimer = true;
 		d3.select(this).text("Resume graph");
 		d3.select(this)
-		.attr("class", "start");
+		.attr("class", "start")
+		.attr("title", "Resume graph")
 	} else {
 		stopTimer = false;
 		d3.select(this).text("Pause graph");
 		d3.select(this)
-		.attr("class", "stop");
+		.attr("class", "stop")
+		.attr("title", "Pause graph");
 	}
 });
 
@@ -159,8 +164,10 @@ var margin = {top: 30, right: 5, bottom: 6, left: 30},
 var svgLegend = d3.select("#graphLegend")
 	.append("svg")
 	.attr("height", 600)
+	.attr("width", 340)
+	.attr("transform", "translate(0," + 30 + ")")
   	.append("g")
-  	.attr("width", 300)
+  	.attr("width", 340)
     .attr("height", 600)
   	.attr("id", "legendG")
   	.attr("transform", "translate(0," + 30 + ")");
@@ -250,7 +257,191 @@ var showAllLink = d3.select("#showAll")
 		displayRowsTooltip(true);
 	} 
 });
+
+var showMetricsTimeout = null;
+
+d3.select("#showMetricsTable")
+	.on('mouseover', function() {
+		showMetricsTooltip(d3.event);
+	})
+	.on('mouseout', function() {
+		hideMetricsTooltip();
+	})
+	.on('keydown', function() {
+		if (d3.event.keyCode && d3.event.keyCode === 13) {
+			showMetricsTooltip(d3.event);
+		} else if (d3.event.keyCode) {
+			hideMetricsTooltip();
+		}
+	});
+
+var showMetricsTooltip = function(event) {
+	if (showMetricsTimeout) {
+		clearTimeout(showMetricsTimeout);
+	}
+	var jobId = d3.select("#jobs").node().value;
+	var content = "<div style='margin:10px; width: 300px; max-height: 300px;overflow-x: scroll;'>";
 	
+	var tableMetrics = new Array();
+	
+	var queryString = "metrics?job=" + jobId + "&getAllMetrics=true";
+	var getEvent = function(){
+		return event;
+	}
+	d3.xhr(queryString, function(error, responseData) {
+		  if (error) {
+			  console.log("error retrieving metrics");
+		  }
+		  if (responseData) {
+			  if (responseData.response) {
+				  var evt = getEvent();
+				  tableMetrics = JSON.parse(responseData.response);
+				  
+					if (tableMetrics.ops.length === 0) {
+						content+= "<span>There are no metrics to display.</span>";
+					} else {
+						var opMetrics = tableMetrics.ops;
+						var countArr = new Array();
+						var rateArr = new Array();
+						opMetrics.forEach(function(op) {
+							var metrics = op.metrics;
+							var opId = op.opId;
+							metrics.forEach(function(tm) {
+								var rateIdx = tm["name"].toUpperCase().indexOf("RATE");
+								// if it starts with Rate it is RateUnit
+								if (opId) {
+									tm.opId = opId;
+								}
+								if (rateIdx !== -1 && rateIdx !== 0) {
+									rateArr.push(tm);
+								} else if (rateIdx !== 0){
+									countArr.push(tm);
+								}
+							});
+
+						});
+						
+						var rowIdx = 0;
+						content += "<table role='presentation'><caption>Counter oplet values</caption><tr><th tabindex=0>Operator name</th><th tabindex=0>Counter value</th></tr>";
+						
+						var sortFunc = function(objA, objB) {
+							var a = objA.opId;
+							var b = objB.opId;
+							
+							if (a < b) {
+								return -1;
+							} else if (a > b) {
+								return 1;
+							} else {
+								return 0;
+							}
+						};
+						
+						var startTr = "<tr><td align='center' tabindex=0>";
+						var startTd = "<td align='center' tabindex=0>";
+						var startTdLeft = "<td align='left' tabindex=0>";
+						var endTd = "</td>"
+						var endTr = "</tr>";
+						
+						if (countArr.length > 0) {
+							countArr.sort(sortFunc);
+
+							countArr.forEach(function(counter) {
+								rowIdx++;
+	
+								var opName = counter["opId"].substring("OP_".length, counter["opId"].length);
+								content +=  startTr + opName + endTd;
+	
+								content += startTd + counter["value"] + endTd + endTr;	
+							});
+							
+							content += "</table>";
+						}
+						
+						if (rateArr.length > 0) {
+							rateArr.sort(sortFunc);
+							content += "<table role='presentation'><caption>Rate meter oplet values</caption><tr><th tabindex=0>Operator name</th><th tabindex=0>Rate type</th><th tabindex=0>Rate value</th></tr>";
+							rateArr.forEach(function(rate) {
+								rowIdx++;
+								
+								var opName = rate["opId"].substring("OP_".length, rate["opId"].length);
+								content +=  startTr + opName + endTd;
+								var rateName = rate["name"];
+								if (rateName.toUpperCase().endsWith("RATE")) {
+									rateName = rateName.substring(0, rateName.length - "RATE".length);
+								}
+								content += startTdLeft + rateName + endTd;
+								var num = Number.parseFloat(rate["value"]);
+								content += startTd + num.toFixed(4) + endTd + endTr;	
+							});
+							content += "</table>";
+						}
+
+					}
+					content += "</div>";
+					
+					var evtX;
+					var evtY;
+					var target = evt.target;
+					if (target) {
+						if (target.x && target.y) {
+							evtX = target.x;
+							evtY = target.y;
+						} else if (target.offsetLeft && target.offsetTop) {
+							evtX = target.offsetLeft;
+							evtY = target.offsetTop;
+						}
+					}
+
+					metricsTooltip
+					.html(content)
+					.style("left", (evtX + 140) + "px")
+					.style("top", evtY +"px")
+					.style("padding-x", 22)
+					.style("padding-y", 10)
+					.style("display", "block");
+					
+					d3.select("#showMetricsTable").node().blur();
+					metricsTooltip.node().focus();
+					
+
+					metricsTooltip
+					.on("keydown", function() {
+						// Escape key closes the popup
+						if (d3.event.keyCode && d3.event.keyCode === 27) {
+							hideMetricsTooltip();
+						}
+					});
+					
+					metricsTooltip
+					.on("mouseover", function() {
+						if (showMetricsTimeout) {
+							clearTimeout(showMetricsTimeout);
+						}
+					});
+					
+					metricsTooltip
+					.on("mouseout", function() {
+						hideMetricsTooltip();
+					});
+				  
+			  }
+		  }
+	});
+};
+
+
+
+var hideMetricsTooltip = function() {
+	if (showMetricsTimeout) {
+		clearTimeout(showMetricsTimeout);
+	}
+	showMetricsTimeout = setTimeout(function() {
+			metricsTooltip
+			.style("display", "none");
+	}, 400);
+};
+
 var tooltip = d3.select("body")
 	.append("div")
 	.attr("class", "tooltip")
@@ -318,7 +509,7 @@ var displayRowsTooltip = function(newRequest) {
 			} else if (newKey === "Oplet kind"){
 				content += "<td class='left' tabindex=0>" + row[newKey] + "</td>";
 			} else {
-				content += "<td class='center' tabindex=0>" + row[newKey] + "</td>";
+				content += "<td class='center' tabindex=0 style='white-space:nowrap;'>" + row[newKey] + "</td>";
 			}
 		}
 		firstTime = false;
@@ -333,10 +524,11 @@ var displayRowsTooltip = function(newRequest) {
 	if (newRequest) {
 		var htmlStr = "<html><head><title>Oplet properties</title><link rel='stylesheet' type='text/css' href='resources/css/main.css'></head>" + 
 		"<body>";
-		var buttonStr = '<button id="pauseTableRefresh" type="button">Pause table refresh</button>';
-		var tableHdr = "<table id='allPropsTable' tabindex=0 style='width: 675px;margin: 10px;table-layout:fixed;word-wrap: break-word;'>";
+		var buttonStr = '<button title="Pause table refresh" id="pauseTableRefresh" type="button">Pause table refresh</button>';
+		var closeWinStr = '<button title="Close window" id="closeTablePropsWindow" type="button">Close window</button>';
+		var tableHdr = "<table id='allPropsTable' tabindex=0 style='margin: 10px;table-layout:fixed;word-wrap: break-word;'><caption>Oplet properties</caption>";
 		
-		var str = htmlStr + buttonStr + tableHdr + headerStr + content + "</table></body><html>";
+		var str = htmlStr + buttonStr + closeWinStr + tableHdr + headerStr + content + "</table></body><html>";
 		propWindow = window.open("", "Properties", "width=825,height=500,scrollbars=yes,dependent=yes");
 		propWindow.document.body.innerHTML = "";
 		propWindow.document.write(str);
@@ -355,11 +547,21 @@ var displayRowsTooltip = function(newRequest) {
 			function() {
 				 if (this.innerHTML === "Pause table refresh") {
 					 this.innerHTML = "Resume table refresh";
+					 this.title = "Resume table refresh";
 					 refreshTable = false;
 				 } else {
 					 this.innerHTML = "Pause table refresh";
+					 this.title = "Pause table refresh";
 					 refreshTable = true;
 				 }
+		};
+		
+		var closeBtn = propWindow.document.getElementById("closeTablePropsWindow");
+		closeBtn.onclick = 
+			function() {
+			if (propWindow) {
+				propWindow.close();
+			}
 		};
 	} else {
 		if (refreshTable) {
@@ -370,16 +572,27 @@ var displayRowsTooltip = function(newRequest) {
 		}
 	}
 };
-
+var showStateTimeout = null;
 
 var showStateTooltip = function(event) {
+	if (showStateTimeout) {
+		clearTimeout(showStateTimeout);
+	}
 	var jobId = d3.select("#jobs").node().value;
 	var jobObj = jobMap[jobId];
-	var content = "<div style='margin:10px'>";
+	var content = "<div style='margin:10px'><table><caption>Job State</caption>";
+	
+	var rowPfx = "stateData";
+	var startTd = "<td align='center' tabindex=0>";
+	var endTd = "</td>"
+	var endTr = "</tr>";
+	
+	var rowIdx = 0;
 
-	var kIdx = 0;
 	for (var key in jobObj) {
-		kIdx++;
+		rowIdx++;
+		content += "<tr>" + startTd;
+		
 		var idx = key.indexOf("State");
 		var errIdx = key.indexOf("Error");
 		
@@ -387,28 +600,47 @@ var showStateTooltip = function(event) {
 			var name = key.substring(0, idx) + " " + key.substring(idx, key.length).toLowerCase();
 			var val = jobObj[key];
 			var value = val.substring(0,1) + val.substring(1,val.length).toLowerCase();
-			content += "<div tabindex=0 id='sJobDiv" + kIdx + "'>" + name + ": " + value + "</div>";
-		} else if (errIdx !== -1) {
+			content += name + endTd;
+			content += "<td tabindex=0 id='" + rowPfx + rowIdx + "'>" + value + endTd + endTr;
+		}
+		
+		if (errIdx !== -1) {
 			var name = key.substring(0, errIdx) + " " + key.substring(errIdx, key.length).toLowerCase();
 			var val = jobObj[key];
 			var value = "";
 			if (val) {
 				value = val.substring(0,1) + val.substring(1,val.length).toLowerCase();
 			}
-			content += "<div tabindex=0 id='sJobDiv" + kIdx + "'>" + name + ": " + value + "</div>";
-		} else {
-			content += "<div tabindex=0 id='sJobDiv" + kIdx + "'>" + key + ": " + jobObj[key] + "</div>";
-		}
+			content += name + endTd;
+			content += "<td tabindex=0 id='" + rowPfx + rowIdx + "'>" + value + endTd + endTr;
+		} 
 		
-	}
-	var evtX = d3.event.srcElement.x;
-	var evtY = d3.event.srcElement.y;
-	content += "</div>";
+		if (idx === -1 && errIdx === -1) {
+			content += key + endTd;
+			content += "<td tabindex=0 id='" + rowPfx + rowIdx + "'>" + jobObj[key] + endTd + endTr;
+		}
 
+	}
+
+	var evtX;
+	var evtY;
+	var target = d3.event.target;
+	if (target) {
+		if (target.x && target.y) {
+			evtX = target.x;
+			evtY = target.y;
+		} else if (target.offsetLeft && target.offsetTop) {
+			evtX = target.offsetLeft;
+			evtY = target.offsetTop;
+		}
+	}
+
+	content += "</div>";
+	
 	stateTooltip
 	.html(content)
 	.style("left", (evtX - 160) + "px")
-	.style("top", evtY +"px")
+	.style("top", evtY - 20 +"px")
 	.style("padding-x", 22)
 	.style("padding-y", 10)
 	.style("display", "block");
@@ -416,44 +648,77 @@ var showStateTooltip = function(event) {
 	d3.select("#stateImg").node().blur();
 	stateTooltip.node().focus();
 	
-	var keyDownNode = "#sJobDiv" + kIdx
+	var lastNode = "#" + rowPfx + rowIdx;
 	
-	d3.select(keyDownNode)
+	d3.select(lastNode)
 	.on("keydown", function() {
 		// the next tab closes the popup
 		if (d3.event.keyCode && d3.event.keyCode === 9) {
 			hideStateTooltip();
 		}
 	});
+
+
+	stateTooltip
+	.on("keydown", function() {
+		// Escape key closes the popup
+		if (d3.event.keyCode && d3.event.keyCode === 27) {
+			hideStateTooltip();
+		}
+	});
+	
+	stateTooltip
+	.on("mouseover", function() {
+		if (showStateTimeout) {
+			clearTimeout(showStateTimeout);
+		}
+	});
+	
+	stateTooltip
+	.on("mouseout", function() {
+		hideStateTooltip();
+	});
+	
 };
 
 var hideStateTooltip = function() {
-	stateTooltip
-	.style("display", "none");
-	//put focus back on the state image
+	if (showStateTimeout) {
+		clearTimeout(showStateTimeout);
+	}
+	
+	stateTooltip.node().blur();
+	// the focus needs to be put on the stateImg so that when the 
+	// tooltip is closed, the loss of focus on that retains the tab order.
+	// Now the next element to focus on is 'layers'
 	d3.select("#stateImg").node().focus();
+	
+	showStateTimeout = setTimeout(function() {
+		stateTooltip
+		.style("display", "none");
+	}, 400)
 };
-
 
 var makeRows = function() {
 	var nodes = refreshedRowValues !== null ? refreshedRowValues : sankey.nodes();
 	var theRows = [];
 	 nodes.forEach(function(n) {
 		 var sources = [];
-	   	 var sourceStreams = [];
+	   	 var sourceStreamsMap = new Map();
 		 n.targetLinks.forEach(function(trg){
-			sources.push(trg.sourceIdx.idx);
+			var source = trg.sourceIdx.idx.toString();
+			sources.push(source);
  	  		if (trg.tags && trg.tags.length > 0) {
-   	  			sourceStreams = trg.tags;
+   	  			sourceStreamsMap.set(source, trg.tags);
    	  		}
 		 });
 		 var targets = [];
-		 var targetStreams = [];
+		 var targetStreamsMap = new Map();
 		 n.sourceLinks.forEach(function(src){
-			 targets.push(src.targetIdx.idx);
-	   	  		if (src.tags && src.tags.length > 0) {
-	   	  			targetStreams = src.tags;
-	   	  		}
+			var target = src.targetIdx.idx.toString();
+			targets.push(target);
+   	  		if (src.tags && src.tags.length > 0) {
+   	  			targetStreamsMap.set(target, src.tags);
+   	  		}
 		 });
    	  	var kind = parseOpletKind(n.invocation.kind);
 
@@ -466,10 +731,36 @@ var makeRows = function() {
    	  		value = formatNumber(n.value);
    	  	}
    	  	
+		var sStreamString = "";
+		if (sourceStreamsMap.size == 0) {
+			sStreamString = "None";
+		} else if (sourceStreamsMap.size == 1) {
+			for (var value of sourceStreamsMap.values()) {
+				sStreamString = value.join(", ");
+			}
+		} else {
+			for (var [key, value] of sourceStreamsMap) {
+				sStreamString += "[" + key + "] " + value.join(", ") + "<br/>";
+			}
+		}
+
+		var tStreamString = "";
+		if (targetStreamsMap.size == 0) {
+			tStreamString = "None";
+		} else if (targetStreamsMap.size == 1) {
+			for (var value of targetStreamsMap.values()) {
+				tStreamString = value.join(", ");
+			}
+		} else {
+			for (var [key, value] of targetStreamsMap) {
+				tStreamString += "[" + key + "] " + value.join(", ") + "<br/>";
+			}
+		}
+
    	  	var rowObj = {"Name": n.idx, "Oplet kind": kind, "Tuple count": formatNumber(n.value), 
    	  			"Sources": sources.toString(), "Targets": targets.toString(), 
-   	  			"Source stream tags": sourceStreams.toString() === "" ? "None" : sourceStreams.toString(), 
-   	  			"Target stream tags": targetStreams.toString() === "" ? "None" : targetStreams.toString()};
+   	  			"Source stream tags": sStreamString,
+   	  			"Target stream tags": tStreamString};
 		theRows.push(rowObj);
 	 });
 	return theRows;
@@ -708,29 +999,54 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
 			+ formatNumber(d.value) + "</td>";
 
 		var sources = [];
-		var sourceStreams = [];
+		var sourceStreamsMap = new Map();
 		d.targetLinks.forEach(function(trg){
-			sources.push(trg.sourceIdx.idx.toString());
- 	  		if (trg.tags && trg.tags.length > 0) {
-   	  			sourceStreams = trg.tags;
-   	  		}
+            var source = trg.sourceIdx.idx.toString();
+            sources.push(source);
+            if (trg.tags && trg.tags.length > 0) {
+                sourceStreamsMap.set(source, trg.tags);
+            }
 		});
 		var targets = [];
-		var targetStreams = [];
-
+        var targetStreamsMap = new Map();
 		d.sourceLinks.forEach(function(src){
-			targets.push(src.targetIdx.idx);
-	   	  		if (src.tags && src.tags.length > 0) {
-	   	  			targetStreams = src.tags;
-	   	  		}
+			var target = src.targetIdx.idx.toString();
+			targets.push(target);
+   	  		if (src.tags && src.tags.length > 0) {
+   	  			targetStreamsMap.set(target, src.tags);
+   	  		}
 		});
 
 		valueStr += "<td class='smallCenter'>" + sources.toString() + "</td>";
 		valueStr += "<td class='smallCenter'>" + targets.toString() + "</td>";
-		var sStreamString = sourceStreams.toString() === "" ? "None" : sourceStreams.toString();
-		valueStr += "<td class='smallCenter'>" + sStreamString + "</td>";
-		var tStreamString = targetStreams.toString() === "" ? "None" : targetStreams.toString();
-		valueStr += "<td class='smallCenter'>" + tStreamString + "</td>";
+		
+		var sStreamString = "";
+		if (sourceStreamsMap.size == 0) {
+			sStreamString = "None";
+		} else if (sourceStreamsMap.size == 1) {
+			for (var value of sourceStreamsMap.values()) {
+				sStreamString = value.join(", ");
+			}
+		} else {
+			for (var [key, value] of sourceStreamsMap) {
+				sStreamString += "[" + key + "] " + value.join(", ") + "<br/>";
+			}
+		}
+		valueStr += "<td class='smallCenter' style='white-space:nowrap;'>" + sStreamString + "</td>";
+
+		var tStreamString = "";
+		if (targetStreamsMap.size == 0) {
+			tStreamString = "None";
+		} else if (targetStreamsMap.size == 1) {
+			for (var value of targetStreamsMap.values()) {
+				tStreamString = value.join(", ");
+			}
+		} else {
+			for (var [key, value] of targetStreamsMap) {
+				tStreamString += "[" + key + "] " + value.join(", ") + "<br/>";
+			}
+		}
+		valueStr += "<td class='smallCenter' style='white-space:nowrap;'>" + tStreamString + "</td>";
 
 		valueStr += "</tr></table></div>";
 		var str = headStr + valueStr;
@@ -952,6 +1268,15 @@ var fetchJobsInfo = function() {
 	                                .style("display", "none")
 	                                .style("background-color", "white")
 	                                .attr("class", "bshadow");
+	                                
+	                                metricsTooltip = d3.select("body")
+	                                .append("div")
+	                                .style("position", "absolute")
+	                                .style("z-index", "10")
+	                                .style("display", "none")
+	                                .style("background-color", "white")
+	                                .attr("class", "bshadow")
+	                                .attr("tabindex", "0");
 	                                
 	                                // check to see if a job is already selected and it's still in the jobMap object
 	                                var jobId = d3.select("#jobs").node().value;

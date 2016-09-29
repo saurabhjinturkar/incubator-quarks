@@ -2,13 +2,17 @@
 <classpath>
 	<classpathentry kind="src" path="common/src/main/java"/>
 	<classpathentry kind="src" path="common/src/test/java"/>
+	<classpathentry kind="src" path="command/src/main/java"/>
+	<classpathentry kind="src" path="command/src/test/java"/>
+	<classpathentry kind="src" path="csv/src/main/java"/>
+	<classpathentry kind="src" path="csv/src/test/java"/>
 	<classpathentry kind="src" path="file/src/main/java"/>
 	<classpathentry kind="src" path="file/src/test/java"/>
 	<classpathentry kind="src" path="http/src/main/java"/>
 	<classpathentry kind="src" path="http/src/test/java"/>
 	<classpathentry kind="src" path="iot/src/main/java"/>
 	<classpathentry kind="src" path="iot/src/test/java"/>
-	<classpathentry kind="src" path="iotf/src/main/java"/>
+	<classpathentry kind="src" path="iotp/src/main/java"/>
 	<classpathentry kind="src" path="jdbc/src/main/java"/>
 	<classpathentry kind="src" path="jdbc/src/test/java"/>
 	<classpathentry kind="src" path="kafka/src/main/java"/>
@@ -18,7 +22,7 @@
 	<classpathentry kind="src" path="pubsub/src/main/java"/>
 	<classpathentry kind="src" path="pubsub/src/test/java"/>
 	<classpathentry kind="src" path="serial/src/main/java"/>
-	<classpathentry kind="src" path="quarks.javax.websocket/src/main/java"/>
+	<classpathentry kind="src" path="edgent.javax.websocket/src/main/java"/>
 	<classpathentry kind="src" path="javax.websocket-client/src/main/java"/>
 	<classpathentry kind="src" path="wsclient/src/main/java"/>
 	<classpathentry kind="src" path="wsclient-javax.websocket/src/main/java"/>
@@ -28,15 +32,15 @@
 	<classpathentry kind="lib" path="http/ext/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="http/ext/httpclient-4.5.1.jar"/>
 	<classpathentry kind="lib" path="http/ext/httpcore-4.4.4.jar"/>
-	<classpathentry kind="lib" path="iotf/ext/watson-iot-0.1.1.jar"/>
-	<classpathentry kind="lib" path="iotf/ext/lib/common-lang3.jar"/>
-	<classpathentry kind="lib" path="iotf/ext/lib/commons-codec-1.10.jar"/>
-	<classpathentry kind="lib" path="iotf/ext/lib/commons-logging-1.2.jar"/>
-	<classpathentry kind="lib" path="iotf/ext/lib/commons-net-3.3.jar"/>
-	<classpathentry kind="lib" path="iotf/ext/lib/httpclient-4.5.1.jar"/>
-	<classpathentry kind="lib" path="iotf/ext/lib/httpcore-4.4.4.jar"/>
-	<classpathentry kind="lib" path="iotf/ext/lib/joda-time-2.9.2.jar"/>
-	<classpathentry kind="lib" path="iotf/ext/lib/org.eclipse.paho.client.mqttv3-1.0.3-20150818.040635-202.jar"/>
+	<classpathentry kind="lib" path="iotp/ext/watson-iot-0.1.1.jar"/>
+	<classpathentry kind="lib" path="iotp/ext/lib/common-lang3.jar"/>
+	<classpathentry kind="lib" path="iotp/ext/lib/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="iotp/ext/lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="iotp/ext/lib/commons-net-3.3.jar"/>
+	<classpathentry kind="lib" path="iotp/ext/lib/httpclient-4.5.1.jar"/>
+	<classpathentry kind="lib" path="iotp/ext/lib/httpcore-4.4.4.jar"/>
+	<classpathentry kind="lib" path="iotp/ext/lib/joda-time-2.9.2.jar"/>
+	<classpathentry kind="lib" path="iotp/ext/lib/org.eclipse.paho.client.mqttv3-1.0.3-20150818.040635-202.jar"/>
 	<classpathentry kind="lib" path="kafka/ext/kafka_2.10-0.8.2.2.jar"/>
 	<classpathentry kind="lib" path="kafka/ext/kafka-clients-0.8.2.2.jar"/>
 	<classpathentry kind="lib" path="kafka/ext/log4j-1.2.16.jar"/>
@@ -45,7 +49,6 @@
 	<classpathentry kind="lib" path="kafka/ext/zkclient-0.3.jar"/>
 	<classpathentry kind="lib" path="kafka/ext/zookeeper-3.4.6.jar"/>
 	<classpathentry kind="lib" path="mqtt/ext/org.eclipse.paho.client.mqttv3-1.0.2.jar"/>
-	<classpathentry kind="lib" path="quarks.javax.websocket/ext/javax.websocket-api-1.0.jar"/>
 	<classpathentry kind="lib" path="javax.websocket-client/ext/javax-websocket-client-impl-9.3.6.v20151106.jar"/>
 	<classpathentry kind="lib" path="javax.websocket-client/ext/javax.websocket-api-1.0.jar"/>
 	<classpathentry kind="lib" path="javax.websocket-client/ext/jetty-util-9.3.6.v20151106.jar"/>

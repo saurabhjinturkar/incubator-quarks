@@ -17,11 +17,11 @@
 # Crontab file which contains settings for scheduling the execution of a 
 # monitoring script every minute using cron.
 #
-# You must set the QUARKS environment variable to point to your Quarks 
+# You must set the EDGENT environment variable to point to your Edgent 
 # installation:
-# QUARKS=/home/your_userid/quarks/java8
+# EDGENT=/home/your_userid/edgent/java8
 #
 # Make sure that JAVA_HOME is set in the environment used by cron:
 # JAVA_HOME=/usr/lib/jvm/jre
 
-* * * * * $QUARKS/scripts/cron/startapp.sh $QUARKS/samples/lib/quarks.samples.topology.jar quarks.samples.topology.TerminateAfterNTuples /tmp >> /tmp/quarks-cron.log
+* * * * * $EDGENT/scripts/cron/startapp.sh $EDGENT/samples/lib/edgent.samples.topology.jar org.apache.edgent.samples.topology.TerminateAfterNTuples /tmp >> /tmp/edgent-cron.log

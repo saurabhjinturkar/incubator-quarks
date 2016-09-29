@@ -4,11 +4,11 @@ The application demonstrates a more complete sample that includes
 some common themes.
 
 The source code for the application can be found under the 
-<quarks-release>/<target>/samples/src directory.
+<edgent-release>/<target>/samples/src directory.
 
 Use:
 
-See SensorAnalytics sample link <quarks-release>/docs/javadoc/overview-summary.html
+See SensorAnalytics sample link <edgent-release>/docs/javadoc/overview-summary.html
 for full information on configuring and running the application
 and observing its behavior.  In particular, the default configuration
 connects to MQTT server url "tcp://localhost:1883".

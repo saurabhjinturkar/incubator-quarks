@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-quarks=../../..
+edgent=../../..
 
 # Runs the DeviceComms client
 #
@@ -24,6 +24,6 @@ quarks=../../..
 #
 # no checking is done for the validity of commandLabel or commandArg
 
-export CLASSPATH=${quarks}/samples/lib/quarks.samples.apps.jar
+export CLASSPATH=${edgent}/samples/lib/edgent.samples.apps.jar
 
-java quarks.samples.apps.mqtt.DeviceCommsApp sensorAnalytics.properties $*
+java org.apache.edgent.samples.apps.mqtt.DeviceCommsApp sensorAnalytics.properties $*

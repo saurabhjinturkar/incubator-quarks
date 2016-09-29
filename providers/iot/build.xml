@@ -14,7 +14,7 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="quarks.providers.iot" default="all"
+<project name="edgent.providers.iot" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
@@ -24,12 +24,13 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${quarks.lib}/quarks.providers.direct.jar" />
-    <pathelement location="${quarks.lib}/quarks.runtime.jsoncontrol.jar" />
-    <pathelement location="${quarks.lib}/quarks.runtime.appservice.jar" />
-    <pathelement location="${quarks.connectors}/iot/lib/quarks.connectors.iot.jar" />
-    <pathelement location="${quarks.connectors}/pubsub/lib/quarks.connectors.pubsub.jar" />
-    <pathelement location="${quarks.apps}/iot/lib/quarks.apps.iot.jar" />
+    <pathelement location="${edgent.lib}/edgent.providers.direct.jar" />
+    <pathelement location="${edgent.lib}/edgent.runtime.jsoncontrol.jar" />
+    <pathelement location="${edgent.lib}/edgent.runtime.appservice.appservice.jar" />
+    <pathelement location="${edgent.connectors}/iot/lib/edgent.connectors.iot.jar" />
+    <pathelement location="${edgent.connectors}/pubsub/lib/edgent.connectors.pubsub.jar" />
+    <pathelement location="${edgent.apps}/iot/lib/edgent.apps.iot.jar" />
+    <pathelement location="${edgent.apps}/runtime/lib/edgent.apps.runtime.jar" />
   </path>
 
   <path id="test.compile.classpath">
